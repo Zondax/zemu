@@ -1,0 +1,59 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:12.13.1
+
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: yarn install
+      - run: yarn build:ci
+
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: yarn install
+      - run: yarn test:unit
+
+  publish:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: yarn install
+      - run: yarn build:ci
+      - run:
+          name: prepare authentication config
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
+      - run:
+          name: Update tag
+          command: npm --no-git-tag-version version $CIRCLE_TAG
+      - run:
+          name: Publish package
+          command: npm publish
+
+workflows:
+  version: 2
+  test-suite:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - test:
+          filters:
+            tags:
+              only: /.*/
+      - publish:
+          requires:
+            - build
+            - test
+          filters:
+            tags:
+              only: /^v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/
