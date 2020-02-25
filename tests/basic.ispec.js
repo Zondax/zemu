@@ -59,6 +59,6 @@ test("ledgerSim-apdu", async () => {
 
   await sim.connect();
   const app = new MinimalApp(sim.transport);
-  const version = await app.getVersion();
+  const version = await app.appInfo();
   console.log(version);
 });
