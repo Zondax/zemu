@@ -16,6 +16,9 @@
 
 export const SCP_PRIVKEY = "ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b"
 export const BOLOS_SDK = "/project/deps/nanos-secure-sdk"
+export const DEFAULT_APP_PATH = "/project/app/bin"
+export const DEFAULT_APP_NAME = "app.elf"
+export const DEFAULT_VNC_PORT = "8001"
 
 export default class EmuContainer {
     constructor(elfPath, image) {
@@ -47,10 +50,10 @@ export default class EmuContainer {
               [`9999/tcp`]: [{"HostPort": "9999"}],
             },
             Binds: [
-               `${this.elfPath}:/project/app/bin/`,
+               `${this.elfPath}:${DEFAULT_APP_PATH}`,
                //`/tmp/.X11-unix:/tmp/.X11-unix` //needed if X forwarding
           ],
-            Cmd: ['/home/zondax/speculos/speculos.py --display headless --vnc-port 8001 /project/app/bin/app.elf'],
+            Cmd: [`/home/zondax/speculos/speculos.py --display headless --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${DEFAULT_APP_NAME}`],
           }).then(container => {
             this.currentContainer = container;
             console.log("Docker container started!");

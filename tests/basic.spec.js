@@ -20,7 +20,7 @@ test("empty", async () => {
   expect(true).toEqual(true);
 });
 
-test("ledgerSim-Container", async () => {
+test("ledgerSim-Container-start-close", async () => {
   jest.setTimeout(20000);
   const sim = new LedgerSim("../ledger-iov/app/bin/", "127.0.0.1", 8001, 9998);
   await sim.start();
