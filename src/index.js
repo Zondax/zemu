@@ -90,26 +90,25 @@ export default class LedgerSim {
   }
 
   async connectVNC() {
-    let self = this;
     return new Promise((resolve, reject) => {
-        self.session = rfb.createConnection({
+        this.session = rfb.createConnection({
         host: this.host,
         port: this.vnc_port,
       });
-
-      self.session.on('connect', function() {
+      const {session} = this;
+      this.session.on('connect', function() {
         console.log('successfully connected and authorised');
-        self.session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
-        self.session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
+        session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
+        session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
         resolve(true);
       });
        
-      self.session.on('error', function(error) {
+      this.session.on('error', function(error) {
         console.log('Could not connect to port ', self.vnc_port, ' on ', self.host);
         reject(error);
       });
 
-      setTimeout(() => reject(new Error("timeout")), TIMEOUT);
+      setTimeout(() => reject(new Error("timeout on connectVNC")), TIMEOUT);
     });
   }
 
