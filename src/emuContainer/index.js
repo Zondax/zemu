@@ -37,7 +37,7 @@ export default class EmuContainer {
               `SCP_PRIVKEY=${SCP_PRIVKEY}`,
               `BOLOS_SDK=${BOLOS_SDK}`,
               `BOLOS_ENV=/opt/bolos`,
-              `DISPLAY=:0`,
+              //`DISPLAY=:0`, //needed if X forwarding
             ],
             PortBindings: {
               [`1234/tcp`]: [{"HostPort": "1234"}],
@@ -48,7 +48,7 @@ export default class EmuContainer {
             },
             Binds: [
                `${this.elfPath}:/project/app/bin/`,
-               `/tmp/.X11-unix:/tmp/.X11-unix`
+               //`/tmp/.X11-unix:/tmp/.X11-unix` //needed if X forwarding
           ],
             Cmd: ['/home/zondax/speculos/speculos.py --display headless --vnc-port 8001 /project/app/bin/app.elf'],
           }).then(container => {

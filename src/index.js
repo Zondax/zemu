@@ -49,8 +49,11 @@ export default class LedgerSim {
 
   async start() {
     await this.emuContainer.runContainer();
-    //LedgerSim.delay(3000);
-    await this.connect();
+    await this.connect()
+    .catch(function(error) {
+      console.log(error);
+      this.close();
+    });
   }
 
   static saveRGBA2Png(rect, filename) {
@@ -72,15 +75,6 @@ export default class LedgerSim {
     }
   }
 
-  static retry(fn, retries=3, err=null) {
-    if (!retries) {
-      return Promise.reject(err);
-    }
-    return fn().catch(err => {
-        return retry(fn, (retries - 1), err);
-      });
-  }
-
   static async delayedPromise(p, delay) {
     await Promise.race([
       p,
@@ -96,22 +90,25 @@ export default class LedgerSim {
   }
 
   async connectVNC() {
-    this.session = rfb.createConnection({
-      host: this.host,
-      port: this.vnc_port,
-    });
-
-    const { session } = this;
+    let self = this;
     return new Promise((resolve, reject) => {
-      session.once("connect", () => {
-        console.log('Successfully connected to rfb');
-        session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
-        session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
-        resolve(session);
+        self.session = rfb.createConnection({
+        host: this.host,
+        port: this.vnc_port,
       });
-      session.once("error", () => {
-        reject(session);
+
+      self.session.on('connect', function() {
+        console.log('successfully connected and authorised');
+        self.session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
+        self.session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
+        resolve(true);
       });
+       
+      self.session.on('error', function(error) {
+        console.log('Could not connect to port ', self.vnc_port, ' on ', self.host);
+        reject(error);
+      });
+
       setTimeout(() => reject(new Error("timeout")), TIMEOUT);
     });
   }
