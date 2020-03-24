@@ -14,7 +14,18 @@
  *  limitations under the License.
  ******************************************************************************* */
 import { expect, test } from "jest";
+import LedgerSim from "../src";
 
 test("empty", async () => {
+  expect(true).toEqual(true);
+});
+
+test("ledgerSim-Container", async () => {
+  jest.setTimeout(20000);
+  const sim = new LedgerSim("../ledger-iov/app/bin/", "127.0.0.1", 8001, 9998);
+  await sim.start();
+  console.log("Emu started");
+  await sim.close();
+  console.log("Emu ended");
   expect(true).toEqual(true);
 });

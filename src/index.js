@@ -18,6 +18,7 @@ import fs from "fs";
 import rfb from "rfb2";
 import sleep from "sleep";
 import TransportHttp from "@ledgerhq/hw-transport-http";
+import EmuContainer from "./emuContainer"
 
 export const KEYS = {
   NOT_PRESSED: 0,
@@ -35,19 +36,21 @@ export const WINDOW = {
 };
 
 export const TIMEOUT = 1000;
-
 export const KEYDELAY = 50;
+export const DEFAULT_EMU_IMG = 'zondax/ledger-docker-bolos:latest';
 
 export default class LedgerSim {
-  constructor(host, vncPort, transportPort) {
+  constructor(elfPath, host, vncPort, transportPort) {
     this.host = host;
     this.vnc_port = vncPort;
     this.transport_url = `http://${this.host}:${transportPort}`;
+    this.emuContainer = new EmuContainer(elfPath, DEFAULT_EMU_IMG);
+  }
 
-    this.session = rfb.createConnection({
-      host: this.host,
-      port: this.vnc_port,
-    });
+  async start() {
+    await this.emuContainer.runContainer();
+    //LedgerSim.delay(3000);
+    await this.connect();
   }
 
   static saveRGBA2Png(rect, filename) {
@@ -69,6 +72,15 @@ export default class LedgerSim {
     }
   }
 
+  static retry(fn, retries=3, err=null) {
+    if (!retries) {
+      return Promise.reject(err);
+    }
+    return fn().catch(err => {
+        return retry(fn, (retries - 1), err);
+      });
+  }
+
   static async delayedPromise(p, delay) {
     await Promise.race([
       p,
@@ -84,18 +96,28 @@ export default class LedgerSim {
   }
 
   async connectVNC() {
+    this.session = rfb.createConnection({
+      host: this.host,
+      port: this.vnc_port,
+    });
+
     const { session } = this;
     return new Promise((resolve, reject) => {
       session.once("connect", () => {
+        console.log('Successfully connected to rfb');
         session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
         session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
         resolve(session);
+      });
+      session.once("error", () => {
+        reject(session);
       });
       setTimeout(() => reject(new Error("timeout")), TIMEOUT);
     });
   }
 
-  close() {
+  async close() {
+    await this.emuContainer.stop();
     this.session.end();
   }
 

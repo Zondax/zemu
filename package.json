@@ -23,6 +23,8 @@
     "@babel/runtime": "^7.7.6",
     "@ledgerhq/hw-transport": "^4.78.0",
     "@ledgerhq/hw-transport-http": "^5.2.0",
+    "dockerode": "^3.1.0",
+    "path": "^0.12.7",
     "pngjs": "^3.4.0",
     "rfb2": "^0.2.2",
     "sleep": "^6.1.0"
