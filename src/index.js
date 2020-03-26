@@ -41,9 +41,16 @@ export const DEFAULT_EMU_IMG = 'zondax/ledger-docker-bolos:latest';
 
 export default class LedgerSim {
   constructor(elfPath, host, vncPort, transportPort) {
+
     this.host = host;
     this.vnc_port = vncPort;
     this.transport_url = `http://${this.host}:${transportPort}`;
+    this.elfPath = elfPath;
+
+    if(elfPath == null) {
+      throw new Error("Parameters cannot be null!");
+    }
+
     this.emuContainer = new EmuContainer(elfPath, DEFAULT_EMU_IMG);
   }
 
@@ -73,6 +80,10 @@ export default class LedgerSim {
     } else {
       sleep.msleep(KEYDELAY);
     }
+  }
+
+  static sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   static async delayedPromise(p, delay) {
