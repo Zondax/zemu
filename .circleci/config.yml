@@ -10,6 +10,7 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+      - run: curl -o- -L https://yarnpkg.com/install.sh | bash
       - run: yarn install
       - run: yarn build:ci
 
