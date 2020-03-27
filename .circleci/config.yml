@@ -11,7 +11,7 @@ jobs:
     steps:
       - checkout
       - run: npm install -g n
-      - run: sudo n 8.10.0 
+      - run: sudo -E env "PATH=$PATH" n 8.10.0 
       - run: curl -o- -L https://yarnpkg.com/install.sh | bash
       - run: echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
       - run: yarn install
@@ -22,7 +22,7 @@ jobs:
     steps:
       - checkout
       - run: npm install -g n
-      - run: sudo n 8.10.0 
+      - run: sudo -E env "PATH=$PATH" n 8.10.0 
       - run: curl -o- -L https://yarnpkg.com/install.sh | bash
       - run: echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
       - run: yarn install
