@@ -10,7 +10,8 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: curl -sL install-node.now.sh | sh
+      - run: npm install -g n
+      - run: n 8.10.0 
       - run: curl -o- -L https://yarnpkg.com/install.sh | bash
       - run: echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
       - run: yarn install
@@ -20,7 +21,8 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: curl -sL install-node.now.sh | sh
+      - run: npm install -g n
+      - run: n 8.10.0 
       - run: curl -o- -L https://yarnpkg.com/install.sh | bash
       - run: echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
       - run: yarn install
