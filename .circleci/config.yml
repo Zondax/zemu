@@ -3,7 +3,7 @@ version: 2
 defaults: &defaults
   working_directory: ~/repo
   machine:
-    image: ubuntu-1604:201903-01
+    image: circleci/classic:201808-01
 
 jobs:
   build:
