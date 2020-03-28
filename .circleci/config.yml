@@ -22,13 +22,18 @@ jobs:
           command: |
              curl -o- -L https://yarnpkg.com/install.sh | bash
              echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
-      - run: |
+      - run:
+          name: yarn install
+          command: |
           export NVM_DIR="/opt/circleci/.nvm"
           [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-          npm version
-      - run: yarn install
-      - run: yarn build:ci
-
+          yarn install
+      - run:
+          name: yarn build:ci
+          command: |
+          export NVM_DIR="/opt/circleci/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          yarn build:ci
   test:
     <<: *defaults
     steps:
