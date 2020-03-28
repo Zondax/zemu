@@ -10,12 +10,19 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: npm install -g n
-      - run: sudo -E env "PATH=$PATH" n 8.10.0 
-      - run: curl -o- -L https://yarnpkg.com/install.sh | bash
-      - run: echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
-      - run: yarn install
-      - run: yarn build:ci
+      - run:
+          name: Install node@v8.10.0
+          command: |
+            export NVM_DIR="/opt/circleci/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install v8.10.0
+            nvm alias default v8.10.0
+      - run: |
+          export NVM_DIR="/opt/circleci/.nvm"
+          [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+          npm version
+          yarn install
+          yarn build:ci
 
   test:
     <<: *defaults
