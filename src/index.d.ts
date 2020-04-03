@@ -21,14 +21,13 @@ export interface Snapshot {
 }
 
 declare class LedgerSim {
-  constructor (host: string, vncPort: number, transportPort: number);
+  constructor (elfPath: string, host: string, vncPort: number, transportPort: number);
 
-  connect();
+  start();
   close();
+  sleep(ms: number);
 
   getTransport() : Transport;
-
-  connectVNC();
 
   snapshot(filename?: string): Promise<Snapshot>;
   clickLeft(filename?: string): Promise<Snapshot>;
