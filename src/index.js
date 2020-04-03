@@ -37,7 +37,7 @@ export const WINDOW = {
 
 export const TIMEOUT = 1000;
 export const KEYDELAY = 50;
-export const DEFAULT_EMU_IMG = 'zondax/ledger-docker-bolos:latest';
+export const DEFAULT_EMU_IMG = 'zondax/builder-bolos-emu:latest';
 
 export default class LedgerSim {
   constructor(elfPath, host, vncPort, transportPort) {
@@ -113,13 +113,13 @@ export default class LedgerSim {
         session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
         resolve(true);
       });
-       
+
       this.session.on('error', function(error) {
-        console.log('Could not connect to port ', self.vnc_port, ' on ', self.host);
+        console.log('Could not connect to port ', this.vnc_port, ' on ', this.host);
         reject(error);
       });
 
-      setTimeout(() => reject(new Error("timeout on connectVNC")), TIMEOUT);
+      setTimeout(() => reject(new Error("timeout on connectVNC")), 10000);
     });
   }
 
