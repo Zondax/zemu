@@ -18,7 +18,7 @@ import fs from "fs";
 import rfb from "rfb2";
 import sleep from "sleep";
 import TransportHttp from "@ledgerhq/hw-transport-http";
-import EmuContainer from "./emuContainer"
+import EmuContainer from "./emuContainer";
 
 export const KEYS = {
   NOT_PRESSED: 0,
@@ -37,17 +37,16 @@ export const WINDOW = {
 
 export const TIMEOUT = 1000;
 export const KEYDELAY = 50;
-export const DEFAULT_EMU_IMG = 'zondax/builder-bolos-emu:latest';
+export const DEFAULT_EMU_IMG = "zondax/builder-bolos-emu:latest";
 
 export default class LedgerSim {
   constructor(elfPath, host, vncPort, transportPort) {
-
     this.host = host;
     this.vnc_port = vncPort;
     this.transport_url = `http://${this.host}:${transportPort}`;
     this.elfPath = elfPath;
 
-    if(elfPath == null) {
+    if (elfPath == null) {
       throw new Error("Parameters cannot be null!");
     }
 
@@ -56,8 +55,7 @@ export default class LedgerSim {
 
   async start() {
     await this.emuContainer.runContainer();
-    await this.connect()
-    .catch(function(error) {
+    await this.connect().catch(function(error) {
       console.log(error);
       this.close();
     });
@@ -102,20 +100,20 @@ export default class LedgerSim {
 
   async connectVNC() {
     return new Promise((resolve, reject) => {
-        this.session = rfb.createConnection({
+      this.session = rfb.createConnection({
         host: this.host,
         port: this.vnc_port,
       });
-      const {session} = this;
-      this.session.on('connect', function() {
-        console.log('successfully connected and authorised');
+      const { session } = this;
+      this.session.on("connect", function() {
+        console.log("successfully connected and authorised");
         session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
         session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
         resolve(true);
       });
 
-      this.session.on('error', function(error) {
-        console.log('Could not connect to port ', this.vnc_port, ' on ', this.host);
+      this.session.on("error", function(error) {
+        console.log("Could not connect to port ", this.vnc_port, " on ", this.host);
         reject(error);
       });
 
