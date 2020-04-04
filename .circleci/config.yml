@@ -35,6 +35,7 @@ jobs:
           command: |
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             yarn install
+      - run: docker pull zondax/builder-bolos-emu:latest
       - run:
           name: yarn test:unit
           command: |
