@@ -11,12 +11,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install node@v8.10.0
+          name: Install node@v12.16.1
           command: |
             export NVM_DIR="/opt/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install v8.10.0
-            nvm alias default v8.10.0
+            nvm install v12.16.1
+            nvm alias default v12.16.1
       - run:
           name: Install yarn
           command: |
@@ -39,12 +39,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install node@v8.10.0
+          name: Install node@v12.16.1
           command: |
             export NVM_DIR="/opt/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install v8.10.0
-            nvm alias default v8.10.0
+            nvm install v12.16.1
+            nvm alias default v12.16.1
       - run:
           name: Install yarn
           command: |
@@ -59,9 +59,9 @@ jobs:
       - run:
           name: build docker image
           command: |
-            git clone -b zondpeculos https://github.com/Zondax/docker-bolos.git
-            cd ./docker-bolos
-            make build
+            git clone https://github.com/Zondax/docker-builder.git
+            cd ./docker-builder
+            make build_bolos_emu
       - run:
           name: yarn test:unit
           command: |
