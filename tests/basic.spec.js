@@ -15,11 +15,12 @@
  ******************************************************************************* */
 import { expect, test } from "jest";
 import LedgerSim from "../src";
-import MinimalApp from "./minapp";
 
-test("ledgerSim-Container-start-close", async () => {
+const demoAppPath = "bin/demoApp";
+test("ledgerSim-Start&Close", async () => {
   jest.setTimeout(20000);
-  const sim = new LedgerSim("../ledger-filecoin/app/bin/", "127.0.0.1", 8001, 9998);
+  const sim = new LedgerSim(demoAppPath);
+  expect(sim).not.toBeNull();
   try {
     await sim.start();
   } finally {
@@ -28,11 +29,9 @@ test("ledgerSim-Container-start-close", async () => {
   expect(true).toEqual(true);
 });
 
-test("ledgerSim-snapshot", async () => {
+test("ledgerSim-Snapshot", async () => {
   jest.setTimeout(20000);
-  const sim = new LedgerSim("../ledger-filecoin/app/bin/", "127.0.0.1", 8001, 9998);
-  expect(sim).not.toBeNull();
-
+  const sim = new LedgerSim(demoAppPath);
   try {
     await sim.start();
     expect(sim.session.title).toEqual("LibVNCServer");
@@ -47,9 +46,9 @@ test("ledgerSim-snapshot", async () => {
   }
 });
 
-test("ledgerSim-control", async () => {
+test("ledgerSim-Basic Control", async () => {
   jest.setTimeout(20000);
-  const sim = new LedgerSim("../ledger-filecoin/app/bin/", "127.0.0.1", 8001, 9998);
+  const sim = new LedgerSim(demoAppPath);
   try {
     await sim.start();
 
@@ -65,19 +64,6 @@ test("ledgerSim-control", async () => {
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0);
     expect(view1).not.toEqual(view0);
-  } finally {
-    await sim.close();
-  }
-});
-
-test("ledgerSim-apdu", async () => {
-  jest.setTimeout(20000);
-  const sim = new LedgerSim("../ledger-filecoin/app/bin/", "127.0.0.1", 8001, 9998);
-  try {
-    await sim.start();
-    const app = new MinimalApp(sim.transport);
-    const version = await app.appInfo();
-    console.log(version);
   } finally {
     await sim.close();
   }

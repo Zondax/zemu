@@ -21,7 +21,7 @@ export interface Snapshot {
 }
 
 declare class LedgerSim {
-  constructor (elfPath: string, host: string, vncPort: number, transportPort: number);
+  constructor (elfPath: string, host?: string, vncPort?: number, transportPort?: number);
 
   start();
   close();

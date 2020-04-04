@@ -71,6 +71,7 @@ export default class EmuContainer {
     });
   }
 
+  /*
   async copyElf(appPath) {
     console.log("Will copy app elf");
     this.currentContainer.putArchive(appPath, { path: "/project/app/bin/" }, function(error, response) {
@@ -79,7 +80,7 @@ export default class EmuContainer {
       }
     });
   }
-
+*/
   stop() {
     const { currentContainer } = this;
     return new Promise((resolve, reject) => {
