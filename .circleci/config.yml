@@ -19,12 +19,12 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install node@v8.10.0
+          name: Install node@v12.16.1
           command: |
             export NVM_DIR="/opt/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install v8.10.0
-            nvm alias default v8.10.0
+            nvm install v12.16.1
+            nvm alias default v12.16.1
       - run:
           name: Install yarn
           command: |
