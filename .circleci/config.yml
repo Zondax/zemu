@@ -15,7 +15,7 @@ jobs:
       image: circleci/classic:latest
     working_directory: ~/repo
     environment:
-      NVM_DIR: /opt/circleci/.nvm
+      BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
     steps:
       - checkout
       - run:
@@ -28,17 +28,9 @@ jobs:
           command: |
             curl -o- -L https://yarnpkg.com/install.sh | bash
             echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
-      - run:
-          name: yarn install
-          command: |
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            yarn install
+      - run: yarn install
       - run: docker pull zondax/builder-bolos-emu:latest
-      - run:
-          name: yarn test:unit
-          command: |
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            yarn test:unit
+      - run: yarn test:unit
 
   publish:
     docker:
