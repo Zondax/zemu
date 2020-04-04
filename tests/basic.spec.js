@@ -16,10 +16,10 @@
 import { expect, test } from "jest";
 import LedgerSim from "../src";
 
-const demoAppPath = "bin/demoApp";
+const DEMO_APP_PATH = "bin/demoApp";
 test("ledgerSim-Start&Close", async () => {
   jest.setTimeout(20000);
-  const sim = new LedgerSim(demoAppPath);
+  const sim = new LedgerSim(DEMO_APP_PATH);
   expect(sim).not.toBeNull();
   try {
     await sim.start();
@@ -31,7 +31,7 @@ test("ledgerSim-Start&Close", async () => {
 
 test("ledgerSim-Snapshot", async () => {
   jest.setTimeout(20000);
-  const sim = new LedgerSim(demoAppPath);
+  const sim = new LedgerSim(DEMO_APP_PATH);
   try {
     await sim.start();
     expect(sim.session.title).toEqual("LibVNCServer");
@@ -48,7 +48,7 @@ test("ledgerSim-Snapshot", async () => {
 
 test("ledgerSim-Basic Control", async () => {
   jest.setTimeout(20000);
-  const sim = new LedgerSim(demoAppPath);
+  const sim = new LedgerSim(DEMO_APP_PATH);
   try {
     await sim.start();
 
