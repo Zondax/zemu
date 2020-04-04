@@ -1,41 +1,21 @@
 version: 2.1
 
-defaults: &defaults
-  working_directory: ~/repo
-  machine:
-    image: circleci/classic:latest
-
 jobs:
   build:
-    <<: *defaults
+    docker:
+      - image: circleci/node:lts
+    working_directory: ~/repo
     steps:
       - checkout
-      - run:
-          name: Install node@v8.10.0
-          command: |
-            export NVM_DIR="/opt/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            nvm install v8.10.0
-            nvm alias default v8.10.0
-      - run:
-          name: Install yarn
-          command: |
-             curl -o- -L https://yarnpkg.com/install.sh | bash
-             echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
-      - run:
-          name: yarn install
-          command: |
-            export NVM_DIR="/opt/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            yarn install
-      - run:
-          name: yarn build:ci
-          command: |
-            export NVM_DIR="/opt/circleci/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            yarn build:ci
+      - run: yarn install
+      - run: yarn build:ci
+
   test:
-    <<: *defaults
+    machine:
+      image: circleci/classic:latest
+    working_directory: ~/repo
+    environment:
+      NVM_DIR: /opt/circleci/.nvm
     steps:
       - checkout
       - run:
@@ -48,12 +28,11 @@ jobs:
       - run:
           name: Install yarn
           command: |
-             curl -o- -L https://yarnpkg.com/install.sh | bash
-             echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
+            curl -o- -L https://yarnpkg.com/install.sh | bash
+            echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
       - run:
           name: yarn install
           command: |
-            export NVM_DIR="/opt/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             yarn install
       - run:
@@ -65,7 +44,6 @@ jobs:
       - run:
           name: yarn test:unit
           command: |
-            export NVM_DIR="/opt/circleci/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             yarn test:unit
 
@@ -95,7 +73,6 @@ jobs:
       - run: yarn docs:build
       - add_ssh_keys:
           fingerprints:
-            # TODO: Fix key
             - "19:d8:07:01:0c:64:b4:8b:d1:44:45:39:87:1f:4d:a0"
       - run:
           name: Install and configure dependencies
@@ -107,6 +84,7 @@ jobs:
           name: Deploy docs to gh-pages branch
           command: |
             $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
+
 
 no-tags: &no-tags
   filters:
@@ -124,14 +102,20 @@ workflows:
   version: 2
 
   default:
-    - build: *no-tags
-    - test: *no-tags
+    jobs:
+      - build:
+          <<: *no-tags
+      - test:
+          <<: *no-tags
 
   release:
-    - build: *only-release-tags
-    - test: *only-release-tags
-    - publish:
-        <<: *only-release-tags
-        requires:
-          - build
-          - test
+    jobs:
+      - build:
+          <<: *only-release-tags
+      - test:
+          <<: *only-release-tags
+      - publish:
+          <<: *only-release-tags
+          requires:
+            - build
+            - test
