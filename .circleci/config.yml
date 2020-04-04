@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 defaults: &defaults
   working_directory: ~/repo
@@ -70,7 +70,8 @@ jobs:
             yarn test:unit
 
   publish:
-    <<: *defaults
+    docker:
+      - image: circleci/node:lts
     steps:
       - checkout
       - run: yarn install
@@ -85,24 +86,52 @@ jobs:
           name: Publish package
           command: npm publish
 
+  vuepress_publish:
+    docker:
+      - image: circleci/node:lts
+    steps:
+      - checkout
+      - run: yarn
+      - run: yarn docs:build
+      - add_ssh_keys:
+          fingerprints:
+            # TODO: Fix key
+            - "19:d8:07:01:0c:64:b4:8b:d1:44:45:39:87:1f:4d:a0"
+      - run:
+          name: Install and configure dependencies
+          command: |
+            yarn global add gh-pages@2.2.0
+            git config user.email "ci-build@zondax.ch"
+            git config user.name "ci-build"
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: |
+            $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
+
+no-tags: &no-tags
+  filters:
+    tags:
+      ignore: /.*/
+
+only-release-tags: &only-release-tags
+  filters:
+    tags:
+      only: /^v[0-9]+(\.[0-9]+)*/
+    branches:
+      ignore: /.*/
+
 workflows:
   version: 2
-  test-suite:
-    jobs:
-      - build:
-          filters:
-            tags:
-              only: /.*/
-      - test:
-          filters:
-            tags:
-              only: /.*/
-      - publish:
-          requires:
-            - build
-            - test
-          filters:
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
+
+  default:
+    - build: *no-tags
+    - test: *no-tags
+
+  release:
+    - build: *only-release-tags
+    - test: *only-release-tags
+    - publish:
+        <<: *only-release-tags
+        requires:
+          - build
+          - test
