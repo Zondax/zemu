@@ -41,7 +41,7 @@ jobs:
       - run: yarn build:ci
       - run:
           name: prepare authentication config
-          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > /home/circleci/project/.npmrc
       - run:
           name: Update tag
           command: npm --no-git-tag-version version $CIRCLE_TAG
