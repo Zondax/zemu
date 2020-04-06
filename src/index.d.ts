@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2020 ZondaX GmbH
+ *  (c) 2020 Zondax GmbH
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ export interface Snapshot {
   height: number;
 }
 
-declare class LedgerSim {
+declare class Zemu {
   constructor (elfPath: string, host?: string, vncPort?: number, transportPort?: number);
 
   start();
@@ -35,4 +35,4 @@ declare class LedgerSim {
   clickBoth(filename?: string): Promise<Snapshot>;
 }
 
-export default LedgerSim;
+export default Zemu;

@@ -4,7 +4,6 @@ module.exports = {
   description: "Ledger Nano S/X Testing Framework",
   plugins: [
     [
-      '@goy/svg-icons',
       "vuepress-plugin-mathjax",
     ],
   ],

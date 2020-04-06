@@ -42,7 +42,7 @@ export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_VNC_PORT = 8001;
 export const DEFAULT_TRANSPORT_PORT = 9998;
 
-export default class LedgerSim {
+export default class Zemu {
   constructor(
     elfPath,
     host = DEFAULT_HOST,
@@ -115,7 +115,6 @@ export default class LedgerSim {
       });
       const { session } = this;
       this.session.on("connect", function() {
-        console.log("VNC connection ready");
         session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
         session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
         resolve(true);
@@ -144,7 +143,7 @@ export default class LedgerSim {
     return new Promise((resolve, reject) => {
       session.once("rect", rect => {
         if (filename) {
-          LedgerSim.saveRGBA2Png(rect, filename);
+          Zemu.saveRGBA2Png(rect, filename);
         }
         resolve(rect);
       });
@@ -155,27 +154,27 @@ export default class LedgerSim {
 
   async clickLeft(filename) {
     this.session.keyEvent(KEYS.LEFT, KEYS.PRESSED);
-    LedgerSim.delay();
+    Zemu.delay();
     this.session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
-    LedgerSim.delay();
+    Zemu.delay();
     return this.snapshot(filename);
   }
 
   async clickRight(filename) {
     this.session.keyEvent(KEYS.RIGHT, KEYS.PRESSED);
-    LedgerSim.delay();
+    Zemu.delay();
     this.session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
-    LedgerSim.delay();
+    Zemu.delay();
     return this.snapshot(filename);
   }
 
   async clickBoth(filename) {
     this.session.keyEvent(KEYS.LEFT, KEYS.PRESSED);
     this.session.keyEvent(KEYS.RIGHT, KEYS.PRESSED);
-    LedgerSim.delay();
+    Zemu.delay();
     this.session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
     this.session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
-    LedgerSim.delay();
+    Zemu.delay();
     return this.snapshot(filename);
   }
 }
