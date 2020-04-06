@@ -14,7 +14,56 @@
  *  limitations under the License.
  ******************************************************************************* */
 import { expect, test } from "jest";
+import LedgerSim from "../src";
 
-test("empty", async () => {
+jest.setTimeout(20000);
+const DEMO_APP_PATH = "bin/demoApp";
+
+test("ledgerSim-Start&Close", async () => {
+  const sim = new LedgerSim(DEMO_APP_PATH);
+  expect(sim).not.toBeNull();
+  try {
+    await sim.start();
+  } finally {
+    await sim.close();
+  }
   expect(true).toEqual(true);
+});
+
+test("ledgerSim-Snapshot", async () => {
+  const sim = new LedgerSim(DEMO_APP_PATH);
+  try {
+    await sim.start();
+    expect(sim.session.title).toEqual("LibVNCServer");
+    expect(sim.session.width).toEqual(128);
+    expect(sim.session.height).toEqual(32);
+
+    const snapshot = await sim.snapshot();
+    expect(snapshot.width).toEqual(128);
+    expect(snapshot.height).toEqual(32);
+  } finally {
+    await sim.close();
+  }
+});
+
+test("ledgerSim-Basic Control", async () => {
+  const sim = new LedgerSim(DEMO_APP_PATH);
+  try {
+    await sim.start();
+
+    await sim.clickLeft();
+    await sim.clickLeft();
+    await sim.clickLeft();
+
+    // Move up and down and check screens
+    const view0 = await sim.snapshot("tests/snapshots/0.png");
+    const view1 = await sim.clickRight("tests/snapshots/1.png");
+    const view2 = await sim.clickLeft("tests/snapshots/2.png");
+
+    // compare to check that it went back to the same view
+    expect(view2).toEqual(view0);
+    expect(view1).not.toEqual(view0);
+  } finally {
+    await sim.close();
+  }
 });

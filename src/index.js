@@ -18,6 +18,7 @@ import fs from "fs";
 import rfb from "rfb2";
 import sleep from "sleep";
 import TransportHttp from "@ledgerhq/hw-transport-http";
+import EmuContainer from "./emuContainer";
 
 export const KEYS = {
   NOT_PRESSED: 0,
@@ -35,18 +36,37 @@ export const WINDOW = {
 };
 
 export const TIMEOUT = 1000;
-
 export const KEYDELAY = 50;
+export const DEFAULT_EMU_IMG = "zondax/builder-bolos-emu:latest";
+export const DEFAULT_HOST = "127.0.0.1";
+export const DEFAULT_VNC_PORT = 8001;
+export const DEFAULT_TRANSPORT_PORT = 9998;
 
 export default class LedgerSim {
-  constructor(host, vncPort, transportPort) {
+  constructor(
+    elfPath,
+    host = DEFAULT_HOST,
+    vncPort = DEFAULT_VNC_PORT,
+    transportPort = DEFAULT_TRANSPORT_PORT,
+  ) {
     this.host = host;
     this.vnc_port = vncPort;
     this.transport_url = `http://${this.host}:${transportPort}`;
+    this.elfPath = elfPath;
 
-    this.session = rfb.createConnection({
-      host: this.host,
-      port: this.vnc_port,
+    if (elfPath == null) {
+      throw new Error("elfPath cannot be null!");
+    }
+
+    this.emuContainer = new EmuContainer(elfPath, DEFAULT_EMU_IMG);
+  }
+
+  async start() {
+    await this.emuContainer.runContainer();
+    // eslint-disable-next-line func-names
+    await this.connect().catch(error => {
+      console.log(error);
+      this.close();
     });
   }
 
@@ -69,6 +89,10 @@ export default class LedgerSim {
     }
   }
 
+  static sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   static async delayedPromise(p, delay) {
     await Promise.race([
       p,
@@ -84,18 +108,30 @@ export default class LedgerSim {
   }
 
   async connectVNC() {
-    const { session } = this;
     return new Promise((resolve, reject) => {
-      session.once("connect", () => {
+      this.session = rfb.createConnection({
+        host: this.host,
+        port: this.vnc_port,
+      });
+      const { session } = this;
+      this.session.on("connect", function() {
+        console.log("VNC connection ready");
         session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
         session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
-        resolve(session);
+        resolve(true);
       });
-      setTimeout(() => reject(new Error("timeout")), TIMEOUT);
+
+      this.session.on("error", function(error) {
+        console.log("Could not connect to port ", this.vnc_port, " on ", this.host);
+        reject(error);
+      });
+
+      setTimeout(() => reject(new Error("timeout on connectVNC")), 10000);
     });
   }
 
-  close() {
+  async close() {
+    await this.emuContainer.stop();
     this.session.end();
   }
 

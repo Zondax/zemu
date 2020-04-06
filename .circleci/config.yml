@@ -1,27 +1,40 @@
-version: 2
-
-defaults: &defaults
-  working_directory: ~/repo
-  docker:
-    - image: circleci/node:12.13.1
+version: 2.1
 
 jobs:
   build:
-    <<: *defaults
+    docker:
+      - image: circleci/node:lts
+    working_directory: ~/repo
     steps:
       - checkout
       - run: yarn install
       - run: yarn build:ci
 
   test:
-    <<: *defaults
+    machine:
+      image: circleci/classic:latest
+    working_directory: ~/repo
+    environment:
+      BASH_ENV: "/opt/circleci/.nvm/nvm.sh"
     steps:
       - checkout
+      - run:
+          name: Install node@v12.16.1
+          command: |
+            nvm install v12.16.1
+            nvm alias default v12.16.1
+      - run:
+          name: Install yarn
+          command: |
+            curl -o- -L https://yarnpkg.com/install.sh | bash
+            echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
       - run: yarn install
+      - run: docker pull zondax/builder-bolos-emu:latest
       - run: yarn test:unit
 
   publish:
-    <<: *defaults
+    docker:
+      - image: circleci/node:lts
     steps:
       - checkout
       - run: yarn install
@@ -36,24 +49,58 @@ jobs:
           name: Publish package
           command: npm publish
 
+  vuepress_publish:
+    docker:
+      - image: circleci/node:lts
+    steps:
+      - checkout
+      - run: yarn
+      - run: yarn docs:build
+      - add_ssh_keys:
+          fingerprints:
+            - "19:d8:07:01:0c:64:b4:8b:d1:44:45:39:87:1f:4d:a0"
+      - run:
+          name: Install and configure dependencies
+          command: |
+            yarn global add gh-pages@2.2.0
+            git config user.email "ci-build@zondax.ch"
+            git config user.name "ci-build"
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: |
+            $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
+
+
+no-tags: &no-tags
+  filters:
+    tags:
+      ignore: /.*/
+
+only-release-tags: &only-release-tags
+  filters:
+    tags:
+      only: /^v[0-9]+(\.[0-9]+)*/
+    branches:
+      ignore: /.*/
+
 workflows:
   version: 2
-  test-suite:
+
+  default:
     jobs:
       - build:
-          filters:
-            tags:
-              only: /.*/
+          <<: *no-tags
       - test:
-          filters:
-            tags:
-              only: /.*/
+          <<: *no-tags
+
+  release:
+    jobs:
+      - build:
+          <<: *only-release-tags
+      - test:
+          <<: *only-release-tags
       - publish:
+          <<: *only-release-tags
           requires:
             - build
             - test
-          filters:
-            tags:
-              only: /^v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/

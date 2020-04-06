@@ -1,7 +1,7 @@
 {
-  "name": "@zondax/zondpeculos",
+  "name": "@zondax/zemu",
   "version": "0.0.0",
-  "description": "Ledger Nano S testing helper (based on Speculos)",
+  "description": "Zemu Testing Framework",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "repository": {
@@ -11,7 +11,8 @@
   "keywords": [
     "Ledger",
     "Zondax",
-    "testing"
+    "Testing",
+    "Zemu"
   ],
   "author": "Zondax GmbH",
   "license": "Apache-2.0",
@@ -23,6 +24,8 @@
     "@babel/runtime": "^7.7.6",
     "@ledgerhq/hw-transport": "^4.78.0",
     "@ledgerhq/hw-transport-http": "^5.2.0",
+    "dockerode": "^3.1.0",
+    "path": "^0.12.7",
     "pngjs": "^3.4.0",
     "rfb2": "^0.2.2",
     "sleep": "^6.1.0"
@@ -44,13 +47,21 @@
     "eslint-plugin-vue": "^6.0.1",
     "jest": "^24.9.0",
     "jest-serial-runner": "^1.1.0",
-    "prettier": "^1.19.1"
-  },
+    "prettier": "^1.19.1",
+    "vuepress": "^1.4.0",
+    "@vuepress/plugin-google-analytics": "^1.4.0",
+    "@vuepress/plugin-pwa": "^1.4.0",
+    "@fortawesome/vue-fontawesome": "0.1.9",
+    "vuepress-plugin-mathjax": "^1.2.8",
+    "vuepress-plugin-code-copy": "^1.0.6"
+    },
   "scripts": {
     "build": "babel src --out-dir dist",
     "build:ci": "yarn build && cp -f src/index.d.ts dist",
     "test:unit": "jest -c jest.config.unit.js",
-    "test:integration": "jest -c jest.config.integration.js --runInBand --detectOpenHandles"
+    "test:integration": "jest -c jest.config.integration.js --runInBand --detectOpenHandles",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
   },
   "moduleDirectories": [
     "node_modules",
