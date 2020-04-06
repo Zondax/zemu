@@ -14,13 +14,13 @@
  *  limitations under the License.
  ******************************************************************************* */
 import { expect, test } from "jest";
-import LedgerSim from "../src";
+import Zemu from "../src";
 
 jest.setTimeout(20000);
 const DEMO_APP_PATH = "bin/demoApp";
 
-test("ledgerSim-Start&Close", async () => {
-  const sim = new LedgerSim(DEMO_APP_PATH);
+test("Zemu-Start&Close", async () => {
+  const sim = new Zemu(DEMO_APP_PATH);
   expect(sim).not.toBeNull();
   try {
     await sim.start();
@@ -30,8 +30,8 @@ test("ledgerSim-Start&Close", async () => {
   expect(true).toEqual(true);
 });
 
-test("ledgerSim-Snapshot", async () => {
-  const sim = new LedgerSim(DEMO_APP_PATH);
+test("Zemu-Snapshot", async () => {
+  const sim = new Zemu(DEMO_APP_PATH);
   try {
     await sim.start();
     expect(sim.session.title).toEqual("LibVNCServer");
@@ -46,8 +46,8 @@ test("ledgerSim-Snapshot", async () => {
   }
 });
 
-test("ledgerSim-Basic Control", async () => {
-  const sim = new LedgerSim(DEMO_APP_PATH);
+test("Zemu-Basic Control", async () => {
+  const sim = new Zemu(DEMO_APP_PATH);
   try {
     await sim.start();
 

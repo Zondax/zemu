@@ -58,7 +58,6 @@
     "build": "babel src --out-dir dist",
     "build:ci": "yarn build && cp -f src/index.d.ts dist",
     "test:unit": "jest -c jest.config.unit.js",
-    "test:integration": "jest -c jest.config.integration.js --runInBand --detectOpenHandles",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs"
   },

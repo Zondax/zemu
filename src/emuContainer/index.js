@@ -33,6 +33,7 @@ export default class EmuContainer {
       // eslint-disable-next-line global-require
       const Docker = require("dockerode");
       const docker = new Docker();
+
       docker.createContainer({
           Image: this.image,
           Tty: true,
@@ -58,6 +59,8 @@ export default class EmuContainer {
           Cmd: [
             `/home/zondax/speculos/speculos.py --display headless --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${DEFAULT_APP_NAME}`,
           ],
+          AttachStdout: true,
+          AttachStderr: true,
         })
         .then(container => {
           this.currentContainer = container;
@@ -84,7 +87,7 @@ export default class EmuContainer {
   stop() {
     const { currentContainer } = this;
     return new Promise((resolve, reject) => {
-      return currentContainer.stop().then(function() {
+      return currentContainer.stop({ t: 0 }).then(function() {
         return currentContainer.remove().then(function() {
           console.log("Container stopped!");
           resolve(true);

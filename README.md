@@ -8,15 +8,15 @@
 This package is part of our Ledger development and integration testing process. It allows full device/app mocking.
 
 **QuickStart:** \
-```LedgerSim``` class provides access and control to your emulated Ledger app running on a docker container.
+```Zemu``` class provides access and control to your emulated Ledger app running on a docker container.
 
 Basic testing code:
 ```javascript
 jest.setTimeout(20000);
 
 test("demo", async () => {
-    //Create LedgerSim object. Pass the path to your .elf file
-    const sim = new LedgerSim("/ledger-demo/app/bin/");
+    //Create Zemu object. Pass the path to your .elf file
+    const sim = new Zemu("/ledger-demo/app/bin/");
     //Create an instance of your Ledger-js app
   try {
     const demoJSApp = new DemoApp(sim.getTransport());
@@ -45,7 +45,7 @@ test("demo", async () => {
 ```await sim.clickBoth()```
 
 - Wait some time: \
-```await LedgerSim.sleep(500) //Time in [ms]```
+```await Zemu.sleep(500) //Time in [ms]```
 
 We recommend using the npmjs package in order to receive updates/fixes.
 
