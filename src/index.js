@@ -54,11 +54,11 @@ export default class Zemu {
     this.transport_url = `http://${this.host}:${transportPort}`;
     this.elfPath = elfPath;
 
-    if (elfPath == null) {
+    if (this.elfPath == null) {
       throw new Error("elfPath cannot be null!");
     }
 
-    this.emuContainer = new EmuContainer(elfPath, DEFAULT_EMU_IMG);
+    this.emuContainer = new EmuContainer(this.elfPath, DEFAULT_EMU_IMG);
   }
 
   async start() {

@@ -19,13 +19,12 @@ export const BOLOS_SDK = "/project/deps/nanos-secure-sdk";
 export const DEFAULT_APP_PATH = "/project/app/bin";
 export const DEFAULT_APP_NAME = "app.elf";
 export const DEFAULT_VNC_PORT = "8001";
-const Resolve = require("path").resolve;
 
 export default class EmuContainer {
   constructor(elfPath, image) {
     // eslint-disable-next-line global-require
     this.image = image;
-    this.elfPath = Resolve(elfPath);
+    this.elfPath = elfPath;
   }
 
   async runContainer() {

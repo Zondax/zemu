@@ -15,9 +15,10 @@
  ******************************************************************************* */
 import { expect, test } from "jest";
 import Zemu from "../src";
+const Resolve = require("path").resolve;
 
 jest.setTimeout(10000);
-const DEMO_APP_PATH = "bin/demoApp";
+const DEMO_APP_PATH = Resolve("bin/demoApp");
 
 test("Zemu-Start&Close", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
