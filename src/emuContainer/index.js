@@ -19,11 +19,11 @@ export const BOLOS_SDK = "/project/deps/nanos-secure-sdk";
 export const DEFAULT_APP_PATH = "/project/app/bin";
 export const DEFAULT_APP_NAME = "app.elf";
 export const DEFAULT_VNC_PORT = "8001";
+const Resolve = require("path").resolve;
 
 export default class EmuContainer {
   constructor(elfPath, image) {
     // eslint-disable-next-line global-require
-    const Resolve = require("path").resolve;
     this.image = image;
     this.elfPath = Resolve(elfPath);
   }
@@ -84,15 +84,9 @@ export default class EmuContainer {
     });
   }
 */
-  stop() {
+  async stop() {
     const { currentContainer } = this;
-    return new Promise((resolve, reject) => {
-      return currentContainer.stop({ t: 0 }).then(function() {
-        return currentContainer.remove().then(function() {
-          console.log("Container stopped!");
-          resolve(true);
-        });
-      });
-    });
+    await currentContainer.stop({ t: 0 });
+    await currentContainer.remove();
   }
 }

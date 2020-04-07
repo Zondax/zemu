@@ -16,7 +16,7 @@
 import { expect, test } from "jest";
 import Zemu from "../src";
 
-jest.setTimeout(20000);
+jest.setTimeout(10000);
 const DEMO_APP_PATH = "bin/demoApp";
 
 test("Zemu-Start&Close", async () => {
@@ -27,7 +27,6 @@ test("Zemu-Start&Close", async () => {
   } finally {
     await sim.close();
   }
-  expect(true).toEqual(true);
 });
 
 test("Zemu-Snapshot", async () => {

@@ -103,7 +103,10 @@ export default class Zemu {
   }
 
   async connect() {
-    this.transport = await TransportHttp(this.transport_url).create(1000);
+    // FIXME: Can we detect open ports?
+    Zemu.delay(1000);
+
+    this.transport = await TransportHttp(this.transport_url).open(this.transport_url);
     await this.connectVNC();
   }
 
