@@ -21,53 +21,61 @@ export const DEFAULT_APP_NAME = "app.elf";
 export const DEFAULT_VNC_PORT = "8001";
 
 export default class EmuContainer {
-  constructor(elfPath, image) {
+  constructor(elfLocalPath, image) {
     // eslint-disable-next-line global-require
     this.image = image;
-    this.elfPath = elfPath;
+    this.elfLocalPath = elfLocalPath;
   }
 
-  async runContainer() {
+  async runContainer(logging = false) {
     return new Promise((resolve, reject) => {
       // eslint-disable-next-line global-require
       const Docker = require("dockerode");
       const docker = new Docker();
 
+      const appPathBinding = `${this.elfLocalPath}:${DEFAULT_APP_PATH}`;
+      const command = `/home/zondax/speculos/speculos.py --display headless --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${DEFAULT_APP_NAME}`;
+
       docker.createContainer({
-          Image: this.image,
-          Tty: true,
-          Privileged: true,
-          User: "1000",
-          Env: [
-            `SCP_PRIVKEY=${SCP_PRIVKEY}`,
-            `BOLOS_SDK=${BOLOS_SDK}`,
-            `BOLOS_ENV=/opt/bolos`,
-            // `DISPLAY=:0`, //needed if X forwarding
-          ],
-          PortBindings: {
-            [`1234/tcp`]: [{ HostPort: "1234" }],
-            [`8001/tcp`]: [{ HostPort: "8001" }],
-            [`9997/tcp`]: [{ HostPort: "9997" }],
-            [`9998/tcp`]: [{ HostPort: "9998" }],
-            [`9999/tcp`]: [{ HostPort: "9999" }],
-          },
-          Binds: [
-            `${this.elfPath}:${DEFAULT_APP_PATH}`,
-            // `/tmp/.X11-unix:/tmp/.X11-unix` //needed if X forwarding
-          ],
-          Cmd: [
-            `/home/zondax/speculos/speculos.py --display headless --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${DEFAULT_APP_NAME}`,
-          ],
-          AttachStdout: true,
-          AttachStderr: true,
-        })
+        Image: this.image,
+        Tty: true,
+        Privileged: true,
+        AttachStdout: true,
+        AttachStderr: true,
+        User: "1000",
+        Env: [
+          `SCP_PRIVKEY=${SCP_PRIVKEY}`,
+          `BOLOS_SDK=${BOLOS_SDK}`,
+          `BOLOS_ENV=/opt/bolos`,
+          // `DISPLAY=:0`, //needed if X forwarding
+        ],
+        PortBindings: {
+          [`1234/tcp`]: [{ HostPort: "1234" }],
+          [`8001/tcp`]: [{ HostPort: "8001" }],
+          [`9997/tcp`]: [{ HostPort: "9997" }],
+          [`9998/tcp`]: [{ HostPort: "9998" }],
+          [`9999/tcp`]: [{ HostPort: "9999" }],
+        },
+        Binds: [
+          appPathBinding,
+          // `/tmp/.X11-unix:/tmp/.X11-unix` //needed if X forwarding
+        ],
+        Cmd: [
+          command,
+        ],
+      })
         .then(container => {
           this.currentContainer = container;
-          console.log("Docker container started!");
+
+          if (logging) {
+            container.attach({ stream: true, stdout: true, stderr: true }, function(err, stream) {
+              stream.pipe(process.stdout);
+            });
+          }
+
           return container.start();
         })
         .then(function() {
-          console.log("Docker container ready!");
           resolve(true);
         });
     });
