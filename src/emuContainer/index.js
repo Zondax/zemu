@@ -27,7 +27,7 @@ export default class EmuContainer {
     this.elfLocalPath = elfLocalPath;
   }
 
-  async runContainer(logging = false) {
+  async runContainer(logging, X11) {
     return new Promise((resolve, reject) => {
       // eslint-disable-next-line global-require
       const Docker = require("dockerode");
@@ -36,8 +36,20 @@ export default class EmuContainer {
       const app_filename = path.basename(this.elfLocalPath);
       const app_dir = path.dirname(this.elfLocalPath);
 
-      const appPathBinding = `${app_dir}:${DEFAULT_APP_PATH}`;
-      const command = `/home/zondax/speculos/speculos.py --display headless --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename}`;
+      let displaySetting = "--display headless"
+      if (X11) {
+        displaySetting = ""
+      }
+
+      const command = `/home/zondax/speculos/speculos.py ${displaySetting} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename}`;
+
+      let dirBindings = [
+        `${app_dir}:${DEFAULT_APP_PATH}`
+      ]
+
+      if (X11) {
+        dirBindings.push("/tmp/.X11-unix:/tmp/.X11-unix:ro")
+      }
 
       docker.createContainer({
         Image: this.image,
@@ -50,7 +62,7 @@ export default class EmuContainer {
           `SCP_PRIVKEY=${SCP_PRIVKEY}`,
           `BOLOS_SDK=${BOLOS_SDK}`,
           `BOLOS_ENV=/opt/bolos`,
-          // `DISPLAY=:0`, //needed if X forwarding
+          `DISPLAY=${process.env.DISPLAY}`, //needed if X forwarding
         ],
         PortBindings: {
           [`1234/tcp`]: [{ HostPort: "1234" }],
@@ -59,10 +71,7 @@ export default class EmuContainer {
           [`9998/tcp`]: [{ HostPort: "9998" }],
           [`9999/tcp`]: [{ HostPort: "9999" }],
         },
-        Binds: [
-          appPathBinding,
-          // `/tmp/.X11-unix:/tmp/.X11-unix` //needed if X forwarding
-        ],
+        Binds: dirBindings,
         Cmd: [
           command,
         ],
