@@ -13,11 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
+const path = require('path');
 
 export const SCP_PRIVKEY = "ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b";
 export const BOLOS_SDK = "/project/deps/nanos-secure-sdk";
-export const DEFAULT_APP_PATH = "/project/app/bin";
-export const DEFAULT_APP_NAME = "app.elf";
+export const DEFAULT_APP_PATH = "/project/app/bin/app.elf";
 export const DEFAULT_VNC_PORT = "8001";
 
 export default class EmuContainer {
@@ -33,8 +33,11 @@ export default class EmuContainer {
       const Docker = require("dockerode");
       const docker = new Docker();
 
-      const appPathBinding = `${this.elfLocalPath}:${DEFAULT_APP_PATH}`;
-      const command = `/home/zondax/speculos/speculos.py --display headless --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${DEFAULT_APP_NAME}`;
+      const app_filename = path.basename(this.elfLocalPath);
+      const app_dir = path.dirname(this.elfLocalPath);
+
+      const appPathBinding = `${app_dir}:${DEFAULT_APP_PATH}`;
+      const command = `/home/zondax/speculos/speculos.py --display headless --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename}`;
 
       docker.createContainer({
         Image: this.image,
