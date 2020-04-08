@@ -24,7 +24,7 @@ test("Zemu-Start&Close", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
   expect(sim).not.toBeNull();
   try {
-    await sim.start(true);
+    await sim.start({ logging: true });
   } finally {
     await sim.close();
   }

@@ -61,8 +61,8 @@ export default class Zemu {
     this.emuContainer = new EmuContainer(this.elfPath, DEFAULT_EMU_IMG);
   }
 
-  async start(logging = false, x11 = false) {
-    await this.emuContainer.runContainer(logging, x11);
+  async start(options = {}) {
+    await this.emuContainer.runContainer(options);
     // eslint-disable-next-line func-names
     await this.connect().catch(error => {
       console.log(error);

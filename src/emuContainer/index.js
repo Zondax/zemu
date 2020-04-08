@@ -27,7 +27,7 @@ export default class EmuContainer {
     this.elfLocalPath = elfLocalPath;
   }
 
-  async runContainer(logging, X11) {
+  async runContainer(options) {
     return new Promise((resolve, reject) => {
       // eslint-disable-next-line global-require
       const Docker = require("dockerode");
@@ -36,20 +36,22 @@ export default class EmuContainer {
       const app_filename = path.basename(this.elfLocalPath);
       const app_dir = path.dirname(this.elfLocalPath);
 
-      let displaySetting = "--display headless"
-      if (X11) {
-        displaySetting = ""
-      }
-
-      const command = `/home/zondax/speculos/speculos.py ${displaySetting} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename}`;
-
       let dirBindings = [
         `${app_dir}:${DEFAULT_APP_PATH}`
       ]
 
-      if (X11) {
+      let displaySetting = "--display headless"
+      if ("X11" in options && options["X11"] === true ){
+        displaySetting = ""
         dirBindings.push("/tmp/.X11-unix:/tmp/.X11-unix:ro")
       }
+
+      let customOptions = "";
+      if ("custom" in options) {
+        customOptions = options["custom"]
+      }
+
+      const command = `/home/zondax/speculos/speculos.py ${displaySetting} ${customOptions} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename}`;
 
       docker.createContainer({
         Image: this.image,
@@ -79,7 +81,7 @@ export default class EmuContainer {
         .then(container => {
           this.currentContainer = container;
 
-          if (logging) {
+          if ("logging" in options && options["logging"] === true ){
             container.attach({ stream: true, stdout: true, stderr: true }, function(err, stream) {
               stream.pipe(process.stdout);
             });
