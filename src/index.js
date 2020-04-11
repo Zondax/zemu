@@ -97,6 +97,10 @@ export default class Zemu {
     await EmuContainer.killContainerByName(BASE_NAME);
   }
 
+  static async checkAndPullImage() {
+    await EmuContainer.checkAndPullImage(DEFAULT_EMU_IMG);
+  }
+
   static sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }

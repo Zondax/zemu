@@ -116,6 +116,29 @@ export default class EmuContainer {
     await currentContainer.remove();
   }
 
+  static async checkAndPullImage(imageName) {
+    const docker = new Docker();
+    await new Promise((resolve) => {
+      docker.pull(imageName, (err, stream) => {
+        docker.modem.followProgress(stream, onFinished, onProgress);
+        function onProgress(event) {
+          console.clear();
+          console.log("*****", "Progress on image:", imageName, "*****");
+          console.log(event.status + "\n" + event.progress);
+        }
+        function onFinished(err, output) {
+          if (!err) {
+            console.log("\nDone pulling.");
+            resolve(true);
+          } else {
+            console.log(err);
+            process.exit(1);
+          }
+        }
+      });
+    });
+  }
+
   /*
 async copyElf(appPath) {
   console.log("Will copy app elf");
