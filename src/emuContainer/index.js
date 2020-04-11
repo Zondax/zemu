@@ -122,9 +122,11 @@ export default class EmuContainer {
       docker.pull(imageName, (err, stream) => {
         docker.modem.followProgress(stream, onFinished, onProgress);
         function onProgress(event) {
+          const progress = event.hasOwnProperty("progress") ? event.progress : "";
+          const status = event.hasOwnProperty("status") ? event.status : "";
           console.clear();
           console.log("*****", "Progress on image:", imageName, "*****");
-          console.log(event.status + "\n" + event.progress);
+          console.log(status, "\n", progress);
         }
         function onFinished(err, output) {
           if (!err) {
