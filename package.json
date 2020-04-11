@@ -27,6 +27,7 @@
     "dockerode": "^3.2.0",
     "path": "^0.12.7",
     "pngjs": "^3.4.0",
+    "randomstring": "^1.1.5",
     "rfb2": "^0.2.2",
     "sleep": "^6.1.0"
   },
@@ -36,6 +37,8 @@
     "@babel/node": "^7.8.7",
     "@babel/plugin-transform-runtime": "^7.9.0",
     "@babel/preset-env": "^7.9.0",
+    "@vuepress/plugin-google-analytics": "^1.4.0",
+    "@vuepress/plugin-pwa": "^1.4.0",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^25.2.6",
     "eslint": "^6.8.0",
@@ -49,11 +52,9 @@
     "jest-serial-runner": "^1.1.0 ",
     "prettier": "^2.0.4",
     "vuepress": "^1.4.0 ",
-    "@vuepress/plugin-google-analytics": "^1.4.0",
-    "@vuepress/plugin-pwa": "^1.4.0",
-    "vuepress-plugin-mathjax": "^1.2.8",
-    "vuepress-plugin-code-copy": "^1.0.6"
-    },
+    "vuepress-plugin-code-copy": "^1.0.6",
+    "vuepress-plugin-mathjax": "^1.2.8"
+  },
   "scripts": {
     "build": "babel src --out-dir dist",
     "build:ci": "yarn build && cp -f src/index.d.ts dist",
