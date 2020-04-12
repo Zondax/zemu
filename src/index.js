@@ -20,6 +20,10 @@ import sleep from "sleep";
 import TransportHttp from "@ledgerhq/hw-transport-http";
 import EmuContainer from "./emuContainer";
 
+const rndstr = require("randomstring");
+
+const KILL_TIMEOUT = 10000;
+
 export const KEYS = {
   NOT_PRESSED: 0,
   PRESSED: 1,
@@ -41,6 +45,7 @@ export const DEFAULT_EMU_IMG = "zondax/builder-bolos-emu:latest";
 export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_VNC_PORT = 8001;
 export const DEFAULT_TRANSPORT_PORT = 9998;
+export const BASE_NAME = "zemu-656d75-";
 
 export default class Zemu {
   constructor(
@@ -58,13 +63,14 @@ export default class Zemu {
       throw new Error("elfPath cannot be null!");
     }
 
-    this.emuContainer = new EmuContainer(this.elfPath, DEFAULT_EMU_IMG);
+    const containerName = BASE_NAME + rndstr.generate(5);
+    this.emuContainer = new EmuContainer(this.elfPath, DEFAULT_EMU_IMG, containerName);
   }
 
   async start(options = {}) {
     await this.emuContainer.runContainer(options);
     // eslint-disable-next-line func-names
-    await this.connect().catch(error => {
+    await this.connect().catch((error) => {
       console.log(error);
       this.close();
     });
@@ -89,14 +95,27 @@ export default class Zemu {
     }
   }
 
+  static async stopAllEmuContainers() {
+    const timer = setTimeout(function () {
+      console.log("Could not kill all containers before timeout!");
+      process.exit(1);
+    }, KILL_TIMEOUT);
+    await EmuContainer.killContainerByName(BASE_NAME);
+    clearTimeout(timer);
+  }
+
+  static async checkAndPullImage() {
+    await EmuContainer.checkAndPullImage(DEFAULT_EMU_IMG);
+  }
+
   static sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   static async delayedPromise(p, delay) {
     await Promise.race([
       p,
-      new Promise(resolve => {
+      new Promise((resolve) => {
         setTimeout(resolve, delay);
       }),
     ]);
@@ -117,13 +136,13 @@ export default class Zemu {
         port: this.vnc_port,
       });
       const { session } = this;
-      this.session.on("connect", function() {
+      this.session.on("connect", function () {
         session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
         session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
         resolve(true);
       });
 
-      this.session.on("error", function(error) {
+      this.session.on("error", function (error) {
         console.log("Could not connect to port ", this.vnc_port, " on ", this.host);
         reject(error);
       });
@@ -144,7 +163,7 @@ export default class Zemu {
   async snapshot(filename) {
     const { session } = this;
     return new Promise((resolve, reject) => {
-      session.once("rect", rect => {
+      session.once("rect", (rect) => {
         if (filename) {
           Zemu.saveRGBA2Png(rect, filename);
         }
