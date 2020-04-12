@@ -22,6 +22,8 @@ import EmuContainer from "./emuContainer";
 
 const rndstr = require("randomstring");
 
+const KILL_TIMEOUT = 10000;
+
 export const KEYS = {
   NOT_PRESSED: 0,
   PRESSED: 1,
@@ -94,7 +96,12 @@ export default class Zemu {
   }
 
   static async stopAllEmuContainers() {
+    const timer = setTimeout(function () {
+      console.log("Could not kill all containers before timeout!");
+      process.exit(1);
+    }, KILL_TIMEOUT);
     await EmuContainer.killContainerByName(BASE_NAME);
+    clearTimeout(timer);
   }
 
   static async checkAndPullImage() {

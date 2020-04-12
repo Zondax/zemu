@@ -130,7 +130,6 @@ export default class EmuContainer {
         }
         function onFinished(err, output) {
           if (!err) {
-            console.log("\nDone pulling.");
             resolve(true);
           } else {
             console.log(err);
@@ -140,15 +139,4 @@ export default class EmuContainer {
       });
     });
   }
-
-  /*
-async copyElf(appPath) {
-  console.log("Will copy app elf");
-  this.currentContainer.putArchive(appPath, { path: "/project/app/bin/" }, function(error, response) {
-    if (error) {
-      console.error(error);
-    }
-  });
-}
-*/
 }
