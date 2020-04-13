@@ -1,4 +1,4 @@
-# Zondax Zemu
+# Zondax Zemu Testing Framework
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://badge.fury.io/js/%40zondax%2Fzemu.svg)](https://badge.fury.io/js/%40zondax%2Fzemu)
@@ -8,13 +8,7 @@
 >
 > We recommend using the npmjs package in order to receive updates/fixes.
 
-# Zemu Testing Framework
-
-:::warning Work in progress
-This project is under development.
-
-API and usage guidelines are **very** likely to change
-:::
+**This project is under active development - API and usage guidelines are *very* likely to change**
 
 ## Overview
 
