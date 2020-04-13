@@ -29,7 +29,6 @@ jobs:
             curl -o- -L https://yarnpkg.com/install.sh | bash
             echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
       - run: yarn install
-      - run: docker pull zondax/builder-bolos-emu:latest
       - run: yarn test:unit
 
   publish:
