@@ -1,9 +1,8 @@
-# Zemu
+# Zondax Zemu
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![npm version](https://badge.fury.io/js/zemu.svg)](https://badge.fury.io/js/zemu)
+[![npm version](https://badge.fury.io/js/%40zondax%2Fzemu.svg)](https://badge.fury.io/js/%40zondax%2Fzemu)
 [![CircleCI](https://circleci.com/gh/Zondax/zemu.svg?style=shield&circle-token=4766b9b560d35854bdf5991fcf3497585a8cc57e)](https://circleci.com/gh/Zondax/zemu)
-[![CodeFactor](https://www.codefactor.io/repository/github/zondax/zemu/badge)](https://www.codefactor.io/repository/github/zondax/zemu)
 
 This package is part of our Ledger development and integration testing process. It allows full device/app mocking.
 
