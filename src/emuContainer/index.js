@@ -27,12 +27,17 @@ export default class EmuContainer {
     this.image = image;
     this.elfLocalPath = elfLocalPath;
     this.name = name;
+    this.logging = false;
   }
 
   async runContainer(options) {
     return new Promise((resolve, reject) => {
       // eslint-disable-next-line global-require
       const docker = new Docker();
+
+      if ("logging" in options && options["logging"] === true ) {
+        this.logging = true;
+      }
 
       const app_filename = path.basename(this.elfLocalPath);
       const app_dir = path.dirname(this.elfLocalPath);
@@ -53,6 +58,10 @@ export default class EmuContainer {
       }
 
       const command = `/home/zondax/speculos/speculos.py ${displaySetting} ${customOptions} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename}`;
+
+      if (this.logging) {
+        process.stdout.write(`[ZEMU] Command: ${command}\n`);
+      }
 
       docker
         .createContainer({
@@ -82,7 +91,11 @@ export default class EmuContainer {
         .then((container) => {
           this.currentContainer = container;
 
-          if ("logging" in options && options["logging"] === true ){
+          if (this.logging) {
+            process.stdout.write(`[ZEMU] Connected ${container.id}\n`);
+          }
+
+          if (this.logging ){
             container.attach({ stream: true, stdout: true, stderr: true }, function(err, stream) {
               stream.pipe(process.stdout);
             });
@@ -111,9 +124,15 @@ export default class EmuContainer {
   }
 
   async stop() {
+    if (this.logging) {
+      process.stdout.write(`\n[ZEMU] Stopping container\n`);
+    }
+
     const { currentContainer } = this;
-    await currentContainer.stop({ t: 0 });
-    await currentContainer.remove();
+    if (currentContainer) {
+      await currentContainer.stop({ t: 0 });
+      await currentContainer.remove();
+    }
   }
 
   static async checkAndPullImage(imageName) {
