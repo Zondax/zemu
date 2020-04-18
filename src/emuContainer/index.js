@@ -39,6 +39,11 @@ export default class EmuContainer {
         this.logging = true;
       }
 
+      this.start_delay = 1000;
+      if ("start_delay" in options ) {
+        this.start_delay = options["start_delay"];
+      }
+
       const app_filename = path.basename(this.elfLocalPath);
       const app_dir = path.dirname(this.elfLocalPath);
 
