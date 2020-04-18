@@ -15,10 +15,17 @@
  ******************************************************************************* */
 import { expect, test } from "jest";
 import Zemu from "../src";
+import assert from "assert";
 const Resolve = require("path").resolve;
 
 jest.setTimeout(10000);
 const DEMO_APP_PATH = Resolve("bin/demoApp/app.elf");
+
+test("Zemu-File-Missing", async () => {
+  assert.throws(
+    () => new Zemu("it_does_not_exist"),
+  /Did you compile/);
+});
 
 test("Zemu-Start&Close", async () => {
   const sim = new Zemu(DEMO_APP_PATH);

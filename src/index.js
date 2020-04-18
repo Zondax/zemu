@@ -63,6 +63,10 @@ export default class Zemu {
       throw new Error("elfPath cannot be null!");
     }
 
+    if (!fs.existsSync(this.elfPath)) {
+      throw new Error("elf file was not found! Did you compile?");
+    }
+
     const containerName = BASE_NAME + rndstr.generate(5);
     this.emuContainer = new EmuContainer(this.elfPath, DEFAULT_EMU_IMG, containerName);
   }
@@ -135,15 +139,25 @@ export default class Zemu {
         host: this.host,
         port: this.vnc_port,
       });
-      const { session } = this;
+      if (this.emuContainer.logging) {
+        process.stdout.write(`[ZEMU] VNC Connection created ${this.host}:${this.vnc_port}\n`);
+      }
+
+      const session = this.session;
+      const logging = this.emuContainer.logging;
       this.session.on("connect", function () {
+        if (logging) {
+          process.stdout.write(`[ZEMU] VNC Session ready\n`);
+        }
         session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
         session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
         resolve(true);
       });
 
+      const vnc_port = this.vnc_port;
+      const host = this.host;
       this.session.on("error", function (error) {
-        console.log("Could not connect to port ", this.vnc_port, " on ", this.host);
+        console.log(`Could not connect to port ${vnc_port}  on ${host}`);
         reject(error);
       });
 
@@ -153,7 +167,9 @@ export default class Zemu {
 
   async close() {
     await this.emuContainer.stop();
-    this.session.end();
+    if (this.session) {
+      this.session.end();
+    }
   }
 
   getTransport() {
