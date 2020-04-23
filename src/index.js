@@ -58,6 +58,7 @@ export default class Zemu {
     this.vnc_port = vncPort;
     this.transport_url = `http://${this.host}:${transportPort}`;
     this.elfPath = elfPath;
+    this.press_delay = KEYDELAY
 
     if (this.elfPath == null) {
       throw new Error("elfPath cannot be null!");
@@ -72,6 +73,10 @@ export default class Zemu {
   }
 
   async start(options = {}) {
+    if ("press_delay" in options ) {
+      this.press_delay = options["press_delay"];
+    }
+
     await this.emuContainer.runContainer(options);
     // eslint-disable-next-line func-names
     await this.connect().catch((error) => {
@@ -192,27 +197,27 @@ export default class Zemu {
 
   async clickLeft(filename) {
     this.session.keyEvent(KEYS.LEFT, KEYS.PRESSED);
-    Zemu.delay();
+    Zemu.delay(this.press_delay);
     this.session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
-    Zemu.delay();
+    Zemu.delay(this.press_delay);
     return this.snapshot(filename);
   }
 
   async clickRight(filename) {
     this.session.keyEvent(KEYS.RIGHT, KEYS.PRESSED);
-    Zemu.delay();
+    Zemu.delay(this.press_delay);
     this.session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
-    Zemu.delay();
+    Zemu.delay(this.press_delay);
     return this.snapshot(filename);
   }
 
   async clickBoth(filename) {
     this.session.keyEvent(KEYS.LEFT, KEYS.PRESSED);
     this.session.keyEvent(KEYS.RIGHT, KEYS.PRESSED);
-    Zemu.delay();
+    Zemu.delay(this.press_delay);
     this.session.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED);
     this.session.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED);
-    Zemu.delay();
+    Zemu.delay(this.press_delay);
     return this.snapshot(filename);
   }
 }
