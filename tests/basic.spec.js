@@ -26,7 +26,7 @@ const APP_SEED = "equip will roof matter pink blind book anxiety banner elbow su
 const ZEMU_OPTIONS = {
   logging: true,
   start_delay: 3000,
-  custom: `-s "${APP_SEED}" --color LAGOON_BLUE`,
+  custom: `-s "${APP_SEED}" `,
   //  custom: `-s "${APP_SEED}" --debug`,
   X11: true,
 };
