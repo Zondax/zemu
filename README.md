@@ -25,9 +25,7 @@ Integration and end-to-end testing of Ledger Apps is a manual and time consuming
     - Parallelized testing
     - Abstracted device control (buttons, reset, etc.)
     - Screenshots + comparisons
-- Future support for Rust & Go
-- Debugging Apps with VSCode (Planned)
-- PDF reporting (Planned)
+- Debugging (support for CLion and vscode, even mixed C/Rust)
 - Used by Zondax in multiple apps
 
 ## QuickStart

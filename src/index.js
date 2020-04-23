@@ -40,7 +40,7 @@ export const WINDOW = {
 };
 
 export const TIMEOUT = 1000;
-export const KEYDELAY = 50;
+export const KEYDELAY = 350;
 export const DEFAULT_EMU_IMG = "zondax/builder-zemu:latest";
 export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_VNC_PORT = 8001;
@@ -58,7 +58,7 @@ export default class Zemu {
     this.vnc_port = vncPort;
     this.transport_url = `http://${this.host}:${transportPort}`;
     this.elfPath = elfPath;
-    this.press_delay = KEYDELAY
+    this.press_delay = KEYDELAY;
 
     if (this.elfPath == null) {
       throw new Error("elfPath cannot be null!");

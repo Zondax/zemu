@@ -14,24 +14,32 @@
  *  limitations under the License.
  ******************************************************************************* */
 import { expect, test } from "jest";
-import Zemu from "../src";
 import assert from "assert";
+import Zemu from "../src";
+
 const Resolve = require("path").resolve;
 
 jest.setTimeout(10000);
 const DEMO_APP_PATH = Resolve("bin/demoApp/app.elf");
 
+const APP_SEED = "equip will roof matter pink blind book anxiety banner elbow sun young";
+const ZEMU_OPTIONS = {
+  logging: true,
+  start_delay: 3000,
+  custom: `-s "${APP_SEED}" --color LAGOON_BLUE`,
+  //  custom: `-s "${APP_SEED}" --debug`,
+  X11: true,
+};
+
 test("Zemu-File-Missing", async () => {
-  assert.throws(
-    () => new Zemu("it_does_not_exist"),
-  /Did you compile/);
+  assert.throws(() => new Zemu("it_does_not_exist"), /Did you compile/);
 });
 
 test("Zemu-Start&Close", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
   expect(sim).not.toBeNull();
   try {
-    await sim.start({ logging: true });
+    await sim.start(ZEMU_OPTIONS);
   } finally {
     await sim.close();
   }
@@ -40,7 +48,7 @@ test("Zemu-Start&Close", async () => {
 test("Zemu-Snapshot", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
   try {
-    await sim.start();
+    await sim.start(ZEMU_OPTIONS);
     expect(sim.session.title).toEqual("LibVNCServer");
     expect(sim.session.width).toEqual(128);
     expect(sim.session.height).toEqual(32);
@@ -56,7 +64,7 @@ test("Zemu-Snapshot", async () => {
 test("Zemu-Basic Control", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
   try {
-    await sim.start();
+    await sim.start(ZEMU_OPTIONS);
 
     await sim.clickLeft();
     await sim.clickLeft();
