@@ -71,9 +71,9 @@ test("Basic Control", async () => {
     await sim.clickLeft();
 
     // Move up and down and check screens
-    const view0 = await sim.snapshot("tests/snapshots/0.png");
-    const view1 = await sim.clickRight("tests/snapshots/1.png");
-    const view2 = await sim.clickLeft("tests/snapshots/2.png");
+    const view0 = await sim.snapshot("tests/tmp/0.png");
+    const view1 = await sim.clickRight("tests/tmp/1.png");
+    const view2 = await sim.clickLeft("tests/tmp/2.png");
 
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0);
