@@ -20,7 +20,7 @@ export interface Snapshot {
   height: number;
 }
 
-declare class Zemu {
+export class Zemu {
   constructor (elfPath: string, host?: string, vncPort?: number, transportPort?: number);
 
   start();
@@ -34,5 +34,3 @@ declare class Zemu {
   clickRight(filename?: string): Promise<Snapshot>;
   clickBoth(filename?: string): Promise<Snapshot>;
 }
-
-export default Zemu;
