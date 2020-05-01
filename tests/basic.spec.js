@@ -31,11 +31,11 @@ const ZEMU_OPTIONS = {
   X11: true,
 };
 
-test("Zemu-File-Missing", async () => {
+test("File-Missing", async () => {
   assert.throws(() => new Zemu("it_does_not_exist"), /Did you compile/);
 });
 
-test("Zemu-Start&Close", async () => {
+test("Start&Close", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
   expect(sim).not.toBeNull();
   try {
@@ -45,7 +45,7 @@ test("Zemu-Start&Close", async () => {
   }
 });
 
-test("Zemu-Snapshot", async () => {
+test("Snapshot", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
   try {
     await sim.start(ZEMU_OPTIONS);
@@ -61,7 +61,7 @@ test("Zemu-Snapshot", async () => {
   }
 });
 
-test("Zemu-Basic Control", async () => {
+test("Basic Control", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
   try {
     await sim.start(ZEMU_OPTIONS);
@@ -82,3 +82,13 @@ test("Zemu-Basic Control", async () => {
     await sim.close();
   }
 });
+
+test("Load/Compare Snapshots", async () => {
+  const image1A = Zemu.LoadPng2RGB("tests/snapshots/image1A.png")
+  const image1B = Zemu.LoadPng2RGB("tests/snapshots/image1B.png")
+  const image2A = Zemu.LoadPng2RGB("tests/snapshots/image2A.png")
+
+  expect(image1A).toEqual(image1B);
+  expect(image1A).not.toEqual(image2A);
+});
+

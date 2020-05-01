@@ -96,6 +96,11 @@ export default class Zemu {
     fs.writeFileSync(filename, buffer);
   }
 
+  static LoadPng2RGB(filename) {
+    const tmpBuffer = fs.readFileSync(filename);
+    return PNG.PNG.sync.read(tmpBuffer, { colorType: 6 });
+  }
+
   static delay(v) {
     if (v) {
       sleep.msleep(v);
