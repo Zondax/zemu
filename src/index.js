@@ -19,6 +19,8 @@ import rfb from "rfb2";
 import sleep from "sleep";
 import TransportHttp from "@ledgerhq/hw-transport-http";
 import EmuContainer from "./emuContainer";
+import grpc from "./grpc";
+import GRPCRouter from "./grpc";
 
 const rndstr = require("randomstring");
 
@@ -59,6 +61,7 @@ export default class Zemu {
     this.transport_url = `http://${this.host}:${transportPort}`;
     this.elfPath = elfPath;
     this.press_delay = KEYDELAY;
+    this.grpcManager = null;
 
     if (this.elfPath == null) {
       throw new Error("elfPath cannot be null!");
@@ -175,11 +178,24 @@ export default class Zemu {
     });
   }
 
+  startgrpcServer() {
+    this.grpcManager = new GRPCRouter(this.transport);
+    this.grpcManager.startServer();
+  }
+
+  stopgrpcServer() {
+    if (this.grpcManager) {
+      this.grpcManager.stopServer();
+    }
+  }
+
   async close() {
     await this.emuContainer.stop();
     if (this.session) {
       this.session.end();
     }
+
+    this.stopgrpcServer();
   }
 
   getTransport() {

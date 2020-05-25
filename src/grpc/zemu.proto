@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package ledger_go;
+
+service ZemuCommand {
+  rpc Exchange (ExchangeRequest) returns (ExchangeReply) {}
+}
+
+message ExchangeRequest {
+  bytes command = 1;
+}
+
+message ExchangeReply {
+  bytes reply = 1;
+}
