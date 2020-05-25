@@ -24,8 +24,9 @@ export default class GRPCRouter {
     const self = this;
     this.server.addService(rpcDefinition.ZemuCommand.service, {
       Exchange: function (call, callback, ctx = self) {
-        console.log("callback executed");
-        callback(null, { reply: ctx.httpTransport.exchange(call.request.command) });
+        ctx.httpTransport.exchange(call.request.command).then((response) => {
+          callback(null, { reply: response });
+        });
       },
     });
     this.server.bind(this.serverAddress, grpc.ServerCredentials.createInsecure());
@@ -35,6 +36,5 @@ export default class GRPCRouter {
 
   stopServer() {
     this.server.forceShutdown();
-    console.log("grpc server stopped");
   }
 }
