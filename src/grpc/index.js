@@ -11,13 +11,17 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 
 const rpcDefinition = grpc.loadPackageDefinition(packageDefinition).ledger_go;
-const DEFAULT_SERVER_ADDRESS = "localhost:3001";
 
 export default class GRPCRouter {
-  constructor(transport) {
+  constructor(ip, port, options = {}, transport) {
     this.httpTransport = transport;
-    this.serverAddress = DEFAULT_SERVER_ADDRESS;
+    this.serverAddress = `${ip}:${port}`;
     this.server = new grpc.Server();
+    this.debug_en = false;
+
+    if ("debug" in options) {
+      this.debug_en = options.debug;
+    }
   }
 
   startServer() {
@@ -25,13 +29,21 @@ export default class GRPCRouter {
     this.server.addService(rpcDefinition.ZemuCommand.service, {
       Exchange: function (call, callback, ctx = self) {
         ctx.httpTransport.exchange(call.request.command).then((response) => {
+          if (self.debug_en) {
+            let x = Buffer.from(call.request.command, "hex");
+            x = x.slice(6, 6 + x[5]).toString("ascii");
+            if (x.includes("oasis-")) {
+              console.log(x);
+            }
+          }
+
           callback(null, { reply: response });
         });
       },
     });
     this.server.bind(this.serverAddress, grpc.ServerCredentials.createInsecure());
     this.server.start();
-    console.log("grpc server started");
+    console.log("grpc server started on", this.serverAddress);
   }
 
   stopServer() {

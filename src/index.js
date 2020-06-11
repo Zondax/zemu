@@ -178,8 +178,8 @@ export default class Zemu {
     });
   }
 
-  startgrpcServer() {
-    this.grpcManager = new GRPCRouter(this.transport);
+  startgrpcServer(ip, port, options = {}) {
+    this.grpcManager = new GRPCRouter(ip, port, options, this.transport);
     this.grpcManager.startServer();
   }
 
