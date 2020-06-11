@@ -92,3 +92,10 @@ test("Load/Compare Snapshots", async () => {
   expect(image1A).not.toEqual(image2A);
 });
 
+test("GRPC Server start-stop", async () => {
+  const sim = new Zemu(DEMO_APP_PATH);
+  await sim.start(ZEMU_OPTIONS);
+  sim.startgrpcServer("localhost", "3002");
+  await Zemu.sleep(3000);
+  await sim.close();
+});
