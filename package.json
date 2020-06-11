@@ -22,9 +22,12 @@
   "homepage": "https://github.com/zondax/zemu",
   "dependencies": {
     "@babel/runtime": "^7.9.2",
+    "@grpc/proto-loader": "^0.5.4",
     "@ledgerhq/hw-transport": "^5.13.1",
     "@ledgerhq/hw-transport-http": "^5.13.1",
     "dockerode": "^3.2.0",
+    "grpc": "^1.24.2",
+    "json-rpc2": "^2.0.0",
     "path": "^0.12.7",
     "pngjs": "^5.0.0",
     "randomstring": "^1.1.5",

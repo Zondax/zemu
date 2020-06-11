@@ -28,6 +28,8 @@ export class Zemu {
   sleep(ms: number);
 
   getTransport() : Transport;
+  startgrpcServer(ip: string, port: string);
+  stopgrpcServer();
 
   snapshot(filename?: string): Promise<Snapshot>;
   clickLeft(filename?: string): Promise<Snapshot>;
