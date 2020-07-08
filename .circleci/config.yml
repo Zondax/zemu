@@ -8,7 +8,7 @@ jobs:
     steps:
       - checkout
       - run: yarn install
-      - run: yarn build:ci
+      - run: yarn build
 
   test:
     machine:
@@ -37,7 +37,7 @@ jobs:
     steps:
       - checkout
       - run: yarn install
-      - run: yarn build:ci
+      - run: yarn build
       - run:
           name: prepare authentication config
           command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > /home/circleci/project/.npmrc
