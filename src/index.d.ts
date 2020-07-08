@@ -35,4 +35,6 @@ export class Zemu {
   clickLeft(filename?: string): Promise<Snapshot>;
   clickRight(filename?: string): Promise<Snapshot>;
   clickBoth(filename?: string): Promise<Snapshot>;
+
+  waitUntilScreenIsNot(screen: Snapshot, timeoutInSeconds: number);
 }

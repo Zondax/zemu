@@ -92,6 +92,17 @@ test("Load/Compare Snapshots", async () => {
   expect(image1A).not.toEqual(image2A);
 });
 
+test("Wait for change / timeout", async () => {
+  const sim = new Zemu(DEMO_APP_PATH);
+  try {
+    await sim.start(ZEMU_OPTIONS);
+    const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000);
+    await expect(result ).rejects.toEqual('Timeout waiting for screen to change (2000 ms)');
+  } finally {
+    await sim.close();
+  }
+});
+
 test("GRPC Server start-stop", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
   await sim.start(ZEMU_OPTIONS);

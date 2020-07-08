@@ -62,6 +62,7 @@ export default class Zemu {
     this.elfPath = elfPath;
     this.press_delay = KEYDELAY;
     this.grpcManager = null;
+    this.mainMenuSnapshot = null;
 
     if (this.elfPath == null) {
       throw new Error("elfPath cannot be null!");
@@ -86,6 +87,9 @@ export default class Zemu {
       console.log(error);
       this.close();
     });
+
+    // Captures main screen
+    this.mainMenuSnapshot  = await this.snapshot();
   }
 
   static saveRGBA2Png(rect, filename) {
@@ -111,6 +115,7 @@ export default class Zemu {
       sleep.msleep(KEYDELAY);
     }
   }
+
 
   static async stopAllEmuContainers() {
     const timer = setTimeout(function () {
@@ -214,6 +219,25 @@ export default class Zemu {
       session.requestUpdate(false, 0, 0, WINDOW.width, WINDOW.height);
       setTimeout(() => reject(new Error("timeout")), TIMEOUT);
     });
+  }
+
+  async getMainMenuSnapshot() {
+    return this.mainMenuSnapshot;
+  }
+
+  async waitUntilScreenIsNot(screen, timeout = 10000) {
+    const start = new Date();
+    const inputSnapshotBufferHex = (await screen).buffer.toString("hex");
+    let currentSnapshotBufferHex = (await this.snapshot()).buffer.toString("hex");
+
+    while (inputSnapshotBufferHex === currentSnapshotBufferHex) {
+      const elapsed = new Date() - start;
+      if (elapsed > timeout) {
+        throw(`Timeout waiting for screen to change (${timeout} ms)`)
+      }
+      await Zemu.delay(100);
+      currentSnapshotBufferHex = (await this.snapshot()).buffer.toString("hex")
+    }
   }
 
   async clickLeft(filename) {
