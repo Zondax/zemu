@@ -13,6 +13,7 @@ jobs:
   test:
     machine:
       image: circleci/classic:latest
+    resource_class: large
     working_directory: ~/repo
     environment:
       BASH_ENV: "/opt/circleci/.nvm/nvm.sh"

@@ -1,16 +1,6 @@
 const PROTO_PATH = `${__dirname}/zemu.proto`;
-const grpc = require("grpc");
 const protoLoader = require("@grpc/proto-loader");
-
-const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
-  keepCase: true,
-  longs: String,
-  enums: String,
-  defaults: true,
-  oneofs: true,
-});
-
-const rpcDefinition = grpc.loadPackageDefinition(packageDefinition).ledger_go;
+const grpc = require("@grpc/grpc-js");
 
 export default class GRPCRouter {
   constructor(ip, port, options = {}, transport) {
@@ -24,10 +14,21 @@ export default class GRPCRouter {
     }
   }
 
-  startServer() {
+  async startServer() {
     const self = this;
-    this.server.addService(rpcDefinition.ZemuCommand.service, {
-      Exchange: function (call, callback, ctx = self) {
+
+    const packageDefinition = await protoLoader.load(PROTO_PATH, {
+      keepCase: true,
+      longs: String,
+      enums: String,
+      defaults: true,
+      oneofs: true,
+    });
+
+    const rpcDefinition = grpc.loadPackageDefinition(packageDefinition);
+
+    this.server.addService(rpcDefinition.ledger_go.ZemuCommand.service, {
+      Exchange(call, callback, ctx = self) {
         ctx.httpTransport.exchange(call.request.command).then((response) => {
           if (self.debug_en) {
             let x = Buffer.from(call.request.command, "hex");
@@ -41,8 +42,19 @@ export default class GRPCRouter {
         });
       },
     });
-    this.server.bind(this.serverAddress, grpc.ServerCredentials.createInsecure());
-    this.server.start();
+    this.server.bindAsync(
+      this.serverAddress,
+      grpc.ServerCredentials.createInsecure(),
+      // eslint-disable-next-line no-unused-vars
+      (err, port) => {
+        if (err != null) {
+          return console.error(err);
+        }
+        console.log(`gRPC listening on ${port}`);
+        this.server.start();
+      },
+    );
+
     console.log("grpc server started on", this.serverAddress);
   }
 
