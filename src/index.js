@@ -14,12 +14,11 @@
  *  limitations under the License.
  ******************************************************************************* */
 import PNG from "pngjs";
-import fs from "fs";
+import fs from "fs-extra";
 import rfb from "rfb2";
 import sleep from "sleep";
 import TransportHttp from "@ledgerhq/hw-transport-http";
 import EmuContainer from "./emuContainer";
-import grpc from "./grpc";
 import GRPCRouter from "./grpc";
 
 const rndstr = require("randomstring");
@@ -237,6 +236,28 @@ export default class Zemu {
       }
       await Zemu.delay(100);
       currentSnapshotBufferHex = (await this.snapshot()).buffer.toString("hex")
+    }
+  }
+
+  async compareSnapshotsAndAccept(path, testcaseName, snapshotCount) {
+    const snapshotPrefixGolden = `${path}/snapshots/${testcaseName}/`;
+    const snapshotPrefixTmp = `${path}/snapshots-tmp/${testcaseName}/`;
+
+    fs.ensureDirSync(snapshotPrefixGolden);
+    fs.ensureDirSync(snapshotPrefixTmp);
+
+    await this.snapshot(`${snapshotPrefixTmp}0.png`);
+    let i = 1;
+    for (; i < snapshotCount; i++) {
+      await this.clickRight(`${snapshotPrefixTmp}${i}.png`);
+    }
+    await this.clickBoth(`${snapshotPrefixTmp}${i++}.png`);
+
+    console.log("start comparison")
+    for (let i = 0; i < snapshotCount; i++) {
+      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}${i}.png`);
+      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}${i}.png`);
+      expect(img1).toEqual(img2);
     }
   }
 

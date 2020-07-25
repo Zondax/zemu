@@ -110,3 +110,15 @@ test("GRPC Server start-stop", async () => {
   await Zemu.sleep(3000);
   await sim.close();
 });
+
+test("Snapshot and compare", async () => {
+  const sim = new Zemu(DEMO_APP_PATH);
+  try {
+    await sim.start(ZEMU_OPTIONS);
+
+    await sim.compareSnapshotsAndAccept("tests", "compare_test", 2);
+
+  } finally {
+    await sim.close();
+  }
+});
