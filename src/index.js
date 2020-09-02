@@ -75,22 +75,6 @@ export default class Zemu {
     this.emuContainer = new EmuContainer(this.elfPath, DEFAULT_EMU_IMG, containerName);
   }
 
-  async start(options = {}) {
-    if ("press_delay" in options ) {
-      this.press_delay = options["press_delay"];
-    }
-
-    await this.emuContainer.runContainer(options);
-    // eslint-disable-next-line func-names
-    await this.connect().catch((error) => {
-      console.log(error);
-      this.close();
-    });
-
-    // Captures main screen
-    this.mainMenuSnapshot  = await this.snapshot();
-  }
-
   static saveRGBA2Png(rect, filename) {
     const png = new PNG.PNG({
       width: rect.width,
@@ -115,9 +99,8 @@ export default class Zemu {
     }
   }
 
-
   static async stopAllEmuContainers() {
-    const timer = setTimeout(function () {
+    const timer = setTimeout(function() {
       console.log("Could not kill all containers before timeout!");
       process.exit(1);
     }, KILL_TIMEOUT);
@@ -142,6 +125,22 @@ export default class Zemu {
     ]);
   }
 
+  async start(options = {}) {
+    if ("press_delay" in options) {
+      this.press_delay = options["press_delay"];
+    }
+
+    await this.emuContainer.runContainer(options);
+    // eslint-disable-next-line func-names
+    await this.connect().catch((error) => {
+      console.log(error);
+      this.close();
+    });
+
+    // Captures main screen
+    this.mainMenuSnapshot = await this.snapshot();
+  }
+
   async connect() {
     // FIXME: Can we detect open ports?
     Zemu.delay(this.emuContainer.start_delay);
@@ -162,7 +161,7 @@ export default class Zemu {
 
       const session = this.session;
       const logging = this.emuContainer.logging;
-      this.session.on("connect", function () {
+      this.session.on("connect", function() {
         if (logging) {
           process.stdout.write(`[ZEMU] VNC Session ready\n`);
         }
@@ -173,7 +172,7 @@ export default class Zemu {
 
       const vnc_port = this.vnc_port;
       const host = this.host;
-      this.session.on("error", function (error) {
+      this.session.on("error", function(error) {
         console.log(`Could not connect to port ${vnc_port}  on ${host}`);
         reject(error);
       });
@@ -232,10 +231,10 @@ export default class Zemu {
     while (inputSnapshotBufferHex === currentSnapshotBufferHex) {
       const elapsed = new Date() - start;
       if (elapsed > timeout) {
-        throw(`Timeout waiting for screen to change (${timeout} ms)`)
+        throw(`Timeout waiting for screen to change (${timeout} ms)`);
       }
       await Zemu.delay(100);
-      currentSnapshotBufferHex = (await this.snapshot()).buffer.toString("hex")
+      currentSnapshotBufferHex = (await this.snapshot()).buffer.toString("hex");
     }
   }
 
@@ -248,15 +247,19 @@ export default class Zemu {
 
     await this.snapshot(`${snapshotPrefixTmp}0.png`);
     let i = 1;
+    let indexStr = "";
     for (; i < snapshotCount; i++) {
-      await this.clickRight(`${snapshotPrefixTmp}${i}.png`);
+      indexStr = `${i}`.padStart(5, "0");
+      await this.clickRight(`${snapshotPrefixTmp}${indexStr}.png`);
     }
-    await this.clickBoth(`${snapshotPrefixTmp}${i++}.png`);
+    indexStr = `${i++}`.padStart(5, "0");
+    await this.clickBoth(`${snapshotPrefixTmp}${indexStr}.png`);
 
-    console.log("start comparison")
+    console.log("start comparison");
     for (let i = 0; i < snapshotCount; i++) {
-      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}${i}.png`);
-      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}${i}.png`);
+      indexStr = `${i}`.padStart(5, "0");
+      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}${indexStr}.png`);
+      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}${indexStr}.png`);
       expect(img1).toEqual(img2);
     }
   }
