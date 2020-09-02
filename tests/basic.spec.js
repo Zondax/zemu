@@ -71,9 +71,9 @@ test("Basic Control", async () => {
     await sim.clickLeft();
 
     // Move up and down and check screens
-    const view0 = await sim.snapshot("tests/tmp/0.png");
-    const view1 = await sim.clickRight("tests/tmp/1.png");
-    const view2 = await sim.clickLeft("tests/tmp/2.png");
+    const view0 = await sim.snapshot("tests/tmp/00000.png");
+    const view1 = await sim.clickRight("tests/tmp/00001.png");
+    const view2 = await sim.clickLeft("tests/tmp/00002.png");
 
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0);
@@ -84,9 +84,9 @@ test("Basic Control", async () => {
 });
 
 test("Load/Compare Snapshots", async () => {
-  const image1A = Zemu.LoadPng2RGB("tests/snapshots/image1A.png")
-  const image1B = Zemu.LoadPng2RGB("tests/snapshots/image1B.png")
-  const image2A = Zemu.LoadPng2RGB("tests/snapshots/image2A.png")
+  const image1A = Zemu.LoadPng2RGB("tests/snapshots/image1A.png");
+  const image1B = Zemu.LoadPng2RGB("tests/snapshots/image1B.png");
+  const image2A = Zemu.LoadPng2RGB("tests/snapshots/image2A.png");
 
   expect(image1A).toEqual(image1B);
   expect(image1A).not.toEqual(image2A);
@@ -97,7 +97,7 @@ test("Wait for change / timeout", async () => {
   try {
     await sim.start(ZEMU_OPTIONS);
     const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000);
-    await expect(result ).rejects.toEqual('Timeout waiting for screen to change (2000 ms)');
+    await expect(result).rejects.toEqual("Timeout waiting for screen to change (2000 ms)");
   } finally {
     await sim.close();
   }
@@ -117,7 +117,6 @@ test("Snapshot and compare", async () => {
     await sim.start(ZEMU_OPTIONS);
 
     await sim.compareSnapshotsAndAccept("tests", "compare_test", 2);
-
   } finally {
     await sim.close();
   }

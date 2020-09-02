@@ -42,7 +42,8 @@ export const WINDOW = {
 
 export const TIMEOUT = 1000;
 export const KEYDELAY = 350;
-export const DEFAULT_EMU_IMG = "zondax/builder-zemu@sha256:52e449343a3b7d0979e86eed4d5e4592b8168cc2b2cc8fa942b21776336ed1f7";
+export const DEFAULT_EMU_IMG =
+  "zondax/builder-zemu@sha256:52e449343a3b7d0979e86eed4d5e4592b8168cc2b2cc8fa942b21776336ed1f7";
 export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_VNC_PORT = 8001;
 export const DEFAULT_TRANSPORT_PORT = 9998;
@@ -100,7 +101,7 @@ export default class Zemu {
   }
 
   static async stopAllEmuContainers() {
-    const timer = setTimeout(function() {
+    const timer = setTimeout(function () {
       console.log("Could not kill all containers before timeout!");
       process.exit(1);
     }, KILL_TIMEOUT);
@@ -161,7 +162,7 @@ export default class Zemu {
 
       const session = this.session;
       const logging = this.emuContainer.logging;
-      this.session.on("connect", function() {
+      this.session.on("connect", () => {
         if (logging) {
           process.stdout.write(`[ZEMU] VNC Session ready\n`);
         }
@@ -172,7 +173,7 @@ export default class Zemu {
 
       const vnc_port = this.vnc_port;
       const host = this.host;
-      this.session.on("error", function(error) {
+      this.session.on("error", (error) => {
         console.log(`Could not connect to port ${vnc_port}  on ${host}`);
         reject(error);
       });
@@ -231,7 +232,7 @@ export default class Zemu {
     while (inputSnapshotBufferHex === currentSnapshotBufferHex) {
       const elapsed = new Date() - start;
       if (elapsed > timeout) {
-        throw(`Timeout waiting for screen to change (${timeout} ms)`);
+        throw `Timeout waiting for screen to change (${timeout} ms)`;
       }
       await Zemu.delay(100);
       currentSnapshotBufferHex = (await this.snapshot()).buffer.toString("hex");
@@ -245,9 +246,9 @@ export default class Zemu {
     fs.ensureDirSync(snapshotPrefixGolden);
     fs.ensureDirSync(snapshotPrefixTmp);
 
-    await this.snapshot(`${snapshotPrefixTmp}0.png`);
     let i = 1;
-    let indexStr = "";
+    let indexStr = "00000";
+    await this.snapshot(`${snapshotPrefixTmp}${indexStr}.png`);
     for (; i < snapshotCount; i++) {
       indexStr = `${i}`.padStart(5, "0");
       await this.clickRight(`${snapshotPrefixTmp}${indexStr}.png`);
