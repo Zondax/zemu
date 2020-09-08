@@ -43,7 +43,7 @@ export const WINDOW = {
 export const TIMEOUT = 1000;
 export const KEYDELAY = 350;
 export const DEFAULT_EMU_IMG =
-  "zondax/builder-zemu@sha256:52e449343a3b7d0979e86eed4d5e4592b8168cc2b2cc8fa942b21776336ed1f7";
+  "zondax/builder-zemu@sha256:4b793ac77c29870e6046e1d0a5019643fd178530205f9cf983bfadd114abca0a";
 export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_VNC_PORT = 8001;
 export const DEFAULT_TRANSPORT_PORT = 9998;
