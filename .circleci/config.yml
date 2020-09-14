@@ -30,6 +30,7 @@ jobs:
             curl -o- -L https://yarnpkg.com/install.sh | bash
             echo 'export PATH="${PATH}:${HOME}/.yarn/bin"' >> $BASH_ENV
       - run: yarn install
+      - run: yarn lint
       - run: yarn test:unit
 
   publish:
@@ -69,7 +70,6 @@ jobs:
           name: Deploy docs to gh-pages branch
           command: |
             $(yarn global bin)/gh-pages --message "[skip ci] Updates" --dist docs/.vuepress/dist
-
 
 no-tags: &no-tags
   filters:

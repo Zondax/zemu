@@ -1,10 +1,8 @@
 import Zemu from "../src";
 
 const catchExit = async () => {
-  process.on("SIGINT", () => {
-    Zemu.stopAllEmuContainers(function () {
-      process.exit();
-    });
+  process.on("SIGINT", async () => {
+    await Zemu.stopAllEmuContainers();
   });
 };
 

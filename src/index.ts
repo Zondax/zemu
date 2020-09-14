@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2020 Zondax GmbH
+ *  (c) 2020 ZondaX GmbH
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,28 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import Transport from '@ledgerhq/hw-transport';
 
-export interface Snapshot {
-  width: number;
-  height: number;
-}
+import Zemu from "./Zemu";
 
-export class Zemu {
-  constructor (elfPath: string, host?: string, vncPort?: number, transportPort?: number);
-
-  start();
-  close();
-  sleep(ms: number);
-
-  getTransport() : Transport;
-  startgrpcServer(ip: string, port: string);
-  stopgrpcServer();
-
-  snapshot(filename?: string): Promise<Snapshot>;
-  clickLeft(filename?: string): Promise<Snapshot>;
-  clickRight(filename?: string): Promise<Snapshot>;
-  clickBoth(filename?: string): Promise<Snapshot>;
-
-  waitUntilScreenIsNot(screen: Snapshot, timeoutInSeconds: number);
-}
+export default Zemu;

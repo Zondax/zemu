@@ -13,11 +13,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { expect, test } from "jest";
 import assert from "assert";
 import Zemu from "../src";
-
-const Resolve = require("path").resolve;
+import { resolve as Resolve } from "path";
 
 jest.setTimeout(10000);
 const DEMO_APP_PATH = Resolve("bin/demoApp/app.elf");
@@ -27,8 +25,7 @@ const ZEMU_OPTIONS = {
   logging: true,
   start_delay: 3000,
   custom: `-s "${APP_SEED}" `,
-  //  custom: `-s "${APP_SEED}" --debug`,
-  X11: true,
+  X11: false,
 };
 
 test("File-Missing", async () => {
@@ -49,6 +46,7 @@ test("Snapshot", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
   try {
     await sim.start(ZEMU_OPTIONS);
+    assert(sim.session);
     expect(sim.session.title).toEqual("LibVNCServer");
     expect(sim.session.width).toEqual(128);
     expect(sim.session.height).toEqual(32);
@@ -106,7 +104,7 @@ test("Wait for change / timeout", async () => {
 test("GRPC Server start-stop", async () => {
   const sim = new Zemu(DEMO_APP_PATH);
   await sim.start(ZEMU_OPTIONS);
-  sim.startgrpcServer("localhost", "3002");
+  sim.startgrpcServer("localhost", 3002);
   await Zemu.sleep(3000);
   await sim.close();
 });

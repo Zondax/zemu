@@ -59,7 +59,7 @@ export default class MinimalApp {
   }
 
   async appInfo() {
-    return this.transport.send(0xb0, 0x01, 0, 0).then(response => {
+    return this.transport.send(0xb0, 0x01, 0, 0).then((response) => {
       const errorCodeData = response.slice(-2);
       const returnCode = errorCodeData[0] * 256 + errorCodeData[1];
 
