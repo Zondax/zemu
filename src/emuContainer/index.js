@@ -22,10 +22,11 @@ export const DEFAULT_APP_PATH = "/project/app/bin";
 export const DEFAULT_VNC_PORT = "8001";
 
 export default class EmuContainer {
-  constructor(elfLocalPath, image, name) {
+  constructor(elfLocalPath, libElfs, image, name) {
     // eslint-disable-next-line global-require
     this.image = image;
     this.elfLocalPath = elfLocalPath;
+    this.libElfs = libElfs;
     this.name = name;
     this.logging = false;
   }
@@ -51,6 +52,12 @@ export default class EmuContainer {
         `${app_dir}:${DEFAULT_APP_PATH}`
       ]
 
+      let libArgs = '';
+      Object.entries(this.libElfs).forEach(([libName, libPath]) => {
+        const lib_filename = path.basename(libPath);
+        libArgs += ` -l ${libName}:${DEFAULT_APP_PATH}/${lib_filename}`;
+      });
+
       let displaySetting = "--display headless"
       if ("X11" in options && options["X11"] === true ){
         displaySetting = ""
@@ -62,7 +69,7 @@ export default class EmuContainer {
         customOptions = options["custom"]
       }
 
-      const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${customOptions} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename}`;
+      const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${customOptions} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename} ${libArgs}`;
 
       if (this.logging) {
         process.stdout.write(`[ZEMU] Command: ${command}\n`);
