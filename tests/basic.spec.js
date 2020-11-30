@@ -20,7 +20,7 @@ import Zemu from "../src";
 const Resolve = require("path").resolve;
 
 jest.setTimeout(10000);
-const DEMO_APP_PATH = Resolve("bin/demoApp/app.elf");
+const DEMO_APP_PATH = Resolve("bin/demoApp.elf");
 
 const APP_SEED = "equip will roof matter pink blind book anxiety banner elbow sun young";
 const ZEMU_OPTIONS = {
@@ -117,6 +117,23 @@ test("Snapshot and compare", async () => {
     await sim.start(ZEMU_OPTIONS);
 
     await sim.compareSnapshotsAndAccept("tests", "compare_test", 2);
+  } finally {
+    await sim.close();
+  }
+});
+
+test("Load and run a library", async () => {
+  const LITECOIN_PATH = Resolve("bin/litecoin.elf");
+  const BITCOIN_LIB = { "Bitcoin": Resolve("bin/bitcoin.elf") };
+  const sim = new Zemu(LITECOIN_PATH, BITCOIN_LIB);
+  try {
+    await sim.start(ZEMU_OPTIONS);
+
+    // If we can see the main screen, then the library has been loaded with success
+    await sim.snapshot("tests/tmp/libWelcome.png");
+    const testLibWelcome = Zemu.LoadPng2RGB("tests/tmp/libWelcome.png");
+    const goldenLibWelcome = Zemu.LoadPng2RGB("tests/snapshots/libWelcome.png");
+    expect(testLibWelcome).toEqual(goldenLibWelcome);
   } finally {
     await sim.close();
   }
