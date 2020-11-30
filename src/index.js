@@ -52,6 +52,7 @@ export const BASE_NAME = "zemu-656d75-";
 export default class Zemu {
   constructor(
     elfPath,
+    libElfs = {},
     host = DEFAULT_HOST,
     vncPort = DEFAULT_VNC_PORT,
     transportPort = DEFAULT_TRANSPORT_PORT,
@@ -60,6 +61,7 @@ export default class Zemu {
     this.vnc_port = vncPort;
     this.transport_url = `http://${this.host}:${transportPort}`;
     this.elfPath = elfPath;
+    this.libElfs = libElfs;
     this.press_delay = KEYDELAY;
     this.grpcManager = null;
     this.mainMenuSnapshot = null;
@@ -72,8 +74,14 @@ export default class Zemu {
       throw new Error("elf file was not found! Did you compile?");
     }
 
+    Object.keys(libElfs).forEach((libName) => {
+      if (!fs.existsSync(libElfs[libName])) {
+        throw new Error("lib elf file was not found! Did you compile?");
+      }
+    });
+
     const containerName = BASE_NAME + rndstr.generate(5);
-    this.emuContainer = new EmuContainer(this.elfPath, DEFAULT_EMU_IMG, containerName);
+    this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, DEFAULT_EMU_IMG, containerName);
   }
 
   static saveRGBA2Png(rect, filename) {
