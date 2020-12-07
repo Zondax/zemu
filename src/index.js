@@ -247,21 +247,41 @@ export default class Zemu {
     }
   }
 
-  async compareSnapshotsAndAccept(path, testcaseName, snapshotCount) {
+  async compareSnapshotsAndAccept(path, testcaseName, snapshotCount, backClickCount) {
     const snapshotPrefixGolden = `${path}/snapshots/${testcaseName}/`;
     const snapshotPrefixTmp = `${path}/snapshots-tmp/${testcaseName}/`;
 
     fs.ensureDirSync(snapshotPrefixGolden);
     fs.ensureDirSync(snapshotPrefixTmp);
 
-    let i = 1;
+    backClickCount = (typeof backClickCount === 'undefined') ? 0 : backClickCount;
+    process.stdout.write(`[ZEMU] forward: ${snapshotCount} backwards: ${backClickCount}\n`);
+
     let indexStr = "00000";
     await this.snapshot(`${snapshotPrefixTmp}${indexStr}.png`);
-    for (; i < snapshotCount; i++) {
-      indexStr = `${i}`.padStart(5, "0");
+
+    let i = 1;
+    // MOve forward to the end
+    for (let j=1; j < snapshotCount; j++) {
+      indexStr = `${i++}`.padStart(5, "0");
+      process.stdout.write(`[ZEMU] click Right\n`);
       await this.clickRight(`${snapshotPrefixTmp}${indexStr}.png`);
     }
+
+    // now go back a few clicks and come back
+    for (let j=0; j < backClickCount; j++) {
+      indexStr = `${i++}`.padStart(5, "0");
+      process.stdout.write(`[ZEMU] click Left\n`);
+      await this.clickLeft(`${snapshotPrefixTmp}${indexStr}.png`);
+    }
+    for (let j=0;  j < backClickCount; j++) {
+      indexStr = `${i++}`.padStart(5, "0");
+      process.stdout.write(`[ZEMU] click Right\n`);
+      await this.clickRight(`${snapshotPrefixTmp}${indexStr}.png`);
+    }
+
     indexStr = `${i++}`.padStart(5, "0");
+    process.stdout.write(`[ZEMU] click Both\n`);
     await this.clickBoth(`${snapshotPrefixTmp}${indexStr}.png`);
 
     console.log("start comparison");

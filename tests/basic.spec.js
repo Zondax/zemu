@@ -122,6 +122,17 @@ test("Snapshot and compare", async () => {
   }
 });
 
+test("Snapshot and compare 2", async () => {
+  const sim = new Zemu(DEMO_APP_PATH);
+  try {
+    await sim.start(ZEMU_OPTIONS);
+
+    await sim.compareSnapshotsAndAccept("tests", "compare_test2", 2, 1);
+  } finally {
+    await sim.close();
+  }
+});
+
 test("Load and run a library", async () => {
   const LITECOIN_PATH = Resolve("bin/litecoin.elf");
   const BITCOIN_LIB = { "Bitcoin": Resolve("bin/bitcoin.elf") };
