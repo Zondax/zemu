@@ -27,8 +27,8 @@ const ZEMU_OPTIONS = {
   logging: true,
   start_delay: 3000,
   custom: `-s "${APP_SEED}" `,
-  //  custom: `-s "${APP_SEED}" --debug`,
-  X11: true,
+  // custom: `-s "${APP_SEED}" --debug`,
+  // X11: true,
 };
 
 test("File-Missing", async () => {
