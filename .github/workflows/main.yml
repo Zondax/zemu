@@ -1,5 +1,5 @@
 name: Test&Build
-on: [push]
+on: [pull_request]
 
 jobs:
   build:
