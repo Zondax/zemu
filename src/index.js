@@ -33,11 +33,18 @@ export const KEYS = {
   RIGHT: 0xff53,
 };
 
-export const WINDOW = {
+export const WINDOW_S = {
   x: 0,
   y: 0,
   width: 128,
   height: 32,
+};
+
+export const WINDOW_X = {
+  x: 0,
+  y: 0,
+  width: 128,
+  height: 64,
 };
 
 export const TIMEOUT = 1000;
@@ -64,6 +71,7 @@ export default class Zemu {
     this.libElfs = libElfs;
     this.press_delay = KEYDELAY;
     this.grpcManager = null;
+    this.model = 'nanos'
     this.mainMenuSnapshot = null;
 
     if (this.elfPath == null) {
@@ -137,6 +145,10 @@ export default class Zemu {
   async start(options = {}) {
     if ("press_delay" in options) {
       this.press_delay = options["press_delay"];
+    }
+
+    if ("model" in options) {
+      this.model = options["model"]
     }
 
     await this.emuContainer.runContainer(options);
@@ -214,6 +226,18 @@ export default class Zemu {
     return this.transport;
   }
 
+  getWindowRect() {
+    switch (this.model) {
+      case "nanos":
+        console.log("model S")
+        return WINDOW_S;
+      case "nanox":
+        console.log("model X")
+        return WINDOW_X;
+    }
+    throw `model ${model} not recognized`
+  }
+
   async snapshot(filename) {
     const { session } = this;
     return new Promise((resolve, reject) => {
@@ -223,7 +247,9 @@ export default class Zemu {
         }
         resolve(rect);
       });
-      session.requestUpdate(false, 0, 0, WINDOW.width, WINDOW.height);
+
+      let modelWindow = this.getWindowRect()
+      session.requestUpdate(false, 0, 0, modelWindow.width, modelWindow.height);
       setTimeout(() => reject(new Error("timeout")), TIMEOUT);
     });
   }

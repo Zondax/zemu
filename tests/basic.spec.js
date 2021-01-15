@@ -81,7 +81,7 @@ test("Snapshot", async () => {
   }
 });
 
-test("Basic Control", async () => {
+test("Basic Control - S", async () => {
   const sim = new Zemu(DEMO_APP_PATH_S);
   try {
     await sim.start(ZEMU_OPTIONS);
@@ -94,6 +94,28 @@ test("Basic Control", async () => {
     const view0 = await sim.snapshot("tests/tmp/00000.png");
     const view1 = await sim.clickRight("tests/tmp/00001.png");
     const view2 = await sim.clickLeft("tests/tmp/00002.png");
+
+    // compare to check that it went back to the same view
+    expect(view2).toEqual(view0);
+    expect(view1).not.toEqual(view0);
+  } finally {
+    await sim.close();
+  }
+});
+
+test("Basic Control - X", async () => {
+  const sim = new Zemu(DEMO_APP_PATH_X);
+  try {
+    await sim.start(ZEMU_OPTIONS_X);
+
+    await sim.clickLeft();
+    await sim.clickLeft();
+    await sim.clickLeft();
+
+    // Move up and down and check screens
+    const view0 = await sim.snapshot("tests/tmpX/00000.png");
+    const view1 = await sim.clickRight("tests/tmpX/00001.png");
+    const view2 = await sim.clickLeft("tests/tmpX/00002.png");
 
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0);
