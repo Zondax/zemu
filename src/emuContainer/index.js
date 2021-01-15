@@ -69,7 +69,12 @@ export default class EmuContainer {
         customOptions = options["custom"]
       }
 
-      const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${customOptions} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename} ${libArgs}`;
+      let model = "nanos"
+      if ("model" in options ) {
+        model = options["model"];
+      }
+
+      const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${customOptions} -m ${model} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename} ${libArgs}`;
 
       if (this.logging) {
         process.stdout.write(`[ZEMU] Command: ${command}\n`);

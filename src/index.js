@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2020 ZondaX GmbH
+ *  (c) 2020 Zondax GmbH
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ export const WINDOW = {
 export const TIMEOUT = 1000;
 export const KEYDELAY = 350;
 export const DEFAULT_EMU_IMG =
-  "zondax/builder-zemu@sha256:4b793ac77c29870e6046e1d0a5019643fd178530205f9cf983bfadd114abca0a";
+  "zondax/builder-zemu@sha256:1afe684142b8a65f2c2d064f89298384cd122889a6449a47b465ac58c47a4dd1";
 export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_VNC_PORT = 8001;
 export const DEFAULT_TRANSPORT_PORT = 9998;
