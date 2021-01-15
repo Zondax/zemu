@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2020 ZondaX GmbH
+ *  (c) 2020 Zondax GmbH
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,17 +33,24 @@ export const KEYS = {
   RIGHT: 0xff53,
 };
 
-export const WINDOW = {
+export const WINDOW_S = {
   x: 0,
   y: 0,
   width: 128,
   height: 32,
 };
 
+export const WINDOW_X = {
+  x: 0,
+  y: 0,
+  width: 128,
+  height: 64,
+};
+
 export const TIMEOUT = 1000;
 export const KEYDELAY = 350;
 export const DEFAULT_EMU_IMG =
-  "zondax/builder-zemu@sha256:4b793ac77c29870e6046e1d0a5019643fd178530205f9cf983bfadd114abca0a";
+  "zondax/builder-zemu@sha256:1afe684142b8a65f2c2d064f89298384cd122889a6449a47b465ac58c47a4dd1";
 export const DEFAULT_HOST = "127.0.0.1";
 export const DEFAULT_VNC_PORT = 8001;
 export const DEFAULT_TRANSPORT_PORT = 9998;
@@ -64,6 +71,7 @@ export default class Zemu {
     this.libElfs = libElfs;
     this.press_delay = KEYDELAY;
     this.grpcManager = null;
+    this.model = 'nanos'
     this.mainMenuSnapshot = null;
 
     if (this.elfPath == null) {
@@ -137,6 +145,10 @@ export default class Zemu {
   async start(options = {}) {
     if ("press_delay" in options) {
       this.press_delay = options["press_delay"];
+    }
+
+    if ("model" in options) {
+      this.model = options["model"]
     }
 
     await this.emuContainer.runContainer(options);
@@ -214,6 +226,18 @@ export default class Zemu {
     return this.transport;
   }
 
+  getWindowRect() {
+    switch (this.model) {
+      case "nanos":
+        console.log("model S")
+        return WINDOW_S;
+      case "nanox":
+        console.log("model X")
+        return WINDOW_X;
+    }
+    throw `model ${model} not recognized`
+  }
+
   async snapshot(filename) {
     const { session } = this;
     return new Promise((resolve, reject) => {
@@ -223,7 +247,9 @@ export default class Zemu {
         }
         resolve(rect);
       });
-      session.requestUpdate(false, 0, 0, WINDOW.width, WINDOW.height);
+
+      let modelWindow = this.getWindowRect()
+      session.requestUpdate(false, 0, 0, modelWindow.width, modelWindow.height);
       setTimeout(() => reject(new Error("timeout")), TIMEOUT);
     });
   }
