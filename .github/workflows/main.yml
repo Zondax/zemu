@@ -38,4 +38,5 @@ jobs:
       - name: Install yarn
         run: npm install -g yarn
       - run: yarn install
+      - run: docker pull zondax/builder-zemu
       - run: yarn test:unit
