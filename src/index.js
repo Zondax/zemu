@@ -156,7 +156,7 @@ export default class Zemu {
       // eslint-disable-next-line func-names
       await this.connect()
     } catch(err) {
-      console.log(error);
+      console.log(err);
       this.close();  
     }
 
