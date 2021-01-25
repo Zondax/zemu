@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { expect, test } from "jest";
+import { expect, test, fail } from "jest";
 import assert from "assert";
 import Zemu from "../src";
 
@@ -50,6 +50,8 @@ test("Start&Close-NanoS", async () => {
   expect(sim).not.toBeNull();
   try {
     await sim.start(ZEMU_OPTIONS_S);
+  } catch(err) {
+    expect(err).not.toBeDefined();
   } finally {
     await sim.close();
   }
@@ -60,6 +62,8 @@ test("Start&Close-NanoX", async () => {
   expect(sim).not.toBeNull();
   try {
     await sim.start(ZEMU_OPTIONS_X);
+  } catch(err) {
+    expect(err).not.toBeDefined();
   } finally {
     await sim.close();
   }
@@ -76,6 +80,8 @@ test("Snapshot", async () => {
     const snapshot = await sim.snapshot();
     expect(snapshot.width).toEqual(128);
     expect(snapshot.height).toEqual(32);
+  } catch(err) {
+    expect(err).not.toBeDefined();
   } finally {
     await sim.close();
   }
@@ -98,6 +104,8 @@ test("Basic Control - S", async () => {
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0);
     expect(view1).not.toEqual(view0);
+  } catch(err) {
+    expect(err).not.toBeDefined();
   } finally {
     await sim.close();
   }
@@ -120,6 +128,8 @@ test("Basic Control - X", async () => {
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0);
     expect(view1).not.toEqual(view0);
+  } catch(err) {
+    expect(err).not.toBeDefined();
   } finally {
     await sim.close();
   }
@@ -140,6 +150,8 @@ test("Wait for change / timeout", async () => {
     await sim.start(ZEMU_OPTIONS);
     const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000);
     await expect(result).rejects.toEqual("Timeout waiting for screen to change (2000 ms)");
+  } catch(err) {
+    expect(err).not.toBeDefined();
   } finally {
     await sim.close();
   }
@@ -159,6 +171,8 @@ test("Snapshot and compare", async () => {
     await sim.start(ZEMU_OPTIONS);
 
     await sim.compareSnapshotsAndAccept("tests", "compare_test", 2);
+  } catch(err) {
+    expect(err).not.toBeDefined();
   } finally {
     await sim.close();
   }
@@ -170,6 +184,8 @@ test("Snapshot and compare 2", async () => {
     await sim.start(ZEMU_OPTIONS);
 
     await sim.compareSnapshotsAndAccept("tests", "compare_test2", 2, 1);
+  } catch(err) {
+    expect(err).not.toBeDefined();
   } finally {
     await sim.close();
   }
@@ -187,6 +203,8 @@ test("Load and run a library", async () => {
     const testLibWelcome = Zemu.LoadPng2RGB("tests/tmp/libWelcome.png");
     const goldenLibWelcome = Zemu.LoadPng2RGB("tests/snapshots/libWelcome.png");
     expect(testLibWelcome).toEqual(goldenLibWelcome);
+  } catch(err) {
+    expect(err).not.toBeDefined();
   } finally {
     await sim.close();
   }
