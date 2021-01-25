@@ -152,11 +152,13 @@ export default class Zemu {
     }
 
     await this.emuContainer.runContainer(options);
-    // eslint-disable-next-line func-names
-    await this.connect().catch((error) => {
+    try {
+      // eslint-disable-next-line func-names
+      await this.connect()
+    } catch(err) {
       console.log(error);
-      this.close();
-    });
+      this.close();  
+    }
 
     // Captures main screen
     this.mainMenuSnapshot = await this.snapshot();
