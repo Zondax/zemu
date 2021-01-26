@@ -56,7 +56,7 @@
   },
   "scripts": {
     "build": "babel src --copy-files --out-dir dist",
-    "test:unit": "jest -c jest.config.unit.js --detectOpenHandles",
+    "test:unit": "jest -c jest.config.unit.js --detectOpenHandles --runInBand",
     "docs:build": "vuepress build docs"
   },
   "moduleDirectories": [
