@@ -19,7 +19,7 @@ import Zemu from "../src";
 
 const Resolve = require("path").resolve;
 
-jest.setTimeout(10000);
+jest.setTimeout(15000);
 const DEMO_APP_PATH_S = Resolve("bin/demoAppS.elf");
 const DEMO_APP_PATH_X = Resolve("bin/demoAppX.elf");
 
@@ -28,7 +28,7 @@ const ZEMU_OPTIONS = {
   logging: true,
   start_delay: 3000,
   custom: `-s "${APP_SEED}" `,
-  X11: true,
+  X11: false,
 };
 
 const ZEMU_OPTIONS_S = {
