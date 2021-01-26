@@ -19,7 +19,7 @@ import Zemu from "../src";
 
 const Resolve = require("path").resolve;
 
-jest.setTimeout(30000);
+jest.setTimeout(15000);
 const DEMO_APP_PATH_S = Resolve("bin/demoAppS.elf");
 const DEMO_APP_PATH_X = Resolve("bin/demoAppX.elf");
 
