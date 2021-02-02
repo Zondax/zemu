@@ -27,6 +27,7 @@
     "@ledgerhq/hw-transport": "^5.39.0",
     "@ledgerhq/hw-transport-http": "^5.39.0",
     "dockerode": "^3.2.0",
+    "elfy": "^1.0.0",
     "fs-extra": "^9.0.1",
     "json-rpc2": "^2.0.0",
     "path": "^0.12.7",
