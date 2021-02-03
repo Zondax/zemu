@@ -20,6 +20,7 @@ import sleep from "sleep";
 import TransportHttp from "@ledgerhq/hw-transport-http";
 import EmuContainer from "./emuContainer";
 import GRPCRouter from "./grpc";
+import elfy from "elfy";
 
 const rndstr = require("randomstring");
 
@@ -149,6 +150,21 @@ export default class Zemu {
 
     if ("model" in options) {
       this.model = options["model"]
+    }
+
+    let elfApp = fs.readFileSync(this.elfPath);
+    let elfInfo = elfy.parse(elfApp);
+
+    if (elfInfo.entry != parseInt("0xc0d00001") && elfInfo.entry != parseInt(" 0xc0de0001")) {
+      throw new Error("Are you sure is a Nano S/X app ?");
+    }
+
+    if (this.model == 'nanos' && elfInfo.entry != parseInt("0xc0d00001")) {
+      throw new Error("Zemu model is set to 'nanos' but elf file doesn't seem to be nano s build. Did you pass the right elf ?");
+    }
+
+    if (this.model == 'nanox' && elfInfo.entry != parseInt("0xc0de0001")) {
+      throw new Error("Zemu model is set to 'nanox' but elf file doesn't seem to be nano x build. Did you pass the right elf ?");
     }
 
     await this.emuContainer.runContainer(options);
