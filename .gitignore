@@ -68,6 +68,4 @@ typings/
 TODO\.md
 
 \dist
-/certs/cert.pem
-/certs/server.cert
-/certs/server.key
+\tests/snapshots-tmp
