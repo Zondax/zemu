@@ -31,47 +31,85 @@ export default class EmuContainer {
     this.logging = false;
   }
 
+  static async killContainerByName(name) {
+    const docker = new Docker();
+    await new Promise((resolve) => {
+      docker.listContainers({ all: true, filters: { name: [name] } }, function (err, containers) {
+        containers.forEach(function (containerInfo) {
+          docker.getContainer(containerInfo.Id).remove({ force: true }, function () {
+            // console.log("container removed");
+          });
+        });
+        return resolve(true);
+      });
+    });
+  }
+
+  static async checkAndPullImage(imageName) {
+    const docker = new Docker();
+    await new Promise((resolve) => {
+      docker.pull(imageName, (err, stream) => {
+        docker.modem.followProgress(stream, onFinished, onProgress);
+
+        function onProgress(event) {
+          const progress = event.hasOwnProperty("progress") ? event.progress : "";
+          const status = event.hasOwnProperty("status") ? event.status : "";
+          console.clear();
+          console.log("*****", "Progress on image:", imageName, "*****");
+          console.log(status, "\n", progress);
+        }
+
+        function onFinished(err, output) {
+          if (!err) {
+            resolve(true);
+          } else {
+            console.log(err);
+            process.exit(1);
+          }
+        }
+      });
+    });
+  }
+
   async runContainer(options) {
     return new Promise((resolve, reject) => {
       // eslint-disable-next-line global-require
       const docker = new Docker();
 
-      if ("logging" in options && options["logging"] === true ) {
+      if ("logging" in options && options.logging === true) {
         this.logging = true;
       }
 
       this.start_delay = 1000;
-      if ("start_delay" in options ) {
-        this.start_delay = options["start_delay"];
+      if ("start_delay" in options) {
+        this.start_delay = options.start_delay;
       }
 
       const app_filename = path.basename(this.elfLocalPath);
       const app_dir = path.dirname(this.elfLocalPath);
 
-      let dirBindings = [
-        `${app_dir}:${DEFAULT_APP_PATH}`
-      ]
+      const dirBindings = [`${app_dir}:${DEFAULT_APP_PATH}`];
 
-      let libArgs = '';
+      let libArgs = "";
       Object.entries(this.libElfs).forEach(([libName, libPath]) => {
         const lib_filename = path.basename(libPath);
         libArgs += ` -l ${libName}:${DEFAULT_APP_PATH}/${lib_filename}`;
       });
 
-      let displaySetting = "--display headless"
-      if ("X11" in options && options["X11"] === true ){
-        displaySetting = ""
-        dirBindings.push("/tmp/.X11-unix:/tmp/.X11-unix:ro")
+      let displaySetting = "--display headless";
+      if ("X11" in options && options.X11 === true) {
+        displaySetting = "";
+        dirBindings.push("/tmp/.X11-unix:/tmp/.X11-unix:ro");
       }
 
       let customOptions = "";
       if ("custom" in options) {
-        customOptions = options["custom"]
+        customOptions = options.custom;
       }
 
-      let model = "nanos"
-      if ("model" in options ) {
-        model = options["model"];
+      let model = "nanos";
+      if ("model" in options) {
+        model = options.model;
       }
 
       const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${customOptions} -m ${model} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename} ${libArgs}`;
@@ -112,8 +150,8 @@ export default class EmuContainer {
             process.stdout.write(`[ZEMU] Connected ${container.id}\n`);
           }
 
-          if (this.logging ){
-            container.attach({ stream: true, stdout: true, stderr: true }, function(err, stream) {
+          if (this.logging) {
+            container.attach({ stream: true, stdout: true, stderr: true }, function (err, stream) {
               stream.pipe(process.stdout);
             });
           }
@@ -123,20 +161,6 @@ export default class EmuContainer {
         .then(function () {
           resolve(true);
         });
-    });
-  }
-
-  static async killContainerByName(name) {
-    const docker = new Docker();
-    await new Promise((resolve) => {
-      docker.listContainers({ all: true, filters: { name: [name] } }, function (err, containers) {
-        containers.forEach(function (containerInfo) {
-          docker.getContainer(containerInfo.Id).remove({ force: true }, function () {
-            // console.log("container removed");
-          });
-        });
-        return resolve(true);
-      });
     });
   }
 
@@ -150,29 +174,5 @@ export default class EmuContainer {
       await currentContainer.stop({ t: 0 });
       await currentContainer.remove();
     }
-  }
-
-  static async checkAndPullImage(imageName) {
-    const docker = new Docker();
-    await new Promise((resolve) => {
-      docker.pull(imageName, (err, stream) => {
-        docker.modem.followProgress(stream, onFinished, onProgress);
-        function onProgress(event) {
-          const progress = event.hasOwnProperty("progress") ? event.progress : "";
-          const status = event.hasOwnProperty("status") ? event.status : "";
-          console.clear();
-          console.log("*****", "Progress on image:", imageName, "*****");
-          console.log(status, "\n", progress);
-        }
-        function onFinished(err, output) {
-          if (!err) {
-            resolve(true);
-          } else {
-            console.log(err);
-            process.exit(1);
-          }
-        }
-      });
-    });
   }
 }

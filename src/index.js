@@ -18,9 +18,9 @@ import fs from "fs-extra";
 import rfb from "rfb2";
 import sleep from "sleep";
 import TransportHttp from "@ledgerhq/hw-transport-http";
+import elfy from "elfy";
 import EmuContainer from "./emuContainer";
 import GRPCRouter from "./grpc";
-import elfy from "elfy";
 
 const rndstr = require("randomstring");
 
@@ -72,7 +72,7 @@ export default class Zemu {
     this.libElfs = libElfs;
     this.press_delay = KEYDELAY;
     this.grpcManager = null;
-    this.model = 'nanos'
+    this.model = "nanos";
     this.mainMenuSnapshot = null;
 
     if (this.elfPath == null) {
@@ -145,26 +145,33 @@ export default class Zemu {
 
   async start(options = {}) {
     if ("press_delay" in options) {
-      this.press_delay = options["press_delay"];
+      this.press_delay = options.press_delay;
     }
 
     if ("model" in options) {
-      this.model = options["model"]
+      this.model = options.model;
     }
 
-    let elfApp = fs.readFileSync(this.elfPath);
-    let elfInfo = elfy.parse(elfApp);
+    const elfApp = fs.readFileSync(this.elfPath);
+    const elfInfo = elfy.parse(elfApp);
 
-    if (elfInfo.entry != parseInt("0xc0d00001") && elfInfo.entry != parseInt(" 0xc0de0001")) {
+    const elfCodeNanoS = 0xc0d00001;
+    const elfCodeNanoX = 0xc0de0001;
+
+    if (elfInfo.entry !== elfCodeNanoS && elfInfo.entry !== elfCodeNanoX) {
       throw new Error("Are you sure is a Nano S/X app ?");
     }
 
-    if (this.model == 'nanos' && elfInfo.entry != parseInt("0xc0d00001")) {
-      throw new Error("Zemu model is set to 'nanos' but elf file doesn't seem to be nano s build. Did you pass the right elf ?");
+    if (this.model === "nanos" && elfInfo.entry !== elfCodeNanoS) {
+      throw new Error(
+        "Zemu model is set to 'nanos' but elf file doesn't seem to be nano s build. Did you pass the right elf ?",
+      );
     }
 
-    if (this.model == 'nanox' && elfInfo.entry != parseInt("0xc0de0001")) {
-      throw new Error("Zemu model is set to 'nanox' but elf file doesn't seem to be nano x build. Did you pass the right elf ?");
+    if (this.model === "nanox" && elfInfo.entry !== elfCodeNanoX) {
+      throw new Error(
+        "Zemu model is set to 'nanox' but elf file doesn't seem to be nano x build. Did you pass the right elf ?",
+      );
     }
 
     await this.emuContainer.runContainer(options);
@@ -196,8 +203,8 @@ export default class Zemu {
         process.stdout.write(`[ZEMU] VNC Connection created ${this.host}:${this.vnc_port}\n`);
       }
 
-      const session = this.session;
-      const logging = this.emuContainer.logging;
+      const { session } = this;
+      const { logging } = this.emuContainer;
       this.session.on("connect", () => {
         if (logging) {
           process.stdout.write(`[ZEMU] VNC Session ready\n`);
@@ -207,8 +214,8 @@ export default class Zemu {
         resolve(true);
       });
 
-      const vnc_port = this.vnc_port;
-      const host = this.host;
+      const { vnc_port } = this;
+      const { host } = this;
       this.session.on("error", (error) => {
         console.log(`Could not connect to port ${vnc_port}  on ${host}`);
         reject(error);
@@ -245,13 +252,13 @@ export default class Zemu {
   getWindowRect() {
     switch (this.model) {
       case "nanos":
-        console.log("model S")
+        console.log("model S");
         return WINDOW_S;
       case "nanox":
-        console.log("model X")
+        console.log("model X");
         return WINDOW_X;
     }
-    throw `model ${model} not recognized`
+    throw `model ${model} not recognized`;
   }
 
   async snapshot(filename) {
@@ -264,7 +271,7 @@ export default class Zemu {
         resolve(rect);
       });
 
-      let modelWindow = this.getWindowRect()
+      const modelWindow = this.getWindowRect();
       session.requestUpdate(false, 0, 0, modelWindow.width, modelWindow.height);
       setTimeout(() => reject(new Error("timeout")), TIMEOUT);
     });
@@ -296,7 +303,7 @@ export default class Zemu {
     fs.ensureDirSync(snapshotPrefixGolden);
     fs.ensureDirSync(snapshotPrefixTmp);
 
-    backClickCount = (typeof backClickCount === 'undefined') ? 0 : backClickCount;
+    backClickCount = typeof backClickCount === "undefined" ? 0 : backClickCount;
     process.stdout.write(`[ZEMU] forward: ${snapshotCount} backwards: ${backClickCount}\n`);
 
     let indexStr = "00000";
@@ -304,31 +311,31 @@ export default class Zemu {
 
     let i = 1;
     // MOve forward to the end
-    for (let j=1; j < snapshotCount; j++) {
-      indexStr = `${i++}`.padStart(5, "0");
+    for (let j = 1; j < snapshotCount; j += 1) {
+      indexStr = `${(i += 1)}`.padStart(5, "0");
       process.stdout.write(`[ZEMU] click Right\n`);
       await this.clickRight(`${snapshotPrefixTmp}${indexStr}.png`);
     }
 
     // now go back a few clicks and come back
-    for (let j=0; j < backClickCount; j++) {
-      indexStr = `${i++}`.padStart(5, "0");
+    for (let j = 0; j < backClickCount; j += 1) {
+      indexStr = `${(i += 1)}`.padStart(5, "0");
       process.stdout.write(`[ZEMU] click Left\n`);
       await this.clickLeft(`${snapshotPrefixTmp}${indexStr}.png`);
     }
-    for (let j=0;  j < backClickCount; j++) {
-      indexStr = `${i++}`.padStart(5, "0");
+    for (let j = 0; j < backClickCount; j += 1) {
+      indexStr = `${(i += 1)}`.padStart(5, "0");
       process.stdout.write(`[ZEMU] click Right\n`);
       await this.clickRight(`${snapshotPrefixTmp}${indexStr}.png`);
     }
 
-    indexStr = `${i++}`.padStart(5, "0");
+    indexStr = `${(i += 1)}`.padStart(5, "0");
     process.stdout.write(`[ZEMU] click Both\n`);
     await this.clickBoth(`${snapshotPrefixTmp}${indexStr}.png`);
 
     console.log("start comparison");
-    for (let i = 0; i < snapshotCount; i++) {
-      indexStr = `${i}`.padStart(5, "0");
+    for (let j = 0; j < snapshotCount; j += 1) {
+      indexStr = `${j}`.padStart(5, "0");
       const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}${indexStr}.png`);
       const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}${indexStr}.png`);
       expect(img1).toEqual(img2);
