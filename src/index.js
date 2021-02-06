@@ -252,13 +252,11 @@ export default class Zemu {
   getWindowRect() {
     switch (this.model) {
       case "nanos":
-        console.log("model S");
         return WINDOW_S;
       case "nanox":
-        console.log("model X");
         return WINDOW_X;
     }
-    throw `model ${model} not recognized`;
+    throw `model ${this.model} not recognized`;
   }
 
   async snapshot(filename) {
