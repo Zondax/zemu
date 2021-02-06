@@ -32,13 +32,13 @@ const ZEMU_OPTIONS = {
 };
 
 const ZEMU_OPTIONS_S = {
-  model : 'nanos',
-  ...ZEMU_OPTIONS
+  model: "nanos",
+  ...ZEMU_OPTIONS,
 };
 
 const ZEMU_OPTIONS_X = {
-  model : 'nanox',
-  ...ZEMU_OPTIONS
+  model: "nanox",
+  ...ZEMU_OPTIONS,
 };
 
 test("File-Missing", async () => {
@@ -70,7 +70,7 @@ test("Trying to run in nano S mode with a nano X elf", async () => {
   expect(sim).not.toBeNull();
   try {
     await sim.start(ZEMU_OPTIONS_X);
-  } catch(err) {
+  } catch (err) {
     expect(err).toEqual(new Error("Zemu model is set to 'nanox' but elf file doesn't seem to be nano x build. Did you pass the right elf ?"));
   } finally {
     await sim.close();

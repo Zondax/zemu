@@ -34,9 +34,9 @@ export default class EmuContainer {
   static async killContainerByName(name) {
     const docker = new Docker();
     await new Promise((resolve) => {
-      docker.listContainers({ all: true, filters: { name: [name] } }, function (err, containers) {
-        containers.forEach(function (containerInfo) {
-          docker.getContainer(containerInfo.Id).remove({ force: true }, function () {
+      docker.listContainers({ all: true, filters: { name: [name] } }, function(err, containers) {
+        containers.forEach(function(containerInfo) {
+          docker.getContainer(containerInfo.Id).remove({ force: true }, function() {
             // console.log("container removed");
           });
         });
@@ -85,15 +85,15 @@ export default class EmuContainer {
         this.start_delay = options.start_delay;
       }
 
-      const app_filename = path.basename(this.elfLocalPath);
-      const app_dir = path.dirname(this.elfLocalPath);
+      const appFilename = path.basename(this.elfLocalPath);
+      const appDir = path.dirname(this.elfLocalPath);
 
-      const dirBindings = [`${app_dir}:${DEFAULT_APP_PATH}`];
+      const dirBindings = [`${appDir}:${DEFAULT_APP_PATH}`];
 
       let libArgs = "";
       Object.entries(this.libElfs).forEach(([libName, libPath]) => {
-        const lib_filename = path.basename(libPath);
-        libArgs += ` -l ${libName}:${DEFAULT_APP_PATH}/${lib_filename}`;
+        const libFilename = path.basename(libPath);
+        libArgs += ` -l ${libName}:${DEFAULT_APP_PATH}/${libFilename}`;
       });
 
       let displaySetting = "--display headless";
@@ -112,10 +112,15 @@ export default class EmuContainer {
         model = options.model;
       }
 
-      const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${customOptions} -m ${model} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${app_filename} ${libArgs}`;
+      const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${customOptions} -m ${model} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`;
 
       if (this.logging) {
         process.stdout.write(`[ZEMU] Command: ${command}\n`);
+      }
+
+      let displayEnvironment = process.env.DISPLAY;
+      if (process.platform === "darwin") {
+        displayEnvironment = "host.docker.internal:0";
       }
 
       docker
@@ -131,7 +136,7 @@ export default class EmuContainer {
             `SCP_PRIVKEY=${SCP_PRIVKEY}`,
             `BOLOS_SDK=${BOLOS_SDK}`,
             `BOLOS_ENV=/opt/bolos`,
-            `DISPLAY=${process.env.DISPLAY}`, // needed if X forwarding
+            `DISPLAY=${displayEnvironment}`, // needed if X forwarding
           ],
           PortBindings: {
             [`1234/tcp`]: [{ HostPort: "1234" }],
@@ -151,14 +156,14 @@ export default class EmuContainer {
           }
 
           if (this.logging) {
-            container.attach({ stream: true, stdout: true, stderr: true }, function (err, stream) {
+            container.attach({ stream: true, stdout: true, stderr: true }, function(err, stream) {
               stream.pipe(process.stdout);
             });
           }
 
           return container.start();
         })
-        .then(function () {
+        .then(function() {
           resolve(true);
         });
     });
