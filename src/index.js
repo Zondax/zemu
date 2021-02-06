@@ -22,6 +22,8 @@ import elfy from "elfy";
 import EmuContainer from "./emuContainer";
 import GRPCRouter from "./grpc";
 
+const Resolve = require("path").resolve;
+
 const rndstr = require("randomstring");
 
 const KILL_TIMEOUT = 10000;
@@ -118,7 +120,7 @@ export default class Zemu {
   }
 
   static async stopAllEmuContainers() {
-    const timer = setTimeout(function () {
+    const timer = setTimeout(function() {
       console.log("Could not kill all containers before timeout!");
       process.exit(1);
     }, KILL_TIMEOUT);
@@ -252,13 +254,11 @@ export default class Zemu {
   getWindowRect() {
     switch (this.model) {
       case "nanos":
-        console.log("model S");
         return WINDOW_S;
       case "nanox":
-        console.log("model X");
         return WINDOW_X;
     }
-    throw `model ${model} not recognized`;
+    throw `model ${this.model} not recognized`;
   }
 
   async snapshot(filename) {
@@ -297,47 +297,57 @@ export default class Zemu {
   }
 
   async compareSnapshotsAndAccept(path, testcaseName, snapshotCount, backClickCount) {
-    const snapshotPrefixGolden = `${path}/snapshots/${testcaseName}/`;
-    const snapshotPrefixTmp = `${path}/snapshots-tmp/${testcaseName}/`;
+    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`);
+    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`);
 
     fs.ensureDirSync(snapshotPrefixGolden);
     fs.ensureDirSync(snapshotPrefixTmp);
 
-    backClickCount = typeof backClickCount === "undefined" ? 0 : backClickCount;
-    process.stdout.write(`[ZEMU] forward: ${snapshotCount} backwards: ${backClickCount}\n`);
+    const localBackClickCount = typeof backClickCount === "undefined" ? 0 : backClickCount;
 
+    process.stdout.write(`[ZEMU] forward: ${snapshotCount} backwards: ${localBackClickCount}\n`);
+    process.stdout.write(`[ZEMU] golden      ${snapshotPrefixGolden}\n`);
+    process.stdout.write(`[ZEMU] tmp         ${snapshotPrefixTmp}\n`);
+
+    let imageIndex = 0;
     let indexStr = "00000";
-    await this.snapshot(`${snapshotPrefixTmp}${indexStr}.png`);
+    let filename = `${snapshotPrefixTmp}/${indexStr}.png`;
+    process.stdout.write(`[ZEMU] Start       ${filename}\n`);
+    await this.snapshot(filename);
 
-    let i = 1;
     // MOve forward to the end
-    for (let j = 1; j < snapshotCount; j += 1) {
-      indexStr = `${(i += 1)}`.padStart(5, "0");
-      process.stdout.write(`[ZEMU] click Right\n`);
-      await this.clickRight(`${snapshotPrefixTmp}${indexStr}.png`);
+    for (let j = 0; j < snapshotCount; j += 1) {
+      indexStr = `${(imageIndex += 1)}`.padStart(5, "0");
+      filename = `${snapshotPrefixTmp}/${indexStr}.png`;
+      await this.clickRight(filename);
+      process.stdout.write(`[ZEMU] Click Right ${filename}\n`);
     }
 
     // now go back a few clicks and come back
-    for (let j = 0; j < backClickCount; j += 1) {
-      indexStr = `${(i += 1)}`.padStart(5, "0");
-      process.stdout.write(`[ZEMU] click Left\n`);
-      await this.clickLeft(`${snapshotPrefixTmp}${indexStr}.png`);
-    }
-    for (let j = 0; j < backClickCount; j += 1) {
-      indexStr = `${(i += 1)}`.padStart(5, "0");
-      process.stdout.write(`[ZEMU] click Right\n`);
-      await this.clickRight(`${snapshotPrefixTmp}${indexStr}.png`);
+    for (let j = 0; j < localBackClickCount; j += 1) {
+      indexStr = `${(imageIndex += 1)}`.padStart(5, "0");
+      filename = `${snapshotPrefixTmp}/${indexStr}.png`;
+      process.stdout.write(`[ZEMU] Click Left  ${filename}\n`);
+      await this.clickLeft(`${filename}`);
     }
 
-    indexStr = `${(i += 1)}`.padStart(5, "0");
-    process.stdout.write(`[ZEMU] click Both\n`);
-    await this.clickBoth(`${snapshotPrefixTmp}${indexStr}.png`);
+    for (let j = 0; j < localBackClickCount; j += 1) {
+      indexStr = `${(imageIndex += 1)}`.padStart(5, "0");
+      filename = `${snapshotPrefixTmp}/${indexStr}.png`;
+      process.stdout.write(`[ZEMU] Click Right ${filename}\n`);
+      await this.clickRight(`${filename}`);
+    }
 
-    console.log("start comparison");
+    indexStr = `${(imageIndex += 1)}`.padStart(5, "0");
+    filename = `${snapshotPrefixTmp}/${indexStr}.png`;
+    process.stdout.write(`[ZEMU] Click Both  ${filename}\n`);
+    await this.clickBoth(`${filename}`);
+
+    process.stdout.write(`[ZEMU] Start comparison`);
     for (let j = 0; j < snapshotCount; j += 1) {
       indexStr = `${j}`.padStart(5, "0");
-      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}${indexStr}.png`);
-      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}${indexStr}.png`);
+      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${indexStr}.png`);
+      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${indexStr}.png`);
       expect(img1).toEqual(img2);
     }
   }

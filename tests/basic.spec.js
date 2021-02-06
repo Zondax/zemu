@@ -170,7 +170,7 @@ test("Snapshot and compare", async () => {
   try {
     await sim.start(ZEMU_OPTIONS);
 
-    await sim.compareSnapshotsAndAccept("tests", "compare_test", 2);
+    await sim.compareSnapshotsAndAccept("tests", "compare_test", 1);
   } finally {
     await sim.close();
   }
@@ -181,7 +181,7 @@ test("Snapshot and compare 2", async () => {
   try {
     await sim.start(ZEMU_OPTIONS);
 
-    await sim.compareSnapshotsAndAccept("tests", "compare_test2", 2, 1);
+    await sim.compareSnapshotsAndAccept("tests", "compare_test2", 1, 1);
   } finally {
     await sim.close();
   }
