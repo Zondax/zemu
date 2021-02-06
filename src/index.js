@@ -317,7 +317,8 @@ export default class Zemu {
 
     // MOve forward to the end
     for (let j = 0; j < snapshotCount; j += 1) {
-      indexStr = `${(imageIndex += 1)}`.padStart(5, "0");
+      imageIndex += 1;
+      indexStr = `${imageIndex}`.padStart(5, "0");
       filename = `${snapshotPrefixTmp}/${indexStr}.png`;
       await this.clickRight(filename);
       process.stdout.write(`[ZEMU] Click Right ${filename}\n`);
@@ -325,27 +326,31 @@ export default class Zemu {
 
     // now go back a few clicks and come back
     for (let j = 0; j < localBackClickCount; j += 1) {
-      indexStr = `${(imageIndex += 1)}`.padStart(5, "0");
+      imageIndex += 1;
+      indexStr = `${imageIndex}`.padStart(5, "0");
       filename = `${snapshotPrefixTmp}/${indexStr}.png`;
       process.stdout.write(`[ZEMU] Click Left  ${filename}\n`);
       await this.clickLeft(`${filename}`);
     }
 
     for (let j = 0; j < localBackClickCount; j += 1) {
-      indexStr = `${(imageIndex += 1)}`.padStart(5, "0");
+      imageIndex += 1;
+      indexStr = `${imageIndex}`.padStart(5, "0");
       filename = `${snapshotPrefixTmp}/${indexStr}.png`;
       process.stdout.write(`[ZEMU] Click Right ${filename}\n`);
       await this.clickRight(`${filename}`);
     }
 
-    indexStr = `${(imageIndex += 1)}`.padStart(5, "0");
+    imageIndex += 1;
+    indexStr = `${imageIndex}`.padStart(5, "0");
     filename = `${snapshotPrefixTmp}/${indexStr}.png`;
     process.stdout.write(`[ZEMU] Click Both  ${filename}\n`);
     await this.clickBoth(`${filename}`);
 
-    process.stdout.write(`[ZEMU] Start comparison`);
-    for (let j = 0; j < snapshotCount; j += 1) {
+    process.stdout.write(`[ZEMU] Start comparison\n`);
+    for (let j = 0; j < imageIndex + 1; j += 1) {
       indexStr = `${j}`.padStart(5, "0");
+      process.stdout.write(`[ZEMU] Checked     ${snapshotPrefixTmp}/${indexStr}.png\n`);
       const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${indexStr}.png`);
       const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${indexStr}.png`);
       expect(img1).toEqual(img2);
