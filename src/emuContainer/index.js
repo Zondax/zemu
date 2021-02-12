@@ -34,9 +34,9 @@ export default class EmuContainer {
   static async killContainerByName(name) {
     const docker = new Docker();
     await new Promise((resolve) => {
-      docker.listContainers({ all: true, filters: { name: [name] } }, function(err, containers) {
-        containers.forEach(function(containerInfo) {
-          docker.getContainer(containerInfo.Id).remove({ force: true }, function() {
+      docker.listContainers({ all: true, filters: { name: [name] } }, function (err, containers) {
+        containers.forEach(function (containerInfo) {
+          docker.getContainer(containerInfo.Id).remove({ force: true }, function () {
             // console.log("container removed");
           });
         });
@@ -97,9 +97,19 @@ export default class EmuContainer {
       });
 
       let displaySetting = "--display headless";
-      if ("X11" in options && options.X11 === true) {
-        displaySetting = "";
-        dirBindings.push("/tmp/.X11-unix:/tmp/.X11-unix:ro");
+      let displayEnvironment = "";
+
+      // Disable X11 in CI
+      if (!("CI" in process.env) || process.env.CI === false) {
+        if ("X11" in options && options.X11 === true) {
+          displaySetting = "";
+          dirBindings.push("/tmp/.X11-unix:/tmp/.X11-unix:ro");
+        }
+
+        displayEnvironment = process.env.DISPLAY;
+        if (process.platform === "darwin") {
+          displayEnvironment = "host.docker.internal:0";
+        }
       }
 
       let customOptions = "";
@@ -116,11 +126,6 @@ export default class EmuContainer {
 
       if (this.logging) {
         process.stdout.write(`[ZEMU] Command: ${command}\n`);
-      }
-
-      let displayEnvironment = process.env.DISPLAY;
-      if (process.platform === "darwin") {
-        displayEnvironment = "host.docker.internal:0";
       }
 
       docker
@@ -156,14 +161,14 @@ export default class EmuContainer {
           }
 
           if (this.logging) {
-            container.attach({ stream: true, stdout: true, stderr: true }, function(err, stream) {
+            container.attach({ stream: true, stdout: true, stderr: true }, function (err, stream) {
               stream.pipe(process.stdout);
             });
           }
 
           return container.start();
         })
-        .then(function() {
+        .then(function () {
           resolve(true);
         });
     });

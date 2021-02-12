@@ -68,7 +68,7 @@ export default class Zemu {
     transportPort = DEFAULT_TRANSPORT_PORT,
   ) {
     this.host = host;
-    this.vnc_port = vncPort;
+    this.vncPort = vncPort;
     this.transport_url = `http://${this.host}:${transportPort}`;
     this.elfPath = elfPath;
     this.libElfs = libElfs;
@@ -179,7 +179,7 @@ export default class Zemu {
     await this.emuContainer.runContainer(options);
     // eslint-disable-next-line func-names
     await this.connect().catch((error) => {
-      console.log(error);
+      process.stdout.write(`[ZEMU] ${error}\n`);
       this.close();
     });
 
@@ -199,10 +199,10 @@ export default class Zemu {
     return new Promise((resolve, reject) => {
       this.session = rfb.createConnection({
         host: this.host,
-        port: this.vnc_port,
+        port: this.vncPort,
       });
       if (this.emuContainer.logging) {
-        process.stdout.write(`[ZEMU] VNC Connection created ${this.host}:${this.vnc_port}\n`);
+        process.stdout.write(`[ZEMU] VNC Connection created ${this.host}:${this.vncPort}\n`);
       }
 
       const { session } = this;
@@ -216,10 +216,10 @@ export default class Zemu {
         resolve(true);
       });
 
-      const { vnc_port } = this;
+      const { vncPort } = this;
       const { host } = this;
       this.session.on("error", (error) => {
-        console.log(`Could not connect to port ${vnc_port}  on ${host}`);
+        process.stdout.write(`[ZEMU] Could not connect to port ${vncPort}  on ${host}`);
         reject(error);
       });
 
