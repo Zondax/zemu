@@ -8,17 +8,14 @@ export default class GRPCRouter {
   private httpTransport: any
   private serverAddress: string
   private server: Server
-  private debug_en: boolean
+
   constructor(ip: string, port: number, options: { debug?: any }, transport: any) {
     this.httpTransport = transport
     this.serverAddress = `${ip}:${port}`
     this.server = new grpc.Server()
-    this.debug_en = options.debug
   }
 
   async startServer() {
-    const self = this
-
     const packageDefinition = await protoLoader.load(PROTO_PATH, {
       keepCase: true,
       longs: String,
@@ -29,14 +26,10 @@ export default class GRPCRouter {
 
     const rpcDefinition = grpc.loadPackageDefinition(packageDefinition)
 
+    const self = this
     this.server.addService(rpcDefinition.ledger_go.ZemuCommand.service, {
       Exchange(call: any, callback: any, ctx = self) {
         ctx.httpTransport.exchange(call.request.command).then((response: any) => {
-          if (self.debug_en) {
-            const tmp = Buffer.from(call.request.command, 'hex')
-            const x = tmp.slice(6, 6 + tmp[5]).toString('ascii')
-          }
-
           callback(null, { reply: response })
         })
       },
@@ -49,12 +42,11 @@ export default class GRPCRouter {
         if (err != null) {
           return console.error(err)
         }
-        console.log(`gRPC listening on ${port}`)
+        process.stdout.write(`gRPC listening on ${port}`)
         this.server.start()
       },
     )
-
-    console.log('grpc server started on', this.serverAddress)
+    process.stdout.write(`grpc server started on ${this.serverAddress}`)
   }
 
   stopServer() {
