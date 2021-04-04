@@ -186,6 +186,8 @@ export default class Zemu {
   }
 
   async start(options: StartParams) {
+    await Zemu.checkAndPullImage()
+
     this.startOptions = options
 
     this.log(`[ZEMU] Checking ELF`)

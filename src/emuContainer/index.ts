@@ -71,9 +71,7 @@ export default class EmuContainer {
           const progress = event.hasOwnProperty('progress') ? event.progress : ''
           // eslint-disable-next-line no-prototype-builtins
           const status = event.hasOwnProperty('status') ? event.status : ''
-          console.clear()
-          console.log('*****', 'Progress on image:', imageName, '*****')
-          console.log(status, '\n', progress)
+          process.stdout.write(`[DOCKER] ${status}: ${progress}\n`)
         }
 
         function onFinished(err: any, output: any) {

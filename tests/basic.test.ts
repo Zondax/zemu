@@ -17,7 +17,7 @@ import Zemu, { StartParams } from '../src'
 
 const Resolve = require('path').resolve
 
-jest.setTimeout(15000)
+jest.setTimeout(60000)
 const DEMO_APP_PATH_S = Resolve('bin/demoAppS.elf')
 const DEMO_APP_PATH_X = Resolve('bin/demoAppX.elf')
 
