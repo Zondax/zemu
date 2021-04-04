@@ -1,15 +1,15 @@
-import Zemu from "../src";
+import Zemu from '../src'
 
 const catchExit = async () => {
-  process.on("SIGINT", () => {
+  process.on('SIGINT', () => {
     Zemu.stopAllEmuContainers(function () {
-      process.exit();
-    });
-  });
-};
+      process.exit()
+    })
+  })
+}
 
 module.exports = async () => {
-  await catchExit();
-  await Zemu.checkAndPullImage();
-  await Zemu.stopAllEmuContainers();
-};
+  await catchExit()
+  await Zemu.checkAndPullImage()
+  await Zemu.stopAllEmuContainers()
+}
