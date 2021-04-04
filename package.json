@@ -19,8 +19,9 @@
     "Zemu"
   ],
   "scripts": {
-    "build": "tsc",
-    "test": "tsc && jest --detectOpenHandles"
+    "build": "tsc && yarn copy-files",
+    "copy-files": "copyfiles -u 0 src/**/*.proto dist/",
+    "test": "yarn build && jest --detectOpenHandles"
   },
   "bugs": {
     "url": "https://github.com/zondax/zemu/issues"
@@ -48,6 +49,7 @@
     "@types/sleep": "^0.0.8",
     "@typescript-eslint/eslint-plugin": "^4.20.0",
     "@typescript-eslint/parser": "^4.20.0",
+    "copyfiles": "^2.4.1",
     "eslint": "^7.23.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-import": "^2.20.2",
