@@ -398,8 +398,13 @@ export default class Zemu {
       this.log(`[ZEMU] Checked     ${snapshotPrefixTmp}/${indexStr}.png`)
       const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${indexStr}.png`)
       const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${indexStr}.png`)
-      assert.ok(img1.data.equals(img2.data))
+
+      if (!img1.data.equals(img2.data)) {
+        return false
+      }
     }
+
+    return true
   }
 
   async clickLeft(filename?: string) {
