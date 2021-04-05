@@ -12,7 +12,9 @@
 
 ## Overview
 
-Integration and end-to-end testing of Ledger Apps is a manual and time consuming process. We believe that the Ledger apps ecosystem is lacking an adequate approach with respect to testing. The Zemu Framework is our solution for this problem. We stand on the shoulders of the giant [greenknot’s](https://github.com/greenknot) speculos.
+Integration and end-to-end testing of Ledger Apps is a manual and time consuming process. We believe that the Ledger
+apps ecosystem is lacking an adequate approach with respect to testing. The Zemu Framework is our solution for this
+problem. We stand on the shoulders of the giant [greenknot’s](https://github.com/greenknot) speculos.
 
 *Zemu is an emulation and testing framework for Ledger Nano S/X devices.*
 
@@ -21,10 +23,10 @@ Integration and end-to-end testing of Ledger Apps is a manual and time consuming
 - Minimal configuration + Docker based
 - Speculous/Qemu based emulation
 - Easy JS API
-    - Mocha / Jest compatible
-    - Parallelized testing
-    - Abstracted device control (buttons, reset, etc.)
-    - Screenshots + comparisons
+  - Mocha / Jest compatible
+  - Parallelized testing
+  - Abstracted device control (buttons, reset, etc.)
+  - Screenshots + comparisons
 - Debugging (support for CLion and vscode, even mixed C/Rust)
 - Used by Zondax in multiple apps
 
@@ -33,19 +35,20 @@ Integration and end-to-end testing of Ledger Apps is a manual and time consuming
 ```Zemu``` class provides access and control to your emulated Ledger app running on a docker container.
 
 Basic testing code:
+
 ```javascript
 jest.setTimeout(20000);
 
 test("demo", async () => {
-    //Create Zemu object. Pass the path to your .elf file
-    const sim = new Zemu("/ledger-demo/app/bin/");
-    //Create an instance of your Ledger-js app
+  //Create Zemu object. Pass the path to your .elf file
+  const sim = new Zemu("/ledger-demo/app/bin/");
+  //Create an instance of your Ledger-js app
   try {
     const demoJSApp = new DemoApp(sim.getTransport());
     //Start simulator. A new docker container instance will be created.
-    await sim.start();
+    await sim.start({});
     //Do your tests
-    ...
+  ...
     //Finally, close the simulator. This will stop and remove the container.
   } finally {
     await sim.close();
@@ -59,13 +62,13 @@ test("demo", async () => {
   ```await sim.snapshot("tests/snapshots/0.png")```
 
 - Send "click left": \
-```await sim.clickLeft()```
+  ```await sim.clickLeft()```
 
 - Send "click right": \
-```await sim.clickRight()```
+  ```await sim.clickRight()```
 
 - Send "click both": \
-```await sim.clickBoth()```
+  ```await sim.clickBoth()```
 
 - Wait some time: \
-```await Zemu.sleep(500) //Time in [ms]```
+  ```await Zemu.sleep(500) //Time in [ms]```

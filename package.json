@@ -1,32 +1,37 @@
 {
   "name": "@zondax/zemu",
+  "author": "Zondax GmbH",
+  "license": "Apache-2.0",
   "version": "0.0.0",
   "description": "Zemu Testing Framework",
   "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
   "types": "./dist/index.d.ts",
+  "homepage": "https://github.com/zondax/zemu",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zondax/zemu.git"
   },
   "keywords": [
-    "Ledger",
     "Zondax",
+    "Ledger",
     "Testing",
     "Zemu"
   ],
-  "author": "Zondax GmbH",
-  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc && yarn copy-files",
+    "copy-files": "copyfiles -u 0 src/**/*.proto dist/",
+    "test": "yarn build && jest --detectOpenHandles"
+  },
   "bugs": {
     "url": "https://github.com/zondax/zemu/issues"
   },
-  "homepage": "https://github.com/zondax/zemu",
   "dependencies": {
-    "@babel/runtime": "^7.13.10",
-    "@grpc/grpc-js": "^1.2.11",
+    "@grpc/grpc-js": "^1.2.12",
     "@grpc/proto-loader": "^0.5.6",
-    "@ledgerhq/hw-transport": "^5.46.0",
-    "@ledgerhq/hw-transport-http": "^5.46.0",
-    "dockerode": "^3.2.0",
+    "@ledgerhq/hw-transport": "^5.48.0",
+    "@ledgerhq/hw-transport-http": "^5.48.0",
+    "dockerode": "^3.2.1",
     "elfy": "^1.0.0",
     "fs-extra": "^9.1.0",
     "json-rpc2": "^2.0.0",
@@ -37,28 +42,25 @@
     "sleep": "^6.3.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.13.10",
-    "@babel/core": "^7.13.10",
-    "@babel/node": "^7.13.10",
-    "@babel/plugin-transform-runtime": "^7.13.10",
-    "@babel/preset-env": "^7.13.10",
-    "babel-eslint": "^10.1.0",
-    "babel-jest": "^26.6.3",
-    "eslint": "^7.22.0",
-    "eslint-config-airbnb-base": "^14.2.1",
+    "@types/fs-extra": "^9.0.10",
+    "@types/jest": "^26.0.22",
+    "@types/ledgerhq__hw-transport": "^4.21.3",
+    "@types/pngjs": "^6.0.0",
+    "@types/sleep": "^0.0.8",
+    "@typescript-eslint/eslint-plugin": "^4.20.0",
+    "@typescript-eslint/parser": "^4.20.0",
+    "copyfiles": "^2.4.1",
+    "eslint": "^7.23.0",
     "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-jest": "^24.3.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jest": "^24.3.3",
     "eslint-plugin-prettier": "^3.3.1",
-    "eslint-plugin-vue": "^7.7.0",
     "jest": "^26.6.3",
     "jest-serial-runner": "^1.1.0",
-    "prettier": "^2.2.1"
-  },
-  "scripts": {
-    "build": "babel src --copy-files --out-dir dist",
-    "test:unit": "jest -c jest.config.unit.js --detectOpenHandles --runInBand",
-    "docs:build": "vuepress build docs"
+    "js-sha512": "^0.8.0",
+    "prettier": "^2.2.1",
+    "ts-jest": "^26.5.4",
+    "typescript": "^4.2.3"
   },
   "moduleDirectories": [
     "node_modules",
