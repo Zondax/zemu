@@ -26,7 +26,6 @@ import elfy from 'elfy'
 import EmuContainer from './emuContainer'
 // @ts-ignore
 import GRPCRouter from './grpc'
-import assert from 'assert'
 import {
   BASE_NAME,
   DEFAULT_EMU_IMG,
@@ -46,7 +45,16 @@ import {
 const Resolve = require('path').resolve
 const rndstr = require('randomstring')
 
-export class StartParams {
+export const DEFAULT_START_OPTIONS = {
+  model: DEFAULT_MODEL,
+  logging: false,
+  X11: false,
+  custom: '',
+  startDelay: DEFAULT_START_DELAY,
+  pressDelay: DEFAULT_KEY_DELAY,
+}
+
+export class StartOptions {
   model = 'nanos'
   logging = false
   X11 = false
@@ -67,7 +75,7 @@ export class DeviceModel {
 }
 
 export default class Zemu {
-  private startOptions: StartParams | undefined
+  private startOptions: StartOptions | undefined
   private host: string
   private vncPort: number
   private transport_url: string
@@ -185,7 +193,7 @@ export default class Zemu {
     }
   }
 
-  async start(options: StartParams) {
+  async start(options: StartOptions) {
     await Zemu.checkAndPullImage()
 
     this.startOptions = options
