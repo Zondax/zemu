@@ -15,7 +15,7 @@
  ******************************************************************************* */
 import PNG from 'pngjs'
 import fs from 'fs-extra'
-import rfb, { RfbClient } from 'rfb2'
+import rfb, {RfbClient} from 'rfb2'
 import sleep from 'sleep'
 
 // @ts-ignore
@@ -130,7 +130,7 @@ export default class Zemu {
       height: rect.height,
     })
     png.data = rect.data.slice()
-    const buffer = PNG.PNG.sync.write(png, { colorType: 6 })
+    const buffer = PNG.PNG.sync.write(png, {colorType: 6})
     fs.writeFileSync(filename, buffer)
   }
 
@@ -303,7 +303,7 @@ export default class Zemu {
   }
 
   async snapshot(filename?: string): Promise<any> {
-    const { vncSession } = this
+    const {vncSession} = this
 
     this.log('[ZEMU] Requested snapshot')
     return new Promise((resolve, reject) => {
@@ -408,7 +408,7 @@ export default class Zemu {
       const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${indexStr}.png`)
 
       if (!img1.data.equals(img2.data)) {
-        return false
+        throw new Error(`Image [${indexStr}] do not match!`)
       }
     }
 
