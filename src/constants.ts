@@ -2,7 +2,7 @@ export const DEFAULT_EMU_IMG = 'zondax/builder-zemu@sha256:139044b41e5d747b1e614
 
 export const TIMEOUT = 1000
 export const DEFAULT_MODEL = 'nanos'
-export const DEFAULT_START_DELAY = 2000
+export const DEFAULT_START_DELAY = 3500
 export const DEFAULT_KEY_DELAY = 350
 export const DEFAULT_HOST = '127.0.0.1'
 export const DEFAULT_VNC_PORT = 8001
