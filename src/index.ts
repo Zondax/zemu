@@ -15,7 +15,7 @@
  ******************************************************************************* */
 import PNG from 'pngjs'
 import fs from 'fs-extra'
-import rfb, {RfbClient} from 'rfb2'
+import rfb, { RfbClient } from 'rfb2'
 import sleep from 'sleep'
 
 // @ts-ignore
@@ -130,7 +130,7 @@ export default class Zemu {
       height: rect.height,
     })
     png.data = rect.data.slice()
-    const buffer = PNG.PNG.sync.write(png, {colorType: 6})
+    const buffer = PNG.PNG.sync.write(png, { colorType: 6 })
     fs.writeFileSync(filename, buffer)
   }
 
@@ -201,21 +201,27 @@ export default class Zemu {
     this.log(`[ZEMU] Checking ELF`)
     Zemu.checkElf(this.startOptions.model ?? DEFAULT_MODEL, this.elfPath)
 
-    this.log(`[ZEMU] Starting Container`)
-    await this.emuContainer.runContainer(options)
+    try {
+      await Zemu.stopAllEmuContainers()
 
-    this.log(`[ZEMU] Started Container`)
+      this.log(`[ZEMU] Starting Container`)
+      await this.emuContainer.runContainer(options)
 
-    // eslint-disable-next-line func-names
-    await this.connect().catch(error => {
-      this.log(`[ZEMU] ${error}`)
-      this.close()
-    })
+      this.log(`[ZEMU] Started Container`)
 
-    this.log(`[ZEMU] Get initial snapshot`)
+      // eslint-disable-next-line func-names
+      await this.connect().catch(error => {
+        this.log(`[ZEMU] ${error}`)
+        this.close()
+      })
 
-    // Captures main screen
-    this.mainMenuSnapshot = await this.snapshot()
+      this.log(`[ZEMU] Get initial snapshot`)
+
+      // Captures main screen
+      this.mainMenuSnapshot = await this.snapshot()
+    } catch (e) {
+      this.log(`[ZEMU] ${e}`)
+    }
   }
 
   async connect() {
@@ -303,7 +309,7 @@ export default class Zemu {
   }
 
   async snapshot(filename?: string): Promise<any> {
-    const {vncSession} = this
+    const { vncSession } = this
 
     this.log('[ZEMU] Requested snapshot')
     return new Promise((resolve, reject) => {
