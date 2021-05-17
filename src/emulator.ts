@@ -120,7 +120,13 @@ export default class EmuContainer {
       }
     }
 
-    const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${options.custom} -m ${options.model} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
+    let SDKoption = ''
+    if (options.model === 'nanos') {
+      this.log(`[ZEMU] Using NanoS SDK 2.0`)
+      SDKoption = ' -k 2.0 '
+    }
+
+    const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${options.custom} -m ${options.model} ${SDKoption} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
 
     this.log(`[ZEMU] Command: ${command}`)
 
