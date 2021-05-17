@@ -23,8 +23,6 @@ import TransportHttp from '@ledgerhq/hw-transport-http'
 // @ts-ignore
 import elfy from 'elfy'
 // @ts-ignore
-import EmuContainer from './emuContainer'
-// @ts-ignore
 import GRPCRouter from './grpc'
 import {
   BASE_NAME,
@@ -41,6 +39,7 @@ import {
   WINDOW_S,
   WINDOW_X,
 } from './constants'
+import EmuContainer from './emulator'
 
 const Resolve = require('path').resolve
 const rndstr = require('randomstring')
@@ -183,14 +182,7 @@ export default class Zemu {
     if (elfInfo.entry !== elfCodeNanoS && elfInfo.entry !== elfCodeNanoX) {
       throw new Error('Are you sure is a Nano S/X app ?')
     }
-
-    if (model === 'nanos' && elfInfo.entry !== elfCodeNanoS) {
-      throw new Error("Zemu model is set to 'nanos' but elf file doesn't seem to be nano s build. Did you pass the right elf ?")
-    }
-
-    if (model === 'nanox' && elfInfo.entry !== elfCodeNanoX) {
-      throw new Error("Zemu model is set to 'nanox' but elf file doesn't seem to be nano x build. Did you pass the right elf ?")
-    }
+    // FIXME: SDK2.0 entry points have changed
   }
 
   async start(options: StartOptions) {

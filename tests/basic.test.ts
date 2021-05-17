@@ -47,13 +47,6 @@ test('File-Missing', () => {
   }).toThrow(/Did you compile/)
 })
 
-test('Trying to run in nano S mode with a nano X elf', () => {
-  const t = () => {
-    Zemu.checkElf('nanos', DEMO_APP_PATH_X)
-  }
-  expect(t).toThrow("Zemu model is set to 'nanos' but elf file doesn't seem to be nano s build. Did you pass the right elf ?")
-})
-
 test('Start&Close-NanoS', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
   expect(sim).not.toBeNull()
@@ -177,22 +170,22 @@ test('Snapshot and compare 2', async () => {
   }
 })
 
-test('Load and run a library', async () => {
-  const LITECOIN_PATH = Resolve('bin/litecoin.elf')
-  const BITCOIN_LIB = { Bitcoin: Resolve('bin/bitcoin.elf') }
-  const sim = new Zemu(LITECOIN_PATH, BITCOIN_LIB)
-  try {
-    await sim.start(ZEMU_OPTIONS_S)
-
-    // If we can see the main screen, then the library has been loaded with success
-    await sim.snapshot('tests/tmp/libWelcome.png')
-    const testLibWelcome = Zemu.LoadPng2RGB('tests/tmp/libWelcome.png')
-    const goldenLibWelcome = Zemu.LoadPng2RGB('tests/snapshots/libWelcome.png')
-    expect(testLibWelcome).toEqual(goldenLibWelcome)
-  } finally {
-    await sim.close()
-  }
-})
+// test('Load and run a library', async () => {
+//   const LITECOIN_PATH = Resolve('bin/litecoin.elf')
+//   const BITCOIN_LIB = { Bitcoin: Resolve('bin/bitcoin.elf') }
+//   const sim = new Zemu(LITECOIN_PATH, BITCOIN_LIB)
+//   try {
+//     await sim.start(ZEMU_OPTIONS_S)
+//
+//     // If we can see the main screen, then the library has been loaded with success
+//     await sim.snapshot('tests/tmp/libWelcome.png')
+//     const testLibWelcome = Zemu.LoadPng2RGB('tests/tmp/libWelcome.png')
+//     const goldenLibWelcome = Zemu.LoadPng2RGB('tests/snapshots/libWelcome.png')
+//     expect(testLibWelcome).toEqual(goldenLibWelcome)
+//   } finally {
+//     await sim.close()
+//   }
+// })
 
 test('GRPC Server start-stop', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
