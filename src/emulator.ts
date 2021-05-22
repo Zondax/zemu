@@ -64,8 +64,6 @@ export default class EmuContainer {
     const docker = new Docker()
     await new Promise(resolve => {
       docker.pull(imageName, (err: any, stream: any) => {
-        docker.modem.followProgress(stream, onFinished, onProgress)
-
         function onProgress(event: any) {
           // eslint-disable-next-line no-prototype-builtins
           const progress = event.hasOwnProperty('progress') ? event.progress : ''
@@ -78,10 +76,17 @@ export default class EmuContainer {
           if (!err) {
             resolve(true)
           } else {
-            console.log(err)
+            process.stdout.write(`[DOCKER] ${err}\n`)
             process.exit(1)
           }
         }
+
+        if (err) {
+          process.stdout.write(`[DOCKER] ${err}\n`)
+          throw new Error(err)
+        }
+
+        docker.modem.followProgress(stream, onFinished, onProgress)
       })
     })
   }
@@ -126,7 +131,17 @@ export default class EmuContainer {
       SDKoption = ' -k 2.0 '
     }
 
-    const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${options.custom} -m ${options.model} ${SDKoption} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
+    let modelOptions = 'nanos';
+    if (options.model) {
+      modelOptions = options.model
+    }
+
+    let customOptions = '';
+    if (options.custom) {
+      customOptions = options.custom
+    }
+
+    const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${customOptions} -m ${modelOptions} ${SDKoption} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
 
     this.log(`[ZEMU] Command: ${command}`)
 

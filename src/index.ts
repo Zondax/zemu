@@ -160,7 +160,7 @@ export default class Zemu {
   }
 
   static async stopAllEmuContainers() {
-    const timer = setTimeout(function () {
+    const timer = setTimeout(function() {
       console.log('Could not kill all containers before timeout!')
       process.exit(1)
     }, KILL_TIMEOUT)
@@ -190,29 +190,31 @@ export default class Zemu {
 
     this.startOptions = options
 
-    this.log(`[ZEMU] Checking ELF`)
+    this.log(`Checking ELF`)
     Zemu.checkElf(this.startOptions.model ?? DEFAULT_MODEL, this.elfPath)
 
     try {
       await Zemu.stopAllEmuContainers()
 
-      this.log(`[ZEMU] Starting Container`)
+      this.log(`Starting Container`)
       await this.emuContainer.runContainer(options)
 
-      this.log(`[ZEMU] Started Container`)
+      this.log(`Started Container`)
 
       // eslint-disable-next-line func-names
       await this.connect().catch(error => {
-        this.log(`[ZEMU] ${error}`)
+        this.log(`${error}`)
         this.close()
+        throw error
       })
 
-      this.log(`[ZEMU] Get initial snapshot`)
+      this.log(`Get initial snapshot`)
 
       // Captures main screen
       this.mainMenuSnapshot = await this.snapshot()
     } catch (e) {
       this.log(`[ZEMU] ${e}`)
+      throw e;
     }
   }
 
@@ -220,7 +222,7 @@ export default class Zemu {
     // FIXME: Can we detect open ports?
     const waitDelay = this.startOptions?.startDelay ?? DEFAULT_START_DELAY
 
-    this.log(`[ZEMU] Wait VNC for ${waitDelay}`)
+    this.log(`Wait VNC for ${waitDelay}`)
     Zemu.delay(waitDelay)
 
     await this.connectVNC()
@@ -230,7 +232,8 @@ export default class Zemu {
 
   log(message: string) {
     if (this.startOptions?.logging ?? false) {
-      process.stdout.write(`${message}\n`)
+      const currentTimestamp = new Date().toISOString().slice(11,23);
+      process.stdout.write(`[ZEMU] ${currentTimestamp}: ${message}\n`)
     }
   }
 
@@ -241,11 +244,11 @@ export default class Zemu {
         port: this.vncPort,
       })
 
-      this.log(`[ZEMU] VNC Connection created ${this.host}:${this.vncPort}`)
+      this.log(`VNC Connection created ${this.host}:${this.vncPort}`)
 
       const tmpVncSession = this.vncSession
       this.vncSession.on('connect', () => {
-        this.log(`[ZEMU] VNC Session ready`)
+        this.log(`VNC Session ready`)
 
         // @ts-ignore
         tmpVncSession.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED)
@@ -257,11 +260,11 @@ export default class Zemu {
       const tmpVncPort = this.vncPort
       const tmpHost = this.host
       this.vncSession.on('error', error => {
-        this.log(`[ZEMU] Could not connect to port ${tmpVncPort}  on ${tmpHost}`)
-        reject(error)
+        this.log(`Could not connect to port ${tmpVncPort}  on ${tmpHost}`)
+        reject(error);
       })
 
-      setTimeout(() => reject(new Error('timeout on connectVNC')), 10000)
+      setTimeout(() => reject(new Error('timeout on connectVNC')), 6000)
     })
   }
 
@@ -277,7 +280,7 @@ export default class Zemu {
   }
 
   async close() {
-    this.log('[ZEMU] Close')
+    this.log('Close')
     await this.emuContainer.stop()
     if (this.vncSession) {
       this.vncSession.end()
@@ -303,7 +306,7 @@ export default class Zemu {
   async snapshot(filename?: string): Promise<any> {
     const { vncSession } = this
 
-    this.log('[ZEMU] Requested snapshot')
+    this.log('Requested snapshot')
     return new Promise((resolve, reject) => {
       const session = this.getSession()
 
@@ -331,7 +334,7 @@ export default class Zemu {
     return this.mainMenuSnapshot
   }
 
-  async waitUntilScreenIsNot(screen: any, timeout = 10000) {
+  async waitUntilScreenIsNot(screen: any, timeout = 2000) {
     const start = new Date()
     const inputSnapshotBufferHex = (await screen).buffer.toString('hex')
     let currentSnapshotBufferHex = (await this.snapshot()).buffer.toString('hex')
@@ -356,14 +359,14 @@ export default class Zemu {
 
     const localBackClickCount = typeof backClickCount === 'undefined' ? 0 : backClickCount
 
-    this.log(`[ZEMU] forward: ${snapshotCount} backwards: ${localBackClickCount}`)
-    this.log(`[ZEMU] golden      ${snapshotPrefixGolden}`)
-    this.log(`[ZEMU] tmp         ${snapshotPrefixTmp}`)
+    this.log(`forward: ${snapshotCount} backwards: ${localBackClickCount}`)
+    this.log(`golden      ${snapshotPrefixGolden}`)
+    this.log(`tmp         ${snapshotPrefixTmp}`)
 
     let imageIndex = 0
     let indexStr = '00000'
     let filename = `${snapshotPrefixTmp}/${indexStr}.png`
-    this.log(`[ZEMU] Start       ${filename}`)
+    this.log(`Start       ${filename}`)
     await this.snapshot(filename)
 
     // Move forward to the end
@@ -372,7 +375,7 @@ export default class Zemu {
       indexStr = `${imageIndex}`.padStart(5, '0')
       filename = `${snapshotPrefixTmp}/${indexStr}.png`
       await this.clickRight(filename)
-      this.log(`[ZEMU] Click Right ${filename}`)
+      this.log(`Click Right ${filename}`)
     }
 
     // now go back a few clicks and come back
@@ -380,7 +383,7 @@ export default class Zemu {
       imageIndex += 1
       indexStr = `${imageIndex}`.padStart(5, '0')
       filename = `${snapshotPrefixTmp}/${indexStr}.png`
-      this.log(`[ZEMU] Click Left  ${filename}`)
+      this.log(`Click Left  ${filename}`)
       await this.clickLeft(`${filename}`)
     }
 
@@ -388,20 +391,20 @@ export default class Zemu {
       imageIndex += 1
       indexStr = `${imageIndex}`.padStart(5, '0')
       filename = `${snapshotPrefixTmp}/${indexStr}.png`
-      this.log(`[ZEMU] Click Right ${filename}`)
+      this.log(`Click Right ${filename}`)
       await this.clickRight(`${filename}`)
     }
 
     imageIndex += 1
     indexStr = `${imageIndex}`.padStart(5, '0')
     filename = `${snapshotPrefixTmp}/${indexStr}.png`
-    this.log(`[ZEMU] Click Both  ${filename}`)
+    this.log(`Click Both  ${filename}`)
     await this.clickBoth(`${filename}`)
 
-    this.log(`[ZEMU] Start comparison`)
+    this.log(`Start comparison`)
     for (let j = 0; j < imageIndex + 1; j += 1) {
       indexStr = `${j}`.padStart(5, '0')
-      this.log(`[ZEMU] Checked     ${snapshotPrefixTmp}/${indexStr}.png`)
+      this.log(`Checked     ${snapshotPrefixTmp}/${indexStr}.png`)
       const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${indexStr}.png`)
       const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${indexStr}.png`)
 
