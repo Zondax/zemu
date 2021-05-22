@@ -334,7 +334,7 @@ export default class Zemu {
     return this.mainMenuSnapshot
   }
 
-  async waitUntilScreenIsNot(screen: any, timeout = 10000) {
+  async waitUntilScreenIsNot(screen: any, timeout = 2000) {
     const start = new Date()
     const inputSnapshotBufferHex = (await screen).buffer.toString('hex')
     let currentSnapshotBufferHex = (await this.snapshot()).buffer.toString('hex')
