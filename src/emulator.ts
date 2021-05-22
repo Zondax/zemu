@@ -133,7 +133,7 @@ export default class EmuContainer {
 
     let modelOptions = 'nanos';
     if (options.model) {
-      modelOptions = optionsoptions.model
+      modelOptions = options.model
     }
 
     let customOptions = '';
