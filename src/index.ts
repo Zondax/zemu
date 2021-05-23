@@ -59,7 +59,7 @@ export class StartOptions {
   X11 = false
   custom = ''
   startDelay = DEFAULT_START_DELAY
-  pressDelay = 300
+  pressDelay = 1000
 }
 
 export interface Snapshot {
@@ -410,7 +410,7 @@ export default class Zemu {
       const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${this.formatIndexString(j)}.png`)
 
       if (!img1.data.equals(img2.data)) {
-        throw new Error(`Image [${this.formatIndexString(imageIndex)}] do not match!`)
+        throw new Error(`Image [${this.formatIndexString(j)}] do not match!`)
       }
     }
 
