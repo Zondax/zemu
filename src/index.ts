@@ -405,9 +405,9 @@ export default class Zemu {
     ////////////////////
     this.log(`Start comparison`)
     for (let j = 0; j < imageIndex + 1; j += 1) {
-      this.log(`Checked     ${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`)
-      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`)
-      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${this.formatIndexString(imageIndex)}.png`)
+      this.log(`Checked     ${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`)
+      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`)
+      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${this.formatIndexString(j)}.png`)
 
       if (!img1.data.equals(img2.data)) {
         throw new Error(`Image [${this.formatIndexString(imageIndex)}] do not match!`)
