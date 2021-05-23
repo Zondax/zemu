@@ -131,17 +131,17 @@ export default class EmuContainer {
       SDKoption = ' -k 2.0 '
     }
 
-    let modelOptions = 'nanos';
+    let modelOptions = 'nanos'
     if (options.model) {
       modelOptions = options.model
     }
 
-    let customOptions = '';
+    let customOptions = ''
     if (options.custom) {
       customOptions = options.custom
     }
 
-    const command = `/home/zondax/speculos/speculos.py --color LAGOON_BLUE ${displaySetting} ${customOptions} -m ${modelOptions} ${SDKoption} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
+    const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --log-level vnc:DEBUG --log-level vnc:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${SDKoption} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
 
     this.log(`[ZEMU] Command: ${command}`)
 
@@ -195,9 +195,17 @@ export default class EmuContainer {
       const container = this.currentContainer
       this.currentContainer = null
       this.log(`[ZEMU] Stopping container`)
-      await container.stop({ t: 0 })
+      try {
+        await container.stop({ t: 0 })
+      } catch (e) {
+        this.log(`[ZEMU] ${e}`)
+      }
       this.log(`[ZEMU] Stopped`)
-      await container.remove()
+      try {
+        await container.remove()
+      } catch (e) {
+        this.log(`[ZEMU] ${e}`)
+      }
       this.log(`[ZEMU] Removed`)
     }
   }

@@ -160,7 +160,7 @@ export default class Zemu {
   }
 
   static async stopAllEmuContainers() {
-    const timer = setTimeout(function() {
+    const timer = setTimeout(function () {
       console.log('Could not kill all containers before timeout!')
       process.exit(1)
     }, KILL_TIMEOUT)
@@ -214,7 +214,7 @@ export default class Zemu {
       this.mainMenuSnapshot = await this.snapshot()
     } catch (e) {
       this.log(`[ZEMU] ${e}`)
-      throw e;
+      throw e
     }
   }
 
@@ -232,7 +232,7 @@ export default class Zemu {
 
   log(message: string) {
     if (this.startOptions?.logging ?? false) {
-      const currentTimestamp = new Date().toISOString().slice(11,23);
+      const currentTimestamp = new Date().toISOString().slice(11, 23)
       process.stdout.write(`[ZEMU] ${currentTimestamp}: ${message}\n`)
     }
   }
@@ -261,7 +261,7 @@ export default class Zemu {
       const tmpHost = this.host
       this.vncSession.on('error', error => {
         this.log(`Could not connect to port ${tmpVncPort}  on ${tmpHost}`)
-        reject(error);
+        reject(error)
       })
 
       setTimeout(() => reject(new Error('timeout on connectVNC')), 6000)
@@ -306,7 +306,6 @@ export default class Zemu {
   async snapshot(filename?: string): Promise<any> {
     const { vncSession } = this
 
-    this.log('Requested snapshot')
     return new Promise((resolve, reject) => {
       const session = this.getSession()
 
@@ -339,81 +338,94 @@ export default class Zemu {
     const inputSnapshotBufferHex = (await screen).buffer.toString('hex')
     let currentSnapshotBufferHex = (await this.snapshot()).buffer.toString('hex')
 
+    this.log(`Wait for screen change`)
+
     while (inputSnapshotBufferHex === currentSnapshotBufferHex) {
-      // @ts-ignore
-      const elapsed: any = new Date() - start
+      const currentTime = new Date()
+      const elapsed: any = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
         throw `Timeout waiting for screen to change (${timeout} ms)`
       }
-      await Zemu.delay(1000)
+      await Zemu.delay(500)
+      this.log(`Check [${elapsed}ms]`)
       currentSnapshotBufferHex = (await this.snapshot()).buffer.toString('hex')
     }
+
+    this.log(`Screen changed`)
   }
 
-  async compareSnapshotsAndAccept(path: string, testcaseName: string, snapshotCount: number, backClickCount = 0) {
+  formatIndexString(i: number) {
+    return `${i}`.padStart(5, '0')
+  }
+
+  async navigateAndCompareSnapshots(path: string, testcaseName: string, clickSchedule: number[]) {
     const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
     const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
     fs.ensureDirSync(snapshotPrefixGolden)
     fs.ensureDirSync(snapshotPrefixTmp)
 
-    const localBackClickCount = typeof backClickCount === 'undefined' ? 0 : backClickCount
-
-    this.log(`forward: ${snapshotCount} backwards: ${localBackClickCount}`)
     this.log(`golden      ${snapshotPrefixGolden}`)
     this.log(`tmp         ${snapshotPrefixTmp}`)
 
     let imageIndex = 0
-    let indexStr = '00000'
-    let filename = `${snapshotPrefixTmp}/${indexStr}.png`
-    this.log(`Start       ${filename}`)
+    let filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+    this.log(`---------------------------`)
+    this.log(`Start        ${filename}`)
     await this.snapshot(filename)
+    this.log(`Instructions ${clickSchedule}`)
 
-    // Move forward to the end
-    for (let j = 0; j < snapshotCount; j += 1) {
-      imageIndex += 1
-      indexStr = `${imageIndex}`.padStart(5, '0')
-      filename = `${snapshotPrefixTmp}/${indexStr}.png`
-      await this.clickRight(filename)
-      this.log(`Click Right ${filename}`)
+    for (let i = 0; i < clickSchedule.length; i++) {
+      const value = clickSchedule[i]
+      if (value == 0) {
+        imageIndex += 1
+        filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+        await this.clickBoth(`${filename}`)
+        continue
+      }
+
+      if (value < 0) {
+        // Move backwards
+        for (let j = 0; j < -value; j += 1) {
+          imageIndex += 1
+          filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+          await this.clickLeft(filename)
+        }
+        continue
+      }
+
+      // Move forward
+      for (let j = 0; j < value; j += 1) {
+        imageIndex += 1
+        filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+        await this.clickRight(filename)
+      }
     }
 
-    // now go back a few clicks and come back
-    for (let j = 0; j < localBackClickCount; j += 1) {
-      imageIndex += 1
-      indexStr = `${imageIndex}`.padStart(5, '0')
-      filename = `${snapshotPrefixTmp}/${indexStr}.png`
-      this.log(`Click Left  ${filename}`)
-      await this.clickLeft(`${filename}`)
-    }
-
-    for (let j = 0; j < localBackClickCount; j += 1) {
-      imageIndex += 1
-      indexStr = `${imageIndex}`.padStart(5, '0')
-      filename = `${snapshotPrefixTmp}/${indexStr}.png`
-      this.log(`Click Right ${filename}`)
-      await this.clickRight(`${filename}`)
-    }
-
-    imageIndex += 1
-    indexStr = `${imageIndex}`.padStart(5, '0')
-    filename = `${snapshotPrefixTmp}/${indexStr}.png`
-    this.log(`Click Both  ${filename}`)
-    await this.clickBoth(`${filename}`)
-
+    ////////////////////
     this.log(`Start comparison`)
     for (let j = 0; j < imageIndex + 1; j += 1) {
-      indexStr = `${j}`.padStart(5, '0')
-      this.log(`Checked     ${snapshotPrefixTmp}/${indexStr}.png`)
-      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${indexStr}.png`)
-      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${indexStr}.png`)
+      this.log(`Checked     ${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`)
+      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`)
+      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${this.formatIndexString(imageIndex)}.png`)
 
       if (!img1.data.equals(img2.data)) {
-        throw new Error(`Image [${indexStr}] do not match!`)
+        throw new Error(`Image [${this.formatIndexString(imageIndex)}] do not match!`)
       }
     }
 
     return true
+  }
+
+  async compareSnapshotsAndAccept(path: string, testcaseName: string, snapshotCount: number, backClickCount = 0) {
+    const instructions = []
+    if (snapshotCount > 0) instructions.push(snapshotCount)
+    if (backClickCount > 0) {
+      instructions.push(-backClickCount)
+      instructions.push(backClickCount)
+    }
+    instructions.push(0)
+    return this.navigateAndCompareSnapshots(path, testcaseName, instructions)
   }
 
   async clickLeft(filename?: string) {
@@ -421,6 +433,7 @@ export default class Zemu {
     Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
     this.getSession().keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED)
     Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
+    this.log(`Click Left  ${filename}`)
     return this.snapshot(filename)
   }
 
@@ -429,6 +442,7 @@ export default class Zemu {
     Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
     this.getSession().keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED)
     Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
+    this.log(`Click Right ${filename}`)
     return this.snapshot(filename)
   }
 
@@ -439,6 +453,7 @@ export default class Zemu {
     this.getSession().keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED)
     this.getSession().keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED)
     Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
+    this.log(`Click Both  ${filename}`)
     return this.snapshot(filename)
   }
 }
