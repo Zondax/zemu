@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import Zemu, { StartOptions } from '../src'
+import Zemu, { DEFAULT_START_OPTIONS, StartOptions } from '../src'
 
 const Resolve = require('path').resolve
 
@@ -24,23 +24,18 @@ const DEMO_APP_PATH_X = Resolve('bin/demoAppX.elf')
 const APP_SEED = 'equip will roof matter pink blind book anxiety banner elbow sun young'
 
 const ZEMU_OPTIONS_S: StartOptions = {
+  ...DEFAULT_START_OPTIONS,
   X11: true,
   logging: true,
-  pressDelay: 350,
-  pressDelayAfter: 700,
-  startDelay: 2000,
-  model: 'nanos',
   custom: `-s "${APP_SEED}" `,
 }
 
 const ZEMU_OPTIONS_X: StartOptions = {
+  ...DEFAULT_START_OPTIONS,
   X11: true,
   logging: true,
-  pressDelay: 350,
-  pressDelayAfter: 700,
-  startDelay: 3000,
-  model: 'nanox',
   custom: `-s "${APP_SEED}" `,
+  model: 'nanox',
 }
 
 test('File-Missing', () => {

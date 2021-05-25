@@ -52,6 +52,7 @@ export const DEFAULT_START_OPTIONS = {
   custom: '',
   startDelay: DEFAULT_START_DELAY,
   pressDelay: DEFAULT_KEY_DELAY,
+  pressDelayAfter: DEFAULT_KEY_DELAY_AFTER,
 }
 
 export class StartOptions {
