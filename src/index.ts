@@ -29,6 +29,7 @@ import {
   DEFAULT_EMU_IMG,
   DEFAULT_HOST,
   DEFAULT_KEY_DELAY,
+  DEFAULT_KEY_DELAY_AFTER,
   DEFAULT_MODEL,
   DEFAULT_START_DELAY,
   DEFAULT_TRANSPORT_PORT,
@@ -59,7 +60,8 @@ export class StartOptions {
   X11 = false
   custom = ''
   startDelay = DEFAULT_START_DELAY
-  pressDelay = 1000
+  pressDelay = DEFAULT_KEY_DELAY
+  pressDelayAfter = DEFAULT_KEY_DELAY_AFTER
 }
 
 export interface Snapshot {
@@ -432,7 +434,7 @@ export default class Zemu {
     this.getSession().keyEvent(KEYS.LEFT, KEYS.PRESSED)
     Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
     this.getSession().keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED)
-    Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
+    Zemu.delay(this.startOptions?.pressDelayAfter ?? DEFAULT_KEY_DELAY_AFTER)
     this.log(`Click Left  ${filename}`)
     return this.snapshot(filename)
   }
@@ -441,7 +443,7 @@ export default class Zemu {
     this.getSession().keyEvent(KEYS.RIGHT, KEYS.PRESSED)
     Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
     this.getSession().keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED)
-    Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
+    Zemu.delay(this.startOptions?.pressDelayAfter ?? DEFAULT_KEY_DELAY_AFTER)
     this.log(`Click Right ${filename}`)
     return this.snapshot(filename)
   }
@@ -452,7 +454,7 @@ export default class Zemu {
     Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
     this.getSession().keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED)
     this.getSession().keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED)
-    Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
+    Zemu.delay(this.startOptions?.pressDelayAfter ?? DEFAULT_KEY_DELAY_AFTER)
     this.log(`Click Both  ${filename}`)
     return this.snapshot(filename)
   }
