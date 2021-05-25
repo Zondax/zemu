@@ -27,6 +27,7 @@ const ZEMU_OPTIONS_S: StartOptions = {
   X11: true,
   logging: true,
   pressDelay: 350,
+  pressDelayAfter: 700,
   startDelay: 2000,
   model: 'nanos',
   custom: `-s "${APP_SEED}" `,
@@ -35,7 +36,8 @@ const ZEMU_OPTIONS_S: StartOptions = {
 const ZEMU_OPTIONS_X: StartOptions = {
   X11: true,
   logging: true,
-  pressDelay: 0,
+  pressDelay: 350,
+  pressDelayAfter: 700,
   startDelay: 3000,
   model: 'nanox',
   custom: `-s "${APP_SEED}" `,
