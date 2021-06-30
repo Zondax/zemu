@@ -23,6 +23,10 @@ const DEMO_APP_PATH_X = Resolve('bin/demoAppX.elf')
 
 const APP_SEED = 'equip will roof matter pink blind book anxiety banner elbow sun young'
 
+beforeAll( async() => {
+  await Zemu.checkAndPullImage()
+})
+
 const ZEMU_OPTIONS_S: StartOptions = {
   ...DEFAULT_START_OPTIONS,
   X11: true,

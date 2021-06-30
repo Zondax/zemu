@@ -1,5 +1,5 @@
 module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  transformIgnorePatterns: ['^.+\\.js$'],
-}
+  preset: "ts-jest",
+  testEnvironment: "node",
+  transformIgnorePatterns: ["^.+\\.js$"]
+};

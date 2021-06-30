@@ -24,9 +24,9 @@ export const DEFAULT_VNC_PORT = '8001'
 export default class EmuContainer {
   private logging: boolean
   private readonly elfLocalPath: string
-  private name: string
+  private readonly name: string
   private startDelay: number
-  private image: any
+  private readonly image: any
   private libElfs: any
   private currentContainer: any | null
 
