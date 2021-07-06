@@ -57,7 +57,6 @@
     "eslint-plugin-jest": "^24.3.6",
     "eslint-plugin-prettier": "^3.4.0",
     "jest": "^27.0.6",
-    "jest-serial-runner": "^1.1.0",
     "js-sha512": "^0.8.0",
     "prettier": "^2.3.2",
     "ts-jest": "^27.0.3",
