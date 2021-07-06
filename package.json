@@ -21,7 +21,7 @@
   "scripts": {
     "build": "tsc && yarn copy-files",
     "copy-files": "copyfiles -u 0 src/**/*.proto dist/",
-    "test": "yarn build && jest --detectOpenHandles"
+    "test": "yarn build && jest"
   },
   "bugs": {
     "url": "https://github.com/zondax/zemu/issues"

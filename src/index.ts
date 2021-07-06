@@ -83,8 +83,8 @@ export default class Zemu {
   private vncPort?: number
   private transportPort?: number
 
-  private desiredVncPort: number
-  private desiredTransportPort: number
+  private desiredVncPort?: number
+  private desiredTransportPort?: number
 
   private transportProtocol = "http"
   private elfPath: string
@@ -99,8 +99,8 @@ export default class Zemu {
     elfPath: string,
     libElfs: { [key: string]: string } = {},
     host: string = DEFAULT_HOST,
-    desiredVncPort: number = DEFAULT_VNC_PORT,
-    desiredTransportPort = DEFAULT_TRANSPORT_PORT,
+    desiredVncPort?: number,
+    desiredTransportPort?: number,
   ) {
     this.host = host
     this.desiredVncPort = desiredVncPort
@@ -475,8 +475,8 @@ export default class Zemu {
   }
 
   private async getPortsToListen() : Promise<void> {
-    const vncPort = await getPort({port:this.desiredVncPort})
-    const transportPort = await getPort({port:this.desiredTransportPort})
+    const vncPort = await getPort({port: this.desiredVncPort})
+    const transportPort = await getPort({port: this.desiredTransportPort})
 
     this.vncPort = vncPort
     this.transportPort = transportPort

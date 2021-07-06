@@ -19,7 +19,6 @@ const Resolve = require('path').resolve
 
 jest.setTimeout(60000)
 const DEMO_APP_PATH_S = Resolve('bin/demoAppS.elf')
-const DEMO_APP_PATH_X = Resolve('bin/demoAppX.elf')
 
 const APP_SEED = 'equip will roof matter pink blind book anxiety banner elbow sun young'
 
@@ -27,20 +26,16 @@ beforeAll( async() => {
   await Zemu.checkAndPullImage()
 })
 
-afterAll( async() => {
-  await Zemu.stopAllEmuContainers()
-})
-
 const ZEMU_OPTIONS_S: StartOptions = {
   ...DEFAULT_START_OPTIONS,
-  X11: true,
+  X11: false,
   logging: true,
   custom: `-s "${APP_SEED}" `,
 }
 
 const ZEMU_OPTIONS_X: StartOptions = {
   ...DEFAULT_START_OPTIONS,
-  X11: true,
+  X11: false,
   logging: true,
   custom: `-s "${APP_SEED}" `,
   model: 'nanox',
@@ -57,16 +52,6 @@ test('Start&Close-NanoS', async () => {
   expect(sim).not.toBeNull()
   try {
     await sim.start(ZEMU_OPTIONS_S)
-  } finally {
-    await sim.close()
-  }
-})
-
-test('Start&Close-NanoX', async () => {
-  const sim = new Zemu(DEMO_APP_PATH_X)
-  expect(sim).not.toBeNull()
-  try {
-    await sim.start(ZEMU_OPTIONS_X)
   } finally {
     await sim.close()
   }
@@ -103,28 +88,6 @@ test('Basic Control - S', async () => {
     const view0 = await sim.snapshot('tests/tmp/00000.png')
     const view1 = await sim.clickRight('tests/tmp/00001.png')
     const view2 = await sim.clickLeft('tests/tmp/00002.png')
-
-    // compare to check that it went back to the same view
-    expect(view2).toEqual(view0)
-    expect(view1).not.toEqual(view0)
-  } finally {
-    await sim.close()
-  }
-})
-
-test('Basic Control - X', async () => {
-  const sim = new Zemu(DEMO_APP_PATH_X)
-  try {
-    await sim.start(ZEMU_OPTIONS_X)
-
-    await sim.clickLeft()
-    await sim.clickLeft()
-    await sim.clickLeft()
-
-    // Move up and down and check screens
-    const view0 = await sim.snapshot('tests/tmpX/00000.png')
-    const view1 = await sim.clickRight('tests/tmpX/00001.png')
-    const view2 = await sim.clickLeft('tests/tmpX/00002.png')
 
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0)
