@@ -238,7 +238,7 @@ export default class Zemu {
     // FIXME: Can we detect open ports?
     const waitDelay = this.startOptions?.startDelay ?? DEFAULT_START_DELAY
 
-    this.log(`Wait VNC for ${waitDelay}`)
+    this.log(`Wait VNC for ${waitDelay} ms`)
     Zemu.delay(waitDelay)
 
     await this.connectVNC()
