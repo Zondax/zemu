@@ -27,6 +27,10 @@ beforeAll( async() => {
   await Zemu.checkAndPullImage()
 })
 
+afterAll( async() => {
+  await Zemu.stopAllEmuContainers()
+})
+
 const ZEMU_OPTIONS_S: StartOptions = {
   ...DEFAULT_START_OPTIONS,
   X11: true,
