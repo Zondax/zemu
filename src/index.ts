@@ -82,7 +82,7 @@ export default class Zemu {
   private host: string
   private vncPort: number
   private transportPort: number
-  private transportProtocol: string = "http"
+  private transportProtocol = "http"
   private elfPath: string
   private grpcManager: GRPCRouter | null | undefined
   private mainMenuSnapshot: null
@@ -199,10 +199,10 @@ export default class Zemu {
     Zemu.checkElf(this.startOptions.model ?? DEFAULT_MODEL, this.elfPath)
 
     try {
-      await Zemu.stopAllEmuContainers()
+      // await Zemu.stopAllEmuContainers()
 
       this.log(`Starting Container`)
-      await this.emuContainer.runContainer(options)
+      await this.emuContainer.runContainer({...this.startOptions, vncPort: this.vncPort, transportPort: this.transportPort})
 
       this.log(`Started Container`)
 
