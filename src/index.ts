@@ -80,8 +80,12 @@ export class DeviceModel {
 export default class Zemu {
   private startOptions: StartOptions | undefined
   private host: string
-  private vncPort: number
-  private transportPort: number
+  private vncPort?: number
+  private transportPort?: number
+
+  private desiredVncPort: number
+  private desiredTransportPort: number
+
   private transportProtocol = "http"
   private elfPath: string
   private grpcManager: GRPCRouter | null | undefined
@@ -95,12 +99,12 @@ export default class Zemu {
     elfPath: string,
     libElfs: { [key: string]: string } = {},
     host: string = DEFAULT_HOST,
-    vncPort: number = DEFAULT_VNC_PORT,
-    transportPort = DEFAULT_TRANSPORT_PORT,
+    desiredVncPort: number = DEFAULT_VNC_PORT,
+    desiredTransportPort = DEFAULT_TRANSPORT_PORT,
   ) {
     this.host = host
-    this.vncPort = vncPort
-    this.transportPort = transportPort
+    this.desiredVncPort = desiredVncPort
+    this.desiredTransportPort = desiredTransportPort
     this.elfPath = elfPath
     this.libElfs = libElfs
     this.mainMenuSnapshot = null
@@ -119,8 +123,6 @@ export default class Zemu {
         throw new Error('lib elf file was not found! Did you compile?')
       }
     })
-
-    this.setConfigPorts(vncPort, transportPort)
 
     const containerName = BASE_NAME + rndstr.generate(5)
     this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, DEFAULT_EMU_IMG, containerName)
@@ -201,8 +203,17 @@ export default class Zemu {
     try {
       // await Zemu.stopAllEmuContainers()
 
+      if(!this.vncPort || !this.transportPort)
+        await this.getPortsToListen()
+
+      if(!this.vncPort || !this.transportPort){
+        const e = new Error("The vnc port or/and transport port couldn't be reserved")
+        this.log(`[ZEMU] ${e}`)
+        throw e
+      }
+
       this.log(`Starting Container`)
-      await this.emuContainer.runContainer({...this.startOptions, vncPort: this.vncPort.toString(), transportPort: this.transportPort.toString()})
+      await this.emuContainer.runContainer({...this.startOptions, vncPort: this.vncPort?.toString(), transportPort: this.transportPort.toString()})
 
       this.log(`Started Container`)
 
@@ -266,7 +277,7 @@ export default class Zemu {
       const tmpVncPort = this.vncPort
       const tmpHost = this.host
       this.vncSession.on('error', error => {
-        this.log(`Could not connect to port ${tmpVncPort}  on ${tmpHost}`)
+        this.log(`Could not connect to port ${tmpVncPort} on ${tmpHost}`)
         reject(error)
       })
 
@@ -463,13 +474,11 @@ export default class Zemu {
     return this.snapshot(filename)
   }
 
-  private async setConfigPorts( desiredVncPort: number, desiredTransportPort: number) : Promise<void> {
-    const vncPort = await getPort({port: desiredVncPort})
-    const transportPort = await getPort({port: desiredTransportPort})
+  private async getPortsToListen() : Promise<void> {
+    const vncPort = await getPort({port:this.desiredVncPort})
+    const transportPort = await getPort({port:this.desiredTransportPort})
 
     this.vncPort = vncPort
     this.transportPort = transportPort
   }
-
-
 }
