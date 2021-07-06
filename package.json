@@ -4,9 +4,9 @@
   "license": "Apache-2.0",
   "version": "0.0.0",
   "description": "Zemu Testing Framework",
-  "main": "./dist/src/index.js",
-  "typings": "./dist/src/index.d.ts",
-  "types": "./dist/src/index.d.ts",
+  "main": "./dist/index.js",
+  "typings": "./dist/index.d.ts",
+  "types": "./dist/index.d.ts",
   "homepage": "https://github.com/zondax/zemu",
   "repository": {
     "type": "git",
