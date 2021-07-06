@@ -146,11 +146,8 @@ export default class EmuContainer {
     this.log(`[ZEMU] Command: ${command}`)
 
     const portBindings = {
-      [`1234/tcp`]: [{ HostPort: '1234' }],
       [`8001/tcp`]: [{ HostPort: '8001' }],
-      [`9997/tcp`]: [{ HostPort: '9997' }],
       [`9998/tcp`]: [{ HostPort: '9998' }],
-      [`9999/tcp`]: [{ HostPort: '9999' }],
     }
 
     const environment = [
