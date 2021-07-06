@@ -91,7 +91,7 @@ export default class EmuContainer {
     })
   }
 
-  async runContainer(options: { logging: any; startDelay: any; X11: boolean; custom: string; model: string }) {
+  async runContainer(options: { logging: any; startDelay: any; X11: boolean; custom: string; model: string; vncPort: string, transportPort: string }) {
     // eslint-disable-next-line global-require
     const docker = new Docker()
 
@@ -146,11 +146,8 @@ export default class EmuContainer {
     this.log(`[ZEMU] Command: ${command}`)
 
     const portBindings = {
-      [`1234/tcp`]: [{ HostPort: '1234' }],
-      [`8001/tcp`]: [{ HostPort: '8001' }],
-      [`9997/tcp`]: [{ HostPort: '9997' }],
-      [`9998/tcp`]: [{ HostPort: '9998' }],
-      [`9999/tcp`]: [{ HostPort: '9999' }],
+      [`8001/tcp`]: [{ HostPort: options.vncPort }],
+      [`9998/tcp`]: [{ HostPort: options.transportPort }],
     }
 
     const environment = [

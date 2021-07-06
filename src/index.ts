@@ -17,6 +17,7 @@ import PNG from 'pngjs'
 import fs from 'fs-extra'
 import rfb, { RfbClient } from 'rfb2'
 import sleep from 'sleep'
+import getPort from 'get-port';
 
 // @ts-ignore
 import TransportHttp from '@ledgerhq/hw-transport-http'
@@ -79,8 +80,13 @@ export class DeviceModel {
 export default class Zemu {
   private startOptions: StartOptions | undefined
   private host: string
-  private vncPort: number
-  private transport_url: string
+  private vncPort?: number
+  private transportPort?: number
+
+  private desiredVncPort?: number
+  private desiredTransportPort?: number
+
+  private transportProtocol = "http"
   private elfPath: string
   private grpcManager: GRPCRouter | null | undefined
   private mainMenuSnapshot: null
@@ -93,12 +99,12 @@ export default class Zemu {
     elfPath: string,
     libElfs: { [key: string]: string } = {},
     host: string = DEFAULT_HOST,
-    vncPort: number = DEFAULT_VNC_PORT,
-    transportPort = DEFAULT_TRANSPORT_PORT,
+    desiredVncPort?: number,
+    desiredTransportPort?: number,
   ) {
     this.host = host
-    this.vncPort = vncPort
-    this.transport_url = `http://${this.host}:${transportPort}`
+    this.desiredVncPort = desiredVncPort
+    this.desiredTransportPort = desiredTransportPort
     this.elfPath = elfPath
     this.libElfs = libElfs
     this.mainMenuSnapshot = null
@@ -195,10 +201,19 @@ export default class Zemu {
     Zemu.checkElf(this.startOptions.model ?? DEFAULT_MODEL, this.elfPath)
 
     try {
-      await Zemu.stopAllEmuContainers()
+      // await Zemu.stopAllEmuContainers()
+
+      if(!this.vncPort || !this.transportPort)
+        await this.getPortsToListen()
+
+      if(!this.vncPort || !this.transportPort){
+        const e = new Error("The vnc port or/and transport port couldn't be reserved")
+        this.log(`[ZEMU] ${e}`)
+        throw e
+      }
 
       this.log(`Starting Container`)
-      await this.emuContainer.runContainer(options)
+      await this.emuContainer.runContainer({...this.startOptions, vncPort: this.vncPort?.toString(), transportPort: this.transportPort.toString()})
 
       this.log(`Started Container`)
 
@@ -223,12 +238,13 @@ export default class Zemu {
     // FIXME: Can we detect open ports?
     const waitDelay = this.startOptions?.startDelay ?? DEFAULT_START_DELAY
 
-    this.log(`Wait VNC for ${waitDelay}`)
+    this.log(`Wait VNC for ${waitDelay} ms`)
     Zemu.delay(waitDelay)
 
     await this.connectVNC()
 
-    this.transport = await TransportHttp(this.transport_url).open(this.transport_url)
+    const transport_url = `${this.transportProtocol}://${this.host}:${this.transportPort}`
+    this.transport = await TransportHttp(transport_url).open(transport_url)
   }
 
   log(message: string) {
@@ -261,7 +277,7 @@ export default class Zemu {
       const tmpVncPort = this.vncPort
       const tmpHost = this.host
       this.vncSession.on('error', error => {
-        this.log(`Could not connect to port ${tmpVncPort}  on ${tmpHost}`)
+        this.log(`Could not connect to port ${tmpVncPort} on ${tmpHost}`)
         reject(error)
       })
 
@@ -456,5 +472,13 @@ export default class Zemu {
     Zemu.delay(this.startOptions?.pressDelayAfter ?? DEFAULT_KEY_DELAY_AFTER)
     this.log(`Click Both  ${filename}`)
     return this.snapshot(filename)
+  }
+
+  private async getPortsToListen() : Promise<void> {
+    const vncPort = await getPort({port: this.desiredVncPort})
+    const transportPort = await getPort({port: this.desiredTransportPort})
+
+    this.vncPort = vncPort
+    this.transportPort = transportPort
   }
 }
