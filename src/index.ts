@@ -17,6 +17,7 @@ import PNG from 'pngjs'
 import fs from 'fs-extra'
 import rfb, { RfbClient } from 'rfb2'
 import sleep from 'sleep'
+import getPort from 'get-port';
 
 // @ts-ignore
 import TransportHttp from '@ledgerhq/hw-transport-http'
@@ -80,7 +81,8 @@ export default class Zemu {
   private startOptions: StartOptions | undefined
   private host: string
   private vncPort: number
-  private transport_url: string
+  private transportPort: number
+  private transportProtocol: string = "http"
   private elfPath: string
   private grpcManager: GRPCRouter | null | undefined
   private mainMenuSnapshot: null
@@ -98,7 +100,7 @@ export default class Zemu {
   ) {
     this.host = host
     this.vncPort = vncPort
-    this.transport_url = `http://${this.host}:${transportPort}`
+    this.transportPort = transportPort
     this.elfPath = elfPath
     this.libElfs = libElfs
     this.mainMenuSnapshot = null
@@ -117,6 +119,8 @@ export default class Zemu {
         throw new Error('lib elf file was not found! Did you compile?')
       }
     })
+
+    this.setConfigPorts(vncPort, transportPort)
 
     const containerName = BASE_NAME + rndstr.generate(5)
     this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, DEFAULT_EMU_IMG, containerName)
@@ -228,7 +232,8 @@ export default class Zemu {
 
     await this.connectVNC()
 
-    this.transport = await TransportHttp(this.transport_url).open(this.transport_url)
+    const transport_url = `${this.transportProtocol}://${this.host}:${this.transportPort}`
+    this.transport = await TransportHttp(transport_url).open(transport_url)
   }
 
   log(message: string) {
@@ -457,4 +462,14 @@ export default class Zemu {
     this.log(`Click Both  ${filename}`)
     return this.snapshot(filename)
   }
+
+  private async setConfigPorts( desiredVncPort: number, desiredTransportPort: number) : Promise<void> {
+    const vncPort = await getPort({port: desiredVncPort})
+    const transportPort = await getPort({port: desiredTransportPort})
+
+    this.vncPort = vncPort
+    this.transportPort = transportPort
+  }
+
+
 }

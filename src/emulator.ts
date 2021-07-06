@@ -91,7 +91,7 @@ export default class EmuContainer {
     })
   }
 
-  async runContainer(options: { logging: any; startDelay: any; X11: boolean; custom: string; model: string }) {
+  async runContainer(options: { logging: any; startDelay: any; X11: boolean; custom: string; model: string; }) {
     // eslint-disable-next-line global-require
     const docker = new Docker()
 
