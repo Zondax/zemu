@@ -202,7 +202,7 @@ export default class Zemu {
       // await Zemu.stopAllEmuContainers()
 
       this.log(`Starting Container`)
-      await this.emuContainer.runContainer({...this.startOptions, vncPort: this.vncPort, transportPort: this.transportPort})
+      await this.emuContainer.runContainer({...this.startOptions, vncPort: this.vncPort.toString(), transportPort: this.transportPort.toString()})
 
       this.log(`Started Container`)
 
