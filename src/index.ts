@@ -244,7 +244,7 @@ export default class Zemu {
     await this.connectVNC()
 
     const transport_url = `${this.transportProtocol}://${this.host}:${this.transportPort}`
-    this.transport = await TransportHttp(transport_url).open(transport_url)
+    this.transport = new (TransportHttp(transport_url))
   }
 
   log(message: string) {
