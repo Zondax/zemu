@@ -310,7 +310,9 @@ export default class Zemu {
     this.stopGRPCServer()
   }
 
-  getTransport() {
+  getTransport(): Transport {
+    if( !this.transport ) throw new Error("Transport is not loaded.")
+    
     return this.transport
   }
 
