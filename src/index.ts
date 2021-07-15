@@ -42,6 +42,7 @@ import {
   WINDOW_X,
 } from './constants'
 import EmuContainer from './emulator'
+import Transport from "@ledgerhq/hw-transport";
 
 const Resolve = require('path').resolve
 const rndstr = require('randomstring')
@@ -93,7 +94,7 @@ export default class Zemu {
   private vncSession: RfbClient | null
   private libElfs: { [p: string]: string }
   private emuContainer: EmuContainer
-  private transport: any
+  private transport: Transport | undefined
 
   constructor(
     elfPath: string,
@@ -244,7 +245,10 @@ export default class Zemu {
     await this.connectVNC()
 
     const transport_url = `${this.transportProtocol}://${this.host}:${this.transportPort}`
-    this.transport = new (TransportHttp(transport_url))
+
+    // Here it should be "StaticTransport" type, in order to be able to use the static method "open". That method belogs to StaticTransport
+    // https://github.com/LedgerHQ/ledgerjs/blob/0ec9a60fe57d75dff26a69c213fd824aa321231c/packages/hw-transport-http/src/withStaticURLs.ts#L89
+    this.transport = await (TransportHttp(transport_url) as any).open(transport_url)
   }
 
   log(message: string) {
