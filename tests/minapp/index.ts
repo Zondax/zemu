@@ -15,11 +15,11 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-function isDict(v) {
+function isDict(v: any) {
   return typeof v === 'object' && v !== null && !(v instanceof Array) && !(v instanceof Date)
 }
 
-export function processErrorResponse(response) {
+export function processErrorResponse(response: any) {
   if (response) {
     if (isDict(response)) {
       if (Object.prototype.hasOwnProperty.call(response, 'statusCode')) {
@@ -49,7 +49,9 @@ export function processErrorResponse(response) {
 }
 
 export default class MinimalApp {
-  constructor(transport) {
+  private transport: any
+
+  constructor(transport: any) {
     if (!transport) {
       throw new Error('Transport has not been defined')
     }
@@ -59,11 +61,11 @@ export default class MinimalApp {
   }
 
   async appInfo() {
-    return this.transport.send(0xb0, 0x01, 0, 0).then(response => {
+    return this.transport.send(0xb0, 0x01, 0, 0).then((response: any) => {
       const errorCodeData = response.slice(-2)
       const returnCode = errorCodeData[0] * 256 + errorCodeData[1]
 
-      const result = {}
+      const result : any = {}
 
       let appName = 'err'
       let appVersion = 'err'
