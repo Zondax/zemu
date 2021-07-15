@@ -14,6 +14,7 @@
  *  limitations under the License.
  ******************************************************************************* */
 import Zemu, { DEFAULT_START_OPTIONS, StartOptions } from '../src'
+import MinimalApp from "./minapp"
 
 const Resolve = require('path').resolve
 
@@ -161,4 +162,18 @@ test('GRPC Server start-stop', async () => {
   sim.startGRPCServer('localhost', 3002)
   await Zemu.sleep(3000)
   await sim.close()
+})
+
+test('Get app info', async () => {
+  const sim = new Zemu(DEMO_APP_PATH_S)
+  expect(sim).not.toBeNull()
+  try {
+    await sim.start(ZEMU_OPTIONS_S)
+    const app = new MinimalApp(sim.getTransport())
+    const resp = await app.appInfo()
+
+    console.log(resp)
+  } finally {
+    await sim.close()
+  }
 })
