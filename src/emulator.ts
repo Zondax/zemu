@@ -168,8 +168,10 @@ export default class EmuContainer {
       AttachStderr: true,
       User: '1000',
       Env: environment,
-      PortBindings: portBindings,
-      Binds: dirBindings,
+      HostConfig: {
+        PortBindings: portBindings,
+        Binds: dirBindings,
+      },
       Cmd: [command],
     })
 
