@@ -459,30 +459,25 @@ export default class Zemu {
   }
 
   async clickLeft(filename?: string) {
-    this.getSession().keyEvent(KEYS.LEFT, KEYS.PRESSED)
-    Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
-    this.getSession().keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED)
-    Zemu.delay(this.startOptions?.pressDelayAfter ?? DEFAULT_KEY_DELAY_AFTER)
+    const leftClickUrl = 'http://localhost:' + this.speculosApiPort?.toString + '/button/left'
+    let payload = { action: 'press-and-release' };
+    let res = await axios.post(leftClickUrl, payload);
     this.log(`Click Left  ${filename}`)
     return this.snapshot(filename)
   }
 
   async clickRight(filename?: string) {
-    this.getSession().keyEvent(KEYS.RIGHT, KEYS.PRESSED)
-    Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
-    this.getSession().keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED)
-    Zemu.delay(this.startOptions?.pressDelayAfter ?? DEFAULT_KEY_DELAY_AFTER)
+    const rightClickUrl = 'http://localhost:' + this.speculosApiPort?.toString + '/button/right'
+    let payload = { action: 'press-and-release' };
+    let res = await axios.post(rightClickUrl, payload);
     this.log(`Click Right ${filename}`)
     return this.snapshot(filename)
   }
 
   async clickBoth(filename?: string) {
-    this.getSession().keyEvent(KEYS.LEFT, KEYS.PRESSED)
-    this.getSession().keyEvent(KEYS.RIGHT, KEYS.PRESSED)
-    Zemu.delay(this.startOptions?.pressDelay ?? DEFAULT_KEY_DELAY)
-    this.getSession().keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED)
-    this.getSession().keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED)
-    Zemu.delay(this.startOptions?.pressDelayAfter ?? DEFAULT_KEY_DELAY_AFTER)
+    const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString + '/button/both'
+    let payload = { action: 'press-and-release' };
+    let res = await axios.post(bothClickUrl, payload);
     this.log(`Click Both  ${filename}`)
     return this.snapshot(filename)
   }
