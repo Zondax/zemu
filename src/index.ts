@@ -459,7 +459,7 @@ export default class Zemu {
   }
 
   async clickLeft(filename?: string) {
-    const leftClickUrl = 'http://localhost:' + this.speculosApiPort?.toString + '/button/left'
+    const leftClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/left'
     let payload = { action: 'press-and-release' };
     let res = await axios.post(leftClickUrl, payload);
     this.log(`Click Left  ${filename}`)
@@ -467,7 +467,7 @@ export default class Zemu {
   }
 
   async clickRight(filename?: string) {
-    const rightClickUrl = 'http://localhost:' + this.speculosApiPort?.toString + '/button/right'
+    const rightClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/right'
     let payload = { action: 'press-and-release' };
     let res = await axios.post(rightClickUrl, payload);
     this.log(`Click Right ${filename}`)
@@ -475,7 +475,7 @@ export default class Zemu {
   }
 
   async clickBoth(filename?: string) {
-    const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString + '/button/both'
+    const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/both'
     let payload = { action: 'press-and-release' };
     let res = await axios.post(bothClickUrl, payload);
     this.log(`Click Both  ${filename}`)
