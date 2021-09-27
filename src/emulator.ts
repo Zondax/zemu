@@ -91,7 +91,7 @@ export default class EmuContainer {
     })
   }
 
-  async runContainer(options: { logging: any; startDelay: any; X11: boolean; custom: string; model: string; vncPort: string, transportPort: string }) {
+  async runContainer(options: { logging: any; startDelay: any; X11: boolean; custom: string; model: string; vncPort: string, transportPort: string, speculosApiPort: string }) {
     // eslint-disable-next-line global-require
     const docker = new Docker()
 
@@ -148,6 +148,7 @@ export default class EmuContainer {
     const portBindings = {
       [`8001/tcp`]: [{ HostPort: options.vncPort }],
       [`9998/tcp`]: [{ HostPort: options.transportPort }],
+      [`5000/tcp`]: [{ HostPort: options.speculosApiPort }],
     }
 
     const environment = [

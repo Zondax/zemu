@@ -18,6 +18,8 @@ import fs from 'fs-extra'
 import rfb, { RfbClient } from 'rfb2'
 import sleep from 'sleep'
 import getPort from 'get-port';
+import axios from 'axios';
+
 
 // @ts-ignore
 import TransportHttp from '@ledgerhq/hw-transport-http'
@@ -43,6 +45,7 @@ import {
 } from './constants'
 import EmuContainer from './emulator'
 import Transport from "@ledgerhq/hw-transport";
+import { ManagerDeviceLockedError } from '@ledgerhq/errors';
 
 const Resolve = require('path').resolve
 const rndstr = require('randomstring')
@@ -83,9 +86,11 @@ export default class Zemu {
   private host: string
   private vncPort?: number
   private transportPort?: number
+  private speculosApiPort?: number
 
   private desiredVncPort?: number
   private desiredTransportPort?: number
+  private desiredSpeculosApiPort?: number
 
   private transportProtocol = "http"
   private elfPath: string
@@ -102,10 +107,12 @@ export default class Zemu {
     host: string = DEFAULT_HOST,
     desiredVncPort?: number,
     desiredTransportPort?: number,
+    desiredSpeculosApiPort?: number,
   ) {
     this.host = host
     this.desiredVncPort = desiredVncPort
     this.desiredTransportPort = desiredTransportPort
+    this.desiredSpeculosApiPort = desiredSpeculosApiPort
     this.elfPath = elfPath
     this.libElfs = libElfs
     this.mainMenuSnapshot = null
@@ -204,17 +211,17 @@ export default class Zemu {
     try {
       // await Zemu.stopAllEmuContainers()
 
-      if(!this.vncPort || !this.transportPort)
+      if(!this.vncPort || !this.transportPort || !this.speculosApiPort)
         await this.getPortsToListen()
 
-      if(!this.vncPort || !this.transportPort){
+      if(!this.vncPort || !this.transportPort || !this.speculosApiPort){
         const e = new Error("The vnc port or/and transport port couldn't be reserved")
         this.log(`[ZEMU] ${e}`)
         throw e
       }
 
       this.log(`Starting Container`)
-      await this.emuContainer.runContainer({...this.startOptions, vncPort: this.vncPort?.toString(), transportPort: this.transportPort.toString()})
+      await this.emuContainer.runContainer({...this.startOptions, vncPort: this.vncPort?.toString(), transportPort: this.transportPort.toString(), speculosApiPort: this.speculosApiPort.toString()})
 
       this.log(`Started Container`)
 
@@ -483,8 +490,10 @@ export default class Zemu {
   private async getPortsToListen() : Promise<void> {
     const vncPort = await getPort({port: this.desiredVncPort})
     const transportPort = await getPort({port: this.desiredTransportPort})
+    const speculosApiPort = await getPort({port: this.desiredSpeculosApiPort})
 
     this.vncPort = vncPort
     this.transportPort = transportPort
+    this.speculosApiPort = speculosApiPort
   }
 }
