@@ -29,7 +29,7 @@ beforeAll( async() => {
 
 const ZEMU_OPTIONS_S: StartOptions = {
   ...DEFAULT_START_OPTIONS,
-  X11: false,
+  X11: true,
   logging: true,
   custom: `-s "${APP_SEED}" `,
 }
@@ -58,23 +58,23 @@ test('Start&Close-NanoS', async () => {
   }
 })
 
-test('Snapshot', async () => {
-  const sim = new Zemu(DEMO_APP_PATH_S)
-  try {
-    await sim.start(ZEMU_OPTIONS_S)
+// test('Snapshot', async () => {
+//   const sim = new Zemu(DEMO_APP_PATH_S)
+//   try {
+//     await sim.start(ZEMU_OPTIONS_S)
 
-    const session = sim.getSession()
-    expect(session.title).toEqual('LibVNCServer')
-    expect(session.width).toEqual(128)
-    expect(session.height).toEqual(32)
+//     const session = sim.getSession()
+//     expect(session.title).toEqual('LibVNCServer')
+//     expect(session.width).toEqual(128)
+//     expect(session.height).toEqual(32)
 
-    const snapshot = await sim.snapshot()
-    expect(snapshot.width).toEqual(128)
-    expect(snapshot.height).toEqual(32)
-  } finally {
-    await sim.close()
-  }
-})
+//     const snapshot = await sim.snapshot()
+//     expect(snapshot.width).toEqual(128)
+//     expect(snapshot.height).toEqual(32)
+//   } finally {
+//     await sim.close()
+//   }
+// })
 
 test('Basic Control - S', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
@@ -107,16 +107,16 @@ test('Load/Compare Snapshots', async () => {
   expect(image1A).not.toEqual(image2A)
 })
 
-test('Wait for change / timeout', async () => {
-  const sim = new Zemu(DEMO_APP_PATH_S)
-  try {
-    await sim.start(ZEMU_OPTIONS_S)
-    const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000)
-    await expect(result).rejects.toEqual('Timeout waiting for screen to change (2000 ms)')
-  } finally {
-    await sim.close()
-  }
-})
+// test('Wait for change / timeout', async () => {
+//   const sim = new Zemu(DEMO_APP_PATH_S)
+//   try {
+//     await sim.start(ZEMU_OPTIONS_S)
+//     const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000)
+//     await expect(result).rejects.toEqual('Timeout waiting for screen to change (2000 ms)')
+//   } finally {
+//     await sim.close()
+//   }
+// })
 
 test('Snapshot and compare', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)

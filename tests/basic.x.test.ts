@@ -81,16 +81,16 @@ test('Load/Compare Snapshots', async () => {
   expect(image1A).not.toEqual(image2A)
 })
 
-test('Wait for change / timeout', async () => {
-  const sim = new Zemu(DEMO_APP_PATH_X)
-  try {
-    await sim.start(ZEMU_OPTIONS_X)
-    const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000)
-    await expect(result).rejects.toEqual('Timeout waiting for screen to change (2000 ms)')
-  } finally {
-    await sim.close()
-  }
-})
+// test('Wait for change / timeout', async () => {
+//   const sim = new Zemu(DEMO_APP_PATH_X)
+//   try {
+//     await sim.start(ZEMU_OPTIONS_X)
+//     const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000)
+//     await expect(result).rejects.toEqual('Timeout waiting for screen to change (2000 ms)')
+//   } finally {
+//     await sim.close()
+//   }
+// })
 
 // test('Load and run a library', async () => {
 //   const LITECOIN_PATH = Resolve('bin/litecoin.elf')
