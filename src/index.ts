@@ -106,7 +106,6 @@ export default class Zemu {
     desiredSpeculosApiPort?: number,
   ) {
     this.host = host
-    this.desiredVncPort = desiredVncPort
     this.desiredTransportPort = desiredTransportPort
     this.desiredSpeculosApiPort = desiredSpeculosApiPort
     this.elfPath = elfPath
@@ -211,7 +210,7 @@ export default class Zemu {
         await this.getPortsToListen()
 
       if(!this.transportPort || !this.speculosApiPort){
-        const e = new Error("The vnc port or/and transport port couldn't be reserved")
+        const e = new Error("The Speculos API port or/and transport port couldn't be reserved")
         this.log(`[ZEMU] ${e}`)
         throw e
       }
