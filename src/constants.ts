@@ -6,7 +6,6 @@ export const DEFAULT_START_DELAY = 3500
 export const DEFAULT_KEY_DELAY = 250
 export const DEFAULT_KEY_DELAY_AFTER = 700
 export const DEFAULT_HOST = '127.0.0.1'
-export const DEFAULT_VNC_PORT = 8001
 export const DEFAULT_TRANSPORT_PORT = 9998
 export const BASE_NAME = 'zemu-656d75-'
 export const KILL_TIMEOUT = 10000

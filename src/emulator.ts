@@ -19,7 +19,6 @@ const Docker = require('dockerode')
 export const DEV_CERT_PRIVATE_KEY = 'ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b'
 export const BOLOS_SDK = '/project/deps/nanos-secure-sdk'
 export const DEFAULT_APP_PATH = '/project/app/bin'
-export const DEFAULT_VNC_PORT = '8001'
 
 export default class EmuContainer {
   private logging: boolean
@@ -91,7 +90,7 @@ export default class EmuContainer {
     })
   }
 
-  async runContainer(options: { logging: any; startDelay: any; X11: boolean; custom: string; model: string; vncPort: string, transportPort: string, speculosApiPort: string }) {
+  async runContainer(options: { logging: any; startDelay: any; X11: boolean; custom: string; model: string; transportPort: string, speculosApiPort: string }) {
     // eslint-disable-next-line global-require
     const docker = new Docker()
 
@@ -141,12 +140,11 @@ export default class EmuContainer {
       customOptions = options.custom
     }
 
-    const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --log-level vnc:DEBUG --log-level vnc:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${SDKoption} --vnc-port ${DEFAULT_VNC_PORT} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
+    const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${SDKoption} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
 
     this.log(`[ZEMU] Command: ${command}`)
 
     const portBindings = {
-      [`8001/tcp`]: [{ HostPort: options.vncPort }],
       [`9998/tcp`]: [{ HostPort: options.transportPort }],
       [`5000/tcp`]: [{ HostPort: options.speculosApiPort }],
     }

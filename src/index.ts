@@ -36,7 +36,6 @@ import {
   DEFAULT_MODEL,
   DEFAULT_START_DELAY,
   DEFAULT_TRANSPORT_PORT,
-  DEFAULT_VNC_PORT,
   KEYS,
   KILL_TIMEOUT,
   TIMEOUT,
@@ -84,11 +83,9 @@ export class DeviceModel {
 export default class Zemu {
   private startOptions: StartOptions | undefined
   private host: string
-  private vncPort?: number
   private transportPort?: number
   private speculosApiPort?: number
 
-  private desiredVncPort?: number
   private desiredTransportPort?: number
   private desiredSpeculosApiPort?: number
 
@@ -105,7 +102,6 @@ export default class Zemu {
     elfPath: string,
     libElfs: { [key: string]: string } = {},
     host: string = DEFAULT_HOST,
-    desiredVncPort?: number,
     desiredTransportPort?: number,
     desiredSpeculosApiPort?: number,
   ) {
@@ -211,17 +207,17 @@ export default class Zemu {
     try {
       // await Zemu.stopAllEmuContainers()
 
-      if(!this.vncPort || !this.transportPort || !this.speculosApiPort)
+      if(!this.transportPort || !this.speculosApiPort)
         await this.getPortsToListen()
 
-      if(!this.vncPort || !this.transportPort || !this.speculosApiPort){
+      if(!this.transportPort || !this.speculosApiPort){
         const e = new Error("The vnc port or/and transport port couldn't be reserved")
         this.log(`[ZEMU] ${e}`)
         throw e
       }
 
       this.log(`Starting Container`)
-      await this.emuContainer.runContainer({...this.startOptions, vncPort: this.vncPort?.toString(), transportPort: this.transportPort.toString(), speculosApiPort: this.speculosApiPort.toString()})
+      await this.emuContainer.runContainer({...this.startOptions, transportPort: this.transportPort.toString(), speculosApiPort: this.speculosApiPort.toString()})
 
       this.log(`Started Container`)
 
@@ -246,10 +242,8 @@ export default class Zemu {
     // FIXME: Can we detect open ports?
     const waitDelay = this.startOptions?.startDelay ?? DEFAULT_START_DELAY
 
-    this.log(`Wait VNC for ${waitDelay} ms`)
+    this.log(`Wait for ${waitDelay} ms`)
     Zemu.delay(waitDelay)
-
-    await this.connectVNC()
 
     const transport_url = `${this.transportProtocol}://${this.host}:${this.transportPort}`
 
@@ -263,37 +257,6 @@ export default class Zemu {
       const currentTimestamp = new Date().toISOString().slice(11, 23)
       process.stdout.write(`[ZEMU] ${currentTimestamp}: ${message}\n`)
     }
-  }
-
-  async connectVNC() {
-    return new Promise((resolve, reject) => {
-      this.vncSession = rfb.createConnection({
-        host: this.host,
-        port: this.vncPort,
-      })
-
-      this.log(`VNC Connection created ${this.host}:${this.vncPort}`)
-
-      const tmpVncSession = this.vncSession
-      this.vncSession.on('connect', () => {
-        this.log(`VNC Session ready`)
-
-        // @ts-ignore
-        tmpVncSession.keyEvent(KEYS.LEFT, KEYS.NOT_PRESSED)
-        // @ts-ignore
-        tmpVncSession.keyEvent(KEYS.RIGHT, KEYS.NOT_PRESSED)
-        resolve(true)
-      })
-
-      const tmpVncPort = this.vncPort
-      const tmpHost = this.host
-      this.vncSession.on('error', error => {
-        this.log(`Could not connect to port ${tmpVncPort} on ${tmpHost}`)
-        reject(error)
-      })
-
-      setTimeout(() => reject(new Error('timeout on connectVNC')), 6000)
-    })
   }
 
   startGRPCServer(ip: string, port: number, options = {}) {
@@ -310,9 +273,6 @@ export default class Zemu {
   async close() {
     this.log('Close')
     await this.emuContainer.stop()
-    if (this.vncSession) {
-      this.vncSession.end()
-    }
 
     this.stopGRPCServer()
   }
@@ -333,29 +293,32 @@ export default class Zemu {
     throw `model ${this.startOptions?.model ?? DEFAULT_MODEL} not recognized`
   }
 
+  async fetchSnapshot(url: string) {
+    return await axios({
+      method: 'GET',
+      url: url,
+      responseType: 'arraybuffer',
+    });
+  }
+
+  saveSnapshot(arrayBuffer: Buffer, filePath: string) {
+    fs.writeFile(filePath, Buffer.from(arrayBuffer), 'binary');
+  }
+
   async snapshot(filename?: string): Promise<any> {
-    const { vncSession } = this
+    const snapshotUrl = 'http://localhost:' + this.speculosApiPort!.toString() + '/screenshot';
+    const response = await this.fetchSnapshot(snapshotUrl);
+    const modelWindow = this.getWindowRect()
+
+    if (filename) {
+      this.saveSnapshot(response.data, filename)
+    }
 
     return new Promise((resolve, reject) => {
-      const session = this.getSession()
-
-      if (!session) {
-        throw new Error('Session is null')
-      }
-
-      session.once('rect', (rect: any) => {
-        if (filename) {
-          Zemu.saveRGBA2Png(rect, filename)
-        }
-        resolve(rect)
-      })
-
-      const modelWindow = this.getWindowRect()
-
-      // @ts-ignore
-      vncSession.requestUpdate(false, 0, 0, modelWindow.width, modelWindow.height)
-
-      setTimeout(() => reject(new Error('timeout')), TIMEOUT)
+      const rect = { width: modelWindow.width,
+                     height: modelWindow.height,
+                     data: response.data };
+      resolve(rect)
     })
   }
 
@@ -365,8 +328,8 @@ export default class Zemu {
 
   async waitUntilScreenIsNot(screen: any, timeout = 10000) {
     const start = new Date()
-    const inputSnapshotBufferHex = (await screen).buffer.toString('hex')
-    let currentSnapshotBufferHex = (await this.snapshot()).buffer.toString('hex')
+    const inputSnapshotBufferHex = (await screen).buffer
+    let currentSnapshotBufferHex = (await this.snapshot()).buffer
 
     this.log(`Wait for screen change`)
 
@@ -378,7 +341,7 @@ export default class Zemu {
       }
       await Zemu.delay(500)
       this.log(`Check [${elapsed}ms]`)
-      currentSnapshotBufferHex = (await this.snapshot()).buffer.toString('hex')
+      currentSnapshotBufferHex = (await this.snapshot()).buffer
     }
 
     this.log(`Screen changed`)
@@ -483,11 +446,9 @@ export default class Zemu {
   }
 
   private async getPortsToListen() : Promise<void> {
-    const vncPort = await getPort({port: this.desiredVncPort})
     const transportPort = await getPort({port: this.desiredTransportPort})
     const speculosApiPort = await getPort({port: this.desiredSpeculosApiPort})
 
-    this.vncPort = vncPort
     this.transportPort = transportPort
     this.speculosApiPort = speculosApiPort
   }
