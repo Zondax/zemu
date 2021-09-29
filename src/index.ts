@@ -301,7 +301,7 @@ export default class Zemu {
   }
 
   saveSnapshot(arrayBuffer: Buffer, filePath: string) {
-    fs.writeFile(filePath, Buffer.from(arrayBuffer), 'binary');
+    fs.writeFileSync(filePath, Buffer.from(arrayBuffer), 'binary');
   }
 
   async snapshot(filename?: string): Promise<any> {
