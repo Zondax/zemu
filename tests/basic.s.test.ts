@@ -29,7 +29,7 @@ beforeAll( async() => {
 
 const ZEMU_OPTIONS_S: StartOptions = {
   ...DEFAULT_START_OPTIONS,
-  X11: false,
+  X11: true,
   logging: true,
   custom: `-s "${APP_SEED}" `,
 }
@@ -53,24 +53,6 @@ test('Start&Close-NanoS', async () => {
   expect(sim).not.toBeNull()
   try {
     await sim.start(ZEMU_OPTIONS_S)
-  } finally {
-    await sim.close()
-  }
-})
-
-test('Snapshot', async () => {
-  const sim = new Zemu(DEMO_APP_PATH_S)
-  try {
-    await sim.start(ZEMU_OPTIONS_S)
-
-    const session = sim.getSession()
-    expect(session.title).toEqual('LibVNCServer')
-    expect(session.width).toEqual(128)
-    expect(session.height).toEqual(32)
-
-    const snapshot = await sim.snapshot()
-    expect(snapshot.width).toEqual(128)
-    expect(snapshot.height).toEqual(32)
   } finally {
     await sim.close()
   }
@@ -138,23 +120,6 @@ test('Snapshot and compare 2', async () => {
     await sim.close()
   }
 })
-
-// test('Load and run a library', async () => {
-//   const LITECOIN_PATH = Resolve('bin/litecoin.elf')
-//   const BITCOIN_LIB = { Bitcoin: Resolve('bin/bitcoin.elf') }
-//   const sim = new Zemu(LITECOIN_PATH, BITCOIN_LIB)
-//   try {
-//     await sim.start(ZEMU_OPTIONS_S)
-//
-//     // If we can see the main screen, then the library has been loaded with success
-//     await sim.snapshot('tests/tmp/libWelcome.png')
-//     const testLibWelcome = Zemu.LoadPng2RGB('tests/tmp/libWelcome.png')
-//     const goldenLibWelcome = Zemu.LoadPng2RGB('tests/snapshots/libWelcome.png')
-//     expect(testLibWelcome).toEqual(goldenLibWelcome)
-//   } finally {
-//     await sim.close()
-//   }
-// })
 
 test('GRPC Server start-stop', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
