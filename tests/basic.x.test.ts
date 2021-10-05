@@ -22,7 +22,7 @@ const DEMO_APP_PATH_X = Resolve('bin/demoAppX.elf')
 
 const APP_SEED = 'equip will roof matter pink blind book anxiety banner elbow sun young'
 
-beforeAll( async() => {
+beforeAll(async () => {
   await Zemu.checkAndPullImage()
 })
 
@@ -81,30 +81,13 @@ test('Load/Compare Snapshots', async () => {
   expect(image1A).not.toEqual(image2A)
 })
 
-// test('Wait for change / timeout', async () => {
-//   const sim = new Zemu(DEMO_APP_PATH_X)
-//   try {
-//     await sim.start(ZEMU_OPTIONS_X)
-//     const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000)
-//     await expect(result).rejects.toEqual('Timeout waiting for screen to change (2000 ms)')
-//   } finally {
-//     await sim.close()
-//   }
-// })
-
-// test('Load and run a library', async () => {
-//   const LITECOIN_PATH = Resolve('bin/litecoin.elf')
-//   const BITCOIN_LIB = { Bitcoin: Resolve('bin/bitcoin.elf') }
-//   const sim = new Zemu(LITECOIN_PATH, BITCOIN_LIB)
-//   try {
-//     await sim.start(ZEMU_OPTIONS_S)
-//
-//     // If we can see the main screen, then the library has been loaded with success
-//     await sim.snapshot('tests/tmp/libWelcome.png')
-//     const testLibWelcome = Zemu.LoadPng2RGB('tests/tmp/libWelcome.png')
-//     const goldenLibWelcome = Zemu.LoadPng2RGB('tests/snapshots/libWelcome.png')
-//     expect(testLibWelcome).toEqual(goldenLibWelcome)
-//   } finally {
-//     await sim.close()
-//   }
-// })
+test('Wait for change / timeout', async () => {
+  const sim = new Zemu(DEMO_APP_PATH_X)
+  try {
+    await sim.start(ZEMU_OPTIONS_X)
+    const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000)
+    await expect(result).rejects.toEqual('Timeout waiting for screen to change (2000 ms)')
+  } finally {
+    await sim.close()
+  }
+})

@@ -26,6 +26,7 @@ export default class GRPCRouter {
 
     const rpcDefinition = grpc.loadPackageDefinition(packageDefinition)
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this
     this.server.addService(rpcDefinition.ledger_go.ZemuCommand.service, {
       Exchange(call: any, callback: any, ctx = self) {
