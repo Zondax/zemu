@@ -43,6 +43,7 @@
     "sleep": "^6.3.0"
   },
   "devDependencies": {
+    "@zondax/ledger-substrate": "^0.18.0",
     "@types/fs-extra": "^9.0.12",
     "@types/jest": "^26.0.24",
     "@types/ledgerhq__hw-transport": "^4.21.4",

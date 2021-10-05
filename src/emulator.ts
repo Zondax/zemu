@@ -39,12 +39,6 @@ export default class EmuContainer {
     this.startDelay = 100
   }
 
-  log(message: string) {
-    if (this.logging ?? false) {
-      process.stdout.write(`${message}\n`)
-    }
-  }
-
   static async killContainerByName(name: string) {
     const docker = new Docker()
     await new Promise(resolve => {
@@ -90,7 +84,21 @@ export default class EmuContainer {
     })
   }
 
-  async runContainer(options: { logging: any; startDelay: any; X11: boolean; custom: string; model: string; transportPort: string, speculosApiPort: string }) {
+  log(message: string) {
+    if (this.logging ?? false) {
+      process.stdout.write(`${message}\n`)
+    }
+  }
+
+  async runContainer(options: {
+    logging: any
+    startDelay: any
+    X11: boolean
+    custom: string
+    model: string
+    transportPort: string
+    speculosApiPort: string
+  }) {
     // eslint-disable-next-line global-require
     const docker = new Docker()
 

@@ -15,11 +15,13 @@
  ******************************************************************************* */
 import Zemu, { DEFAULT_START_OPTIONS, StartOptions } from '../src'
 import MinimalApp from "./minapp"
+import { newPolymeshApp } from "@zondax/ledger-substrate";
 
 const Resolve = require('path').resolve
 
 jest.setTimeout(60000)
 const DEMO_APP_PATH_S = Resolve('bin/demoAppS.elf')
+const DEMO_APP2_PATH_S = Resolve('bin/app_s.elf')
 
 const APP_SEED = 'equip will roof matter pink blind book anxiety banner elbow sun young'
 
@@ -138,6 +140,40 @@ test('Get app info', async () => {
     const resp = await app.appInfo()
 
     console.log(resp)
+  } finally {
+    await sim.close()
+  }
+})
+
+test('sign real app', async function () {
+  const sim = new Zemu(DEMO_APP2_PATH_S)
+  try {
+    const defaultOptions = {
+      ...DEFAULT_START_OPTIONS,
+      logging: true,
+      custom: `-s "${APP_SEED}"`,
+      X11: true,
+    }
+
+    await sim.start({ ...defaultOptions, model: "nanos" })
+    const app = newPolymeshApp(sim.getTransport())
+    const pathAccount = 0x80000000
+    const pathChange = 0x80000000
+    const pathIndex = 0x80000000
+
+    const txBasic =
+      '050000b7886d12fa597fa6921352e2fbc92263cbd220047e48553c6f135778a4a833b300d50391018ed73e0db80b0000010000009deeb940c92ae02111c3bd5baca89970384f4c9849f02a1b2e53e66414d30f9f9deeb940c92ae02111c3bd5baca89970384f4c9849f02a1b2e53e66414d30f9f'
+    const txBlob = Buffer.from(txBasic, 'hex')
+
+    const signatureRequest = app.sign(pathAccount, pathChange, pathIndex, txBlob)
+    await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
+    await sim.compareSnapshotsAndAccept('.', `s-sign_basic_normal`, 5)
+
+    const signatureResponse = await signatureRequest
+    console.log(signatureResponse)
+
+    expect(signatureResponse.return_code).toEqual(0x9000)
+    expect(signatureResponse.error_message).toEqual('No errors')
   } finally {
     await sim.close()
   }

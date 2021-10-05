@@ -15,11 +15,10 @@
  ******************************************************************************* */
 import PNG from 'pngjs'
 import fs from 'fs-extra'
-import rfb, { RfbClient } from 'rfb2'
+import { RfbClient } from 'rfb2'
 import sleep from 'sleep'
-import getPort from 'get-port';
-import axios from 'axios';
-
+import getPort from 'get-port'
+import axios from 'axios'
 
 // @ts-ignore
 import TransportHttp from '@ledgerhq/hw-transport-http'
@@ -35,16 +34,12 @@ import {
   DEFAULT_KEY_DELAY_AFTER,
   DEFAULT_MODEL,
   DEFAULT_START_DELAY,
-  DEFAULT_TRANSPORT_PORT,
-  KEYS,
   KILL_TIMEOUT,
-  TIMEOUT,
   WINDOW_S,
   WINDOW_X,
 } from './constants'
 import EmuContainer from './emulator'
-import Transport from "@ledgerhq/hw-transport";
-import { ManagerDeviceLockedError } from '@ledgerhq/errors';
+import Transport from '@ledgerhq/hw-transport'
 
 const Resolve = require('path').resolve
 const rndstr = require('randomstring')
@@ -65,8 +60,6 @@ export class StartOptions {
   X11 = false
   custom = ''
   startDelay = DEFAULT_START_DELAY
-  pressDelay = DEFAULT_KEY_DELAY
-  pressDelayAfter = DEFAULT_KEY_DELAY_AFTER
 }
 
 export interface Snapshot {
@@ -89,7 +82,7 @@ export default class Zemu {
   private desiredTransportPort?: number
   private desiredSpeculosApiPort?: number
 
-  private transportProtocol = "http"
+  private transportProtocol = 'http'
   private elfPath: string
   private grpcManager: GRPCRouter | null | undefined
   private mainMenuSnapshot: null
@@ -206,17 +199,20 @@ export default class Zemu {
     try {
       // await Zemu.stopAllEmuContainers()
 
-      if(!this.transportPort || !this.speculosApiPort)
-        await this.getPortsToListen()
+      if (!this.transportPort || !this.speculosApiPort) await this.getPortsToListen()
 
-      if(!this.transportPort || !this.speculosApiPort){
+      if (!this.transportPort || !this.speculosApiPort) {
         const e = new Error("The Speculos API port or/and transport port couldn't be reserved")
         this.log(`[ZEMU] ${e}`)
         throw e
       }
 
       this.log(`Starting Container`)
-      await this.emuContainer.runContainer({...this.startOptions, transportPort: this.transportPort.toString(), speculosApiPort: this.speculosApiPort.toString()})
+      await this.emuContainer.runContainer({
+        ...this.startOptions,
+        transportPort: this.transportPort.toString(),
+        speculosApiPort: this.speculosApiPort.toString(),
+      })
 
       this.log(`Started Container`)
 
@@ -277,8 +273,8 @@ export default class Zemu {
   }
 
   getTransport(): Transport {
-    if( !this.transport ) throw new Error("Transport is not loaded.")
-    
+    if (!this.transport) throw new Error('Transport is not loaded.')
+
     return this.transport
   }
 
@@ -297,16 +293,16 @@ export default class Zemu {
       method: 'GET',
       url: url,
       responseType: 'arraybuffer',
-    });
+    })
   }
 
   saveSnapshot(arrayBuffer: Buffer, filePath: string) {
-    fs.writeFileSync(filePath, Buffer.from(arrayBuffer), 'binary');
+    fs.writeFileSync(filePath, Buffer.from(arrayBuffer), 'binary')
   }
 
   async snapshot(filename?: string): Promise<any> {
-    const snapshotUrl = 'http://localhost:' + this.speculosApiPort!.toString() + '/screenshot';
-    const response = await this.fetchSnapshot(snapshotUrl);
+    const snapshotUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/screenshot'
+    const response = await this.fetchSnapshot(snapshotUrl)
     const modelWindow = this.getWindowRect()
 
     if (filename) {
@@ -314,9 +310,11 @@ export default class Zemu {
     }
 
     return new Promise((resolve, reject) => {
-      const rect = { width: modelWindow.width,
-                     height: modelWindow.height,
-                     data: response.data };
+      const rect = {
+        width: modelWindow.width,
+        height: modelWindow.height,
+        data: response.data,
+      }
       resolve(rect)
     })
   }
@@ -327,8 +325,8 @@ export default class Zemu {
 
   async waitUntilScreenIsNot(screen: any, timeout = 10000) {
     const start = new Date()
-    const inputSnapshotBufferHex = (await screen).buffer
-    let currentSnapshotBufferHex = (await this.snapshot()).buffer
+    const inputSnapshotBufferHex = (await screen).data.toString('hex')
+    let currentSnapshotBufferHex = (await this.snapshot()).data.toString('hex')
 
     this.log(`Wait for screen change`)
 
@@ -340,7 +338,7 @@ export default class Zemu {
       }
       await Zemu.delay(500)
       this.log(`Check [${elapsed}ms]`)
-      currentSnapshotBufferHex = (await this.snapshot()).buffer
+      currentSnapshotBufferHex = (await this.snapshot()).data.toString('hex')
     }
 
     this.log(`Screen changed`)
@@ -421,32 +419,32 @@ export default class Zemu {
   }
 
   async clickLeft(filename?: string) {
-    const leftClickUrl = 'http://localhost:' + this.speculosApiPort!.toString() + '/button/left'
-    let payload = { action: 'press-and-release' };
-    let res = await axios.post(leftClickUrl, payload);
+    const leftClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/left'
+    const payload = { action: 'press-and-release' }
+    await axios.post(leftClickUrl, payload)
     this.log(`Click Left  ${filename}`)
     return this.snapshot(filename)
   }
 
   async clickRight(filename?: string) {
-    const rightClickUrl = 'http://localhost:' + this.speculosApiPort!.toString() + '/button/right'
-    let payload = { action: 'press-and-release' };
-    let res = await axios.post(rightClickUrl, payload);
+    const rightClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/right'
+    const payload = { action: 'press-and-release' }
+    await axios.post(rightClickUrl, payload)
     this.log(`Click Right ${filename}`)
     return this.snapshot(filename)
   }
 
   async clickBoth(filename?: string) {
-    const bothClickUrl = 'http://localhost:' + this.speculosApiPort!.toString() + '/button/both'
-    let payload = { action: 'press-and-release' };
-    let res = await axios.post(bothClickUrl, payload);
+    const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/both'
+    const payload = { action: 'press-and-release' }
+    await axios.post(bothClickUrl, payload)
     this.log(`Click Both  ${filename}`)
     return this.snapshot(filename)
   }
 
-  private async getPortsToListen() : Promise<void> {
-    const transportPort = await getPort({port: this.desiredTransportPort})
-    const speculosApiPort = await getPort({port: this.desiredSpeculosApiPort})
+  private async getPortsToListen(): Promise<void> {
+    const transportPort = await getPort({ port: this.desiredTransportPort })
+    const speculosApiPort = await getPort({ port: this.desiredSpeculosApiPort })
 
     this.transportPort = transportPort
     this.speculosApiPort = speculosApiPort
