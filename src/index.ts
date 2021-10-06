@@ -19,6 +19,7 @@ import { RfbClient } from 'rfb2'
 import sleep from 'sleep'
 import getPort from 'get-port'
 import axios from 'axios'
+import axiosRetry from 'axios-retry'
 
 // @ts-ignore
 import TransportHttp from '@ledgerhq/hw-transport-http'
@@ -31,7 +32,6 @@ import {
   DEFAULT_EMU_IMG,
   DEFAULT_HOST,
   DEFAULT_KEY_DELAY,
-  DEFAULT_KEY_DELAY_AFTER,
   DEFAULT_MODEL,
   DEFAULT_START_DELAY,
   KILL_TIMEOUT,
@@ -51,7 +51,6 @@ export const DEFAULT_START_OPTIONS = {
   custom: '',
   startDelay: DEFAULT_START_DELAY,
   pressDelay: DEFAULT_KEY_DELAY,
-  pressDelayAfter: DEFAULT_KEY_DELAY_AFTER,
 }
 
 export class StartOptions {
@@ -289,6 +288,9 @@ export default class Zemu {
   }
 
   async fetchSnapshot(url: string) {
+    // Exponential back-off retry delay between requests
+    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay});
+
     return await axios({
       method: 'GET',
       url: url,

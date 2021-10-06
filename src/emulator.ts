@@ -36,7 +36,7 @@ export default class EmuContainer {
     this.libElfs = libElfs
     this.name = name
     this.logging = false
-    this.startDelay = 100
+    this.startDelay = 200
   }
 
   static async killContainerByName(name: string) {

@@ -32,6 +32,8 @@
     "@ledgerhq/hw-transport": "^6.1.0",
     "@ledgerhq/hw-transport-http": "^6.1.0",
     "dockerode": "^3.3.0",
+    "axios": "^0.22.0",
+    "axios-retry": "^3.2.0",
     "elfy": "^1.0.0",
     "fs-extra": "^10.0.0",
     "get-port": "^5.1.1",
