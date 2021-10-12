@@ -215,7 +215,7 @@ export default class Zemu {
 
       this.log(`Started Container`)
 
-      // eslint-disable-next-line func-names
+      // eslint-disable-next-liwaine func-names
       await this.connect().catch(error => {
         this.log(`${error}`)
         this.close()
@@ -225,6 +225,7 @@ export default class Zemu {
       this.log(`Get initial snapshot`)
 
       // Captures main screen
+      await this.waitForText('Ready')
       this.mainMenuSnapshot = await this.snapshot()
     } catch (e) {
       this.log(`[ZEMU] ${e}`)
@@ -426,12 +427,14 @@ export default class Zemu {
   }
 
   async getEvents() {
-    const events = 'http://localhost:' + this.speculosApiPort!.toString() + '/events'
-    const response = await axios({
-      method: 'GET',
-      url: events,
-    });
-    return response.data['events']
+    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay});
+    const eventsUrl = 'http://localhost:' + this.speculosApiPort!.toString() + '/events'
+    try {
+      const { data } = await axios.get(eventsUrl)
+      return data['events']
+    } catch (error) {
+      return []
+    }
   }
 
   async deleteEvents() {
