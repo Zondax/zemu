@@ -19,6 +19,7 @@ import { RfbClient } from 'rfb2'
 import sleep from 'sleep'
 import getPort from 'get-port'
 import axios from 'axios'
+import axiosRetry from 'axios-retry'
 
 // @ts-ignore
 import TransportHttp from '@ledgerhq/hw-transport-http'
@@ -31,7 +32,6 @@ import {
   DEFAULT_EMU_IMG,
   DEFAULT_HOST,
   DEFAULT_KEY_DELAY,
-  DEFAULT_KEY_DELAY_AFTER,
   DEFAULT_MODEL,
   DEFAULT_START_DELAY,
   KILL_TIMEOUT,
@@ -51,7 +51,6 @@ export const DEFAULT_START_OPTIONS = {
   custom: '',
   startDelay: DEFAULT_START_DELAY,
   pressDelay: DEFAULT_KEY_DELAY,
-  pressDelayAfter: DEFAULT_KEY_DELAY_AFTER,
 }
 
 export class StartOptions {
@@ -216,7 +215,7 @@ export default class Zemu {
 
       this.log(`Started Container`)
 
-      // eslint-disable-next-line func-names
+      // eslint-disable-next-liwaine func-names
       await this.connect().catch(error => {
         this.log(`${error}`)
         this.close()
@@ -226,6 +225,7 @@ export default class Zemu {
       this.log(`Get initial snapshot`)
 
       // Captures main screen
+      await this.waitForText('Ready')
       this.mainMenuSnapshot = await this.snapshot()
     } catch (e) {
       this.log(`[ZEMU] ${e}`)
@@ -289,6 +289,9 @@ export default class Zemu {
   }
 
   async fetchSnapshot(url: string) {
+    // Exponential back-off retry delay between requests
+    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay});
+
     return await axios({
       method: 'GET',
       url: url,
@@ -298,6 +301,10 @@ export default class Zemu {
 
   saveSnapshot(arrayBuffer: Buffer, filePath: string) {
     fs.writeFileSync(filePath, Buffer.from(arrayBuffer), 'binary')
+  }
+
+  convertBufferToPNG(arrayBuffer: Buffer) {
+    return PNG.PNG.sync.read(Buffer.from(arrayBuffer))
   }
 
   async snapshot(filename?: string): Promise<any> {
@@ -325,12 +332,13 @@ export default class Zemu {
 
   async waitUntilScreenIsNot(screen: any, timeout = 10000) {
     const start = new Date()
-    const inputSnapshotBufferHex = (await screen).data.toString('hex')
-    let currentSnapshotBufferHex = (await this.snapshot()).data.toString('hex')
+
+    const inputSnapshotBufferHex = this.convertBufferToPNG((await screen).data)
+    let currentSnapshotBufferHex = this.convertBufferToPNG((await this.snapshot()).data)
 
     this.log(`Wait for screen change`)
 
-    while (inputSnapshotBufferHex === currentSnapshotBufferHex) {
+    while (inputSnapshotBufferHex.data.equals(currentSnapshotBufferHex.data)) {
       const currentTime = new Date()
       const elapsed: any = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
@@ -338,7 +346,7 @@ export default class Zemu {
       }
       await Zemu.delay(500)
       this.log(`Check [${elapsed}ms]`)
-      currentSnapshotBufferHex = (await this.snapshot()).data.toString('hex')
+      currentSnapshotBufferHex = this.convertBufferToPNG((await this.snapshot()).data)
     }
 
     this.log(`Screen changed`)
@@ -416,6 +424,65 @@ export default class Zemu {
     }
     instructions.push(0)
     return this.navigateAndCompareSnapshots(path, testcaseName, instructions)
+  }
+
+  async getEvents() {
+    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay});
+    const eventsUrl = 'http://localhost:' + this.speculosApiPort!.toString() + '/events'
+    try {
+      const { data } = await axios.get(eventsUrl)
+      return data['events']
+    } catch (error) {
+      return []
+    }
+  }
+
+  async deleteEvents() {
+    const events = 'http://localhost:' + this.speculosApiPort!.toString() + '/events'
+    const response = await axios({
+      method: 'DELETE',
+      url: events,
+    });
+  }
+
+  async waitScreenChange(timeout = 5000) {
+    const start = new Date()
+    const prev_events_qty = (await this.getEvents()).length
+    let current_events_qty = prev_events_qty
+    this.log(`Wait for screen change`)
+
+    while (prev_events_qty === current_events_qty) {
+      const currentTime = new Date()
+      const elapsed: any = currentTime.getTime() - start.getTime()
+      if (elapsed > timeout) {
+        throw `Timeout waiting for screen to change (${timeout} ms)`
+      }
+      await Zemu.delay(500)
+      this.log(`Check [${elapsed}ms]`)
+      current_events_qty = (await this.getEvents()).length
+    }
+    this.log(`Screen changed`)
+  }
+
+  async waitForText(text: string, timeout = 5000) {
+    const start = new Date()
+    let found = false
+
+    while(!found) {
+      const currentTime = new Date()
+      const elapsed: any = currentTime.getTime() - start.getTime()
+      if (elapsed > timeout) {
+        throw `Timeout waiting for text (${text})`
+      }
+
+      const events = await this.getEvents()
+      events.forEach((element: any) => {
+        if(element['text'].includes(text)) {
+          found = true
+        }
+      })
+      await Zemu.delay(500)
+    }
   }
 
   async clickLeft(filename?: string) {
