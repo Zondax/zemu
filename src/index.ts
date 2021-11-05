@@ -196,9 +196,11 @@ export default class Zemu {
     Zemu.checkElf(this.startOptions.model ?? DEFAULT_MODEL, this.elfPath)
 
     try {
-      // await Zemu.stopAllEmuContainers()
+      await Zemu.stopAllEmuContainers()
 
-      if (!this.transportPort || !this.speculosApiPort) await this.getPortsToListen()
+      if (!this.transportPort || !this.speculosApiPort) {
+        await this.getPortsToListen()
+      }
 
       if (!this.transportPort || !this.speculosApiPort) {
         const e = new Error("The Speculos API port or/and transport port couldn't be reserved")
@@ -428,7 +430,7 @@ export default class Zemu {
 
   async getEvents() {
     axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay});
-    const eventsUrl = 'http://localhost:' + this.speculosApiPort!.toString() + '/events'
+    const eventsUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/events'
     try {
       const { data } = await axios.get(eventsUrl)
       return data['events']
@@ -438,7 +440,7 @@ export default class Zemu {
   }
 
   async deleteEvents() {
-    const events = 'http://localhost:' + this.speculosApiPort!.toString() + '/events'
+    const events = 'http://localhost:' + this.speculosApiPort?.toString() + '/events'
     const response = await axios({
       method: 'DELETE',
       url: events,

@@ -31,7 +31,7 @@ beforeAll( async() => {
 
 const ZEMU_OPTIONS_S: StartOptions = {
   ...DEFAULT_START_OPTIONS,
-  X11: true,
+  X11: false,
   logging: true,
   custom: `-s "${APP_SEED}" `,
 }
