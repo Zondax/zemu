@@ -152,7 +152,7 @@ test('sign real app', async function () {
       ...DEFAULT_START_OPTIONS,
       logging: true,
       custom: `-s "${APP_SEED}"`,
-      X11: true,
+      X11: false,
     }
 
     await sim.start({ ...defaultOptions, model: "nanos" })
