@@ -36,14 +36,6 @@ const ZEMU_OPTIONS_S: StartOptions = {
   custom: `-s "${APP_SEED}" `,
 }
 
-const ZEMU_OPTIONS_X: StartOptions = {
-  ...DEFAULT_START_OPTIONS,
-  X11: false,
-  logging: true,
-  custom: `-s "${APP_SEED}" `,
-  model: 'nanox',
-}
-
 test('File-Missing', () => {
   expect(() => {
     new Zemu('it_does_not_exist')
@@ -123,6 +115,7 @@ test('Snapshot and compare 2', async () => {
   }
 })
 
+// eslint-disable-next-line jest/expect-expect
 test('GRPC Server start-stop', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
   await sim.start(ZEMU_OPTIONS_S)
