@@ -5,13 +5,9 @@ on:
     types:
       - created
     tags:
-      - "v[0-9]+"
-      - "v[0-9]+.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+(\\.[0-9]+)*"
 
 jobs:
-
   build:
     timeout-minutes: 5
     runs-on: ubuntu-latest

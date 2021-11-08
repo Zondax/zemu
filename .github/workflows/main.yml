@@ -1,9 +1,5 @@
-name: Test-Build
-
-on:
-  pull_request:
-    branches:
-      - main
+name: Build
+on: [ push ]
 
 jobs:
   build:
