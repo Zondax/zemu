@@ -99,6 +99,12 @@ export default class EmuContainer {
     transportPort: string
     speculosApiPort: string
   }) {
+    if ('X11' in options && options.X11) {
+      this.log("[ZEMU] X11 support is deprecated and not supported anymore")
+      this.log("[ZEMU] automatically disabling")
+      options.X11 = false
+    }
+
     // eslint-disable-next-line global-require
     const docker = new Docker()
 
