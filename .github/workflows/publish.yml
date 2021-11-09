@@ -46,9 +46,7 @@ jobs:
       - run: yarn test
 
   publish:
-    timeout-minutes: 5
     runs-on: ubuntu-latest
-    needs: [ build, test ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -58,21 +56,35 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16.13.0'
-          registry-url: "https://npm.pkg.github.com"
-          # Defaults to the user or organization that owns the workflow file
+          registry-url: "https://registry.npmjs.org"
           scope: "@zondax"
       - name: Install yarn
         run: npm install -g yarn
-      - name: Install modules
-        run: yarn install
       - name: Build package
-        run: yarn build
+        run: |
+          cd js
+          yarn install
+          yarn build
       - name: Get latest release version number
         id: get_version
         uses: battila7/get-version-action@v2
+      - name: Show version
+        run: echo ${{ steps.get_version.outputs.version }}
+      - name: Clean latest release version number
+        id: get_version_cleaned
+        uses: bhowell2/github-substring-action@v1
+        with:
+          output_name: version
+          value: ${{ steps.get_version.outputs.version }}
+          index_of_str: "npm_"
       - name: Update tag
-        run: npm --no-git-tag-version version ${{ steps.get_version.outputs.version }}
+        run: |
+          cd js
+          echo Publishing as ${{ steps.get_version_cleaned.outputs.version }}
+          npm --allow-same-version --no-git-tag-version version ${{ steps.get_version_cleaned.outputs.version }}
       - name: Publish package
-        run: npm publish
+        run: |
+          cd js
+          npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_PUBLISH_AUTO }}
