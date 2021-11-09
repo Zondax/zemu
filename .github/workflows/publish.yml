@@ -56,7 +56,7 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16.13.0'
-          registry-url: "https://npm.pkg.github.com"
+          registry-url: "https://registry.npmjs.org"
           scope: "@zondax"
       - name: Install yarn
         run: npm install -g yarn
