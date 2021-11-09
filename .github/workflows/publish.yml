@@ -58,21 +58,22 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16.13.0'
-          registry-url: "https://npm.pkg.github.com"
-          # Defaults to the user or organization that owns the workflow file
+          registry-url: "https://registry.npmjs.org"
           scope: "@zondax"
       - name: Install yarn
         run: npm install -g yarn
-      - name: Install modules
-        run: yarn install
       - name: Build package
-        run: yarn build
+        run: |
+          yarn install
+          yarn build
       - name: Get latest release version number
         id: get_version
         uses: battila7/get-version-action@v2
+      - name: Show version
+        run: echo ${{ steps.get_version.outputs.version }}
       - name: Update tag
         run: npm --no-git-tag-version version ${{ steps.get_version.outputs.version }}
       - name: Publish package
         run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_PUBLISH_AUTO }}
