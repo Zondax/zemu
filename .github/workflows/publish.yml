@@ -69,13 +69,6 @@ jobs:
         uses: battila7/get-version-action@v2
       - name: Show version
         run: echo ${{ steps.get_version.outputs.version }}
-      - name: Clean latest release version number
-        id: get_version_cleaned
-        uses: bhowell2/github-substring-action@v1
-        with:
-          output_name: version
-          value: ${{ steps.get_version.outputs.version }}
-          index_of_str: "npm_v"
      - name: Update tag
         run: npm --no-git-tag-version version ${{ steps.get_version.outputs.version }}
       - name: Publish package
