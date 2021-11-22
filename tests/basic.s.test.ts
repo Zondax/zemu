@@ -155,7 +155,7 @@ test('sign real app', async function () {
     const pathIndex = 0x80000000
 
     const txBasic =
-      '050000b7886d12fa597fa6921352e2fbc92263cbd220047e48553c6f135778a4a833b300d50391018ed73e0db80b0000010000009deeb940c92ae02111c3bd5baca89970384f4c9849f02a1b2e53e66414d30f9f9deeb940c92ae02111c3bd5baca89970384f4c9849f02a1b2e53e66414d30f9f'
+      '050000ca1ef1d326bd379143d6e743f6c3b51b7058d07e02e4614dc027e05bdb226c6503d2029649d503ae1103008ed73e0db80b0000010000006fbd74e5e1d0a61d52ccfe9d4adaed16dd3a7caa37c6bc4d0c2fa12e8b2f40636fbd74e5e1d0a61d52ccfe9d4adaed16dd3a7caa37c6bc4d0c2fa12e8b2f4063'
     const txBlob = Buffer.from(txBasic, 'hex')
 
     const signatureRequest = app.sign(pathAccount, pathChange, pathIndex, txBlob)
