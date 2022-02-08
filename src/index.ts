@@ -382,7 +382,7 @@ export default class Zemu {
       if (value == 0) {
         imageIndex += 1
         filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
-        await this.clickBoth(`${filename}`)
+        await this.clickBoth(`${filename}`, true)
         continue
       }
 
@@ -505,11 +505,28 @@ export default class Zemu {
     return this.snapshot(filename)
   }
 
-  async clickBoth(filename?: string) {
+  async clickBoth(filename?: string, waitForScreenUpdate?: boolean) {
+    let previousScreen;
+    if(waitForScreenUpdate) {
+      previousScreen = await this.snapshot();
+    }
     const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/both'
     const payload = { action: 'press-and-release' }
     await axios.post(bothClickUrl, payload)
     this.log(`Click Both  ${filename}`)
+
+    // Wait and poll Speculos until the application screen gets updated
+    if(waitForScreenUpdate) {
+      let watchdog = 5000;
+      let currentScreen = await this.snapshot();
+      while(currentScreen.data.equals(previousScreen.data)){
+        this.log("sleep")
+        await Zemu.delay(100);
+        watchdog -= 100;
+        if(watchdog <= 0) throw 'Timeout waiting for screen update'
+        currentScreen = await this.snapshot();
+      }
+    }
     return this.snapshot(filename)
   }
 
