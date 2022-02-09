@@ -160,7 +160,7 @@ test('sign real app', async function () {
 
     const signatureRequest = app.sign(pathAccount, pathChange, pathIndex, txBlob)
     await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot())
-    await sim.compareSnapshotsAndAccept('.', `s-sign_basic_normal`, 5)
+    await sim.compareSnapshotsAndApprove('.', `s-sign_basic_normal`)
 
     const signatureResponse = await signatureRequest
     console.log(signatureResponse)

@@ -367,9 +367,6 @@ export default class Zemu {
     fs.ensureDirSync(snapshotPrefixGolden)
     fs.ensureDirSync(snapshotPrefixTmp)
 
-    this.log(`golden      ${snapshotPrefixGolden}`)
-    this.log(`tmp         ${snapshotPrefixTmp}`)
-
     let imageIndex = 0
     let filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
     this.log(`---------------------------`)
@@ -404,9 +401,20 @@ export default class Zemu {
       }
     }
 
+    return this.compareSnapshots(path, testcaseName, imageIndex)
+  }
+
+  async compareSnapshots(path: string, testcaseName: string, snapshotCount: number): Promise<boolean> {
+
+    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+
+    this.log(`golden      ${snapshotPrefixGolden}`)
+    this.log(`tmp         ${snapshotPrefixTmp}`)
+
     ////////////////////
     this.log(`Start comparison`)
-    for (let j = 0; j < imageIndex + 1; j += 1) {
+    for (let j = 0; j < snapshotCount + 1; j += 1) {
       this.log(`Checked     ${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`)
       const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`)
       const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${this.formatIndexString(j)}.png`)
@@ -428,6 +436,67 @@ export default class Zemu {
     }
     instructions.push(0)
     return this.navigateAndCompareSnapshots(path, testcaseName, instructions)
+  }
+
+  async compareSnapshotsAndApprove(path: string, testcaseName: string, timeout = 5000): Promise<boolean> {
+    return this.navigateAndCompareUntilText(path, testcaseName, "APPROVE", timeout)
+  }
+
+  async navigateAndCompareUntilText(path: string, testcaseName: string, text: string, timeout = 5000): Promise<boolean> {
+    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+
+    fs.ensureDirSync(snapshotPrefixGolden)
+    fs.ensureDirSync(snapshotPrefixTmp)
+
+    let imageIndex = 0
+    let filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+    await this.snapshot(filename)
+
+    const start = new Date()
+    const prev_events_qty = (await this.getEvents()).length
+    let current_events_qty = prev_events_qty
+
+    let found = false
+
+    while(!found) {
+
+      const currentTime = new Date()
+      const elapsed: any = currentTime.getTime() - start.getTime()
+
+      if (elapsed > timeout) {
+        throw `Timeout waiting for screen containing ${text}`
+      }
+
+      const events = await this.getEvents()
+
+      if (current_events_qty != events.length) {
+
+        imageIndex += 1
+        filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+        current_events_qty = events.length
+
+        events.forEach((element: any) => {
+          if(element['text'].includes(text)) {
+            found = true
+          }
+        })
+
+        if (found) {
+          await this.clickBoth(filename)
+        } else {
+          // navigate to next screen
+          await this.clickRight(filename)
+        }
+      } else {
+        // this case we need to pull again in order to move to next screen
+        this.log("No new event, clicking right")
+        imageIndex += 1
+        filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+        await this.clickRight(filename)
+      }
+    }
+    return this.compareSnapshots(path, testcaseName, imageIndex)
   }
 
   async getEvents() {
