@@ -51,7 +51,8 @@ export const DEFAULT_START_OPTIONS = {
   custom: '',
   startDelay: DEFAULT_START_DELAY,
   pressDelay: DEFAULT_KEY_DELAY,
-  startText: 'Ready'
+  startText: 'Ready',
+  startTimeout: 1000
 }
 
 export class StartOptions {
@@ -61,6 +62,7 @@ export class StartOptions {
   custom = ''
   startDelay = DEFAULT_START_DELAY
   startText = 'Ready'
+  startTimeout = 1000
 }
 
 export interface Snapshot {
@@ -229,7 +231,7 @@ export default class Zemu {
       this.log(`Get initial snapshot`)
 
       // Captures main screen
-      await this.waitForText(this.startOptions.startText)
+      await this.waitForText(this.startOptions.startText, this.startOptions.startTimeout)
       this.mainMenuSnapshot = await this.snapshot()
     } catch (e) {
       this.log(`[ZEMU] ${e}`)
@@ -537,7 +539,7 @@ export default class Zemu {
     this.log(`Screen changed`)
   }
 
-  async waitForText(text: string, timeout = 5000) {
+  async waitForText(text: string, timeout = 1000) {
     const start = new Date()
     let found = false
 
