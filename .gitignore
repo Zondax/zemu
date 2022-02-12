@@ -69,3 +69,4 @@ TODO\.md
 
 \dist
 \tests/snapshots-tmp
+yarn.lock
