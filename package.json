@@ -32,7 +32,7 @@
     "@ledgerhq/hw-transport": "^6.24.1",
     "@ledgerhq/hw-transport-http": "^6.24.1",
     "dockerode": "^3.3.1",
-    "axios": "^0.25.0",
+    "axios": "^0.26.0",
     "axios-retry": "^3.2.0",
     "elfy": "^1.0.0",
     "fs-extra": "^10.0.0",
