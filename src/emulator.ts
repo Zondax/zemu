@@ -96,6 +96,7 @@ export default class EmuContainer {
     X11: boolean
     custom: string
     model: string
+    sdk: string
     transportPort: string
     speculosApiPort: string
   }) {
@@ -139,9 +140,9 @@ export default class EmuContainer {
     }
 
     let SDKoption = ''
-    if (options.model === 'nanos') {
-      this.log(`[ZEMU] Using NanoS SDK 2.0`)
-      SDKoption = ' -k 2.0 '
+    if (options.sdk) {
+      this.log(`[ZEMU] Using SDK ${options.model}`)
+      SDKoption = ` -k ${options.sdk} `
     }
 
     let modelOptions = 'nanos'

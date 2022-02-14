@@ -57,6 +57,7 @@ export const DEFAULT_START_OPTIONS = {
 
 export class StartOptions {
   model = 'nanos'
+  sdk = ''
   logging = false
   X11 = false
   custom = ''
