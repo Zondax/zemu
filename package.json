@@ -36,7 +36,7 @@
     "dockerode": "^3.3.1",
     "elfy": "^1.0.0",
     "fs-extra": "^10.0.0",
-    "get-port": "^5.1.1",
+    "get-port": "^6.0.0",
     "path": "^0.12.7",
     "pngjs": "^6.0.0",
     "randomstring": "^1.2.1",
