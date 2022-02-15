@@ -31,9 +31,9 @@
     "@grpc/proto-loader": "^0.6.9",
     "@ledgerhq/hw-transport": "^6.24.1",
     "@ledgerhq/hw-transport-http": "^6.24.1",
-    "dockerode": "^3.3.1",
     "axios": "^0.26.0",
     "axios-retry": "^3.2.0",
+    "dockerode": "^3.3.1",
     "elfy": "^1.0.0",
     "fs-extra": "^10.0.0",
     "get-port": "^5.1.1",
@@ -44,7 +44,6 @@
     "sleep": "^6.3.0"
   },
   "devDependencies": {
-    "@zondax/ledger-substrate": "^0.24.0",
     "@types/fs-extra": "^9.0.12",
     "@types/jest": "^27.4.0",
     "@types/ledgerhq__hw-transport": "^4.21.4",
@@ -52,6 +51,7 @@
     "@types/sleep": "^0.0.8",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
+    "@zondax/ledger-substrate": "^0.24.0",
     "copyfiles": "^2.4.1",
     "eslint": "^8.9.0",
     "eslint-config-prettier": "^8.3.0",

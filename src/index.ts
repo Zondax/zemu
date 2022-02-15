@@ -15,7 +15,7 @@
  ******************************************************************************* */
 import PNG from 'pngjs'
 import fs from 'fs-extra'
-import { RfbClient } from 'rfb2'
+import {RfbClient} from 'rfb2'
 import sleep from 'sleep'
 import getPort from 'get-port'
 import axios from 'axios'
@@ -46,6 +46,7 @@ const rndstr = require('randomstring')
 
 export const DEFAULT_START_OPTIONS = {
   model: DEFAULT_MODEL,
+  sdk: '',
   logging: false,
   X11: false,
   custom: '',
@@ -138,7 +139,7 @@ export default class Zemu {
       height: rect.height,
     })
     png.data = rect.data.slice()
-    const buffer = PNG.PNG.sync.write(png, { colorType: 6 })
+    const buffer = PNG.PNG.sync.write(png, {colorType: 6})
     fs.writeFileSync(filename, buffer)
   }
 
@@ -297,7 +298,7 @@ export default class Zemu {
 
   async fetchSnapshot(url: string) {
     // Exponential back-off retry delay between requests
-    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay});
+    axiosRetry(axios, {retryDelay: axiosRetry.exponentialDelay});
 
     return await axios({
       method: 'GET',
@@ -462,7 +463,7 @@ export default class Zemu {
 
     let found = false
 
-    while(!found) {
+    while (!found) {
 
       const currentTime = new Date()
       const elapsed: any = currentTime.getTime() - start.getTime()
@@ -480,7 +481,7 @@ export default class Zemu {
         current_events_qty = events.length
 
         events.forEach((element: any) => {
-          if(element['text'].includes(text)) {
+          if (element['text'].includes(text)) {
             found = true
           }
         })
@@ -503,10 +504,10 @@ export default class Zemu {
   }
 
   async getEvents() {
-    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay});
+    axiosRetry(axios, {retryDelay: axiosRetry.exponentialDelay});
     const eventsUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/events'
     try {
-      const { data } = await axios.get(eventsUrl)
+      const {data} = await axios.get(eventsUrl)
       return data['events']
     } catch (error) {
       return []
@@ -544,7 +545,7 @@ export default class Zemu {
     const start = new Date()
     let found = false
 
-    while(!found) {
+    while (!found) {
       const currentTime = new Date()
       const elapsed: any = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
@@ -553,7 +554,7 @@ export default class Zemu {
 
       const events = await this.getEvents()
       events.forEach((element: any) => {
-        if(element['text'].includes(text)) {
+        if (element['text'].includes(text)) {
           found = true
         }
       })
@@ -563,7 +564,7 @@ export default class Zemu {
 
   async clickLeft(filename?: string) {
     const leftClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/left'
-    const payload = { action: 'press-and-release' }
+    const payload = {action: 'press-and-release'}
     await axios.post(leftClickUrl, payload)
     this.log(`Click Left  ${filename}`)
     return this.snapshot(filename)
@@ -571,7 +572,7 @@ export default class Zemu {
 
   async clickRight(filename?: string) {
     const rightClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/right'
-    const payload = { action: 'press-and-release' }
+    const payload = {action: 'press-and-release'}
     await axios.post(rightClickUrl, payload)
     this.log(`Click Right ${filename}`)
     return this.snapshot(filename)
@@ -579,23 +580,23 @@ export default class Zemu {
 
   async clickBoth(filename?: string, waitForScreenUpdate?: boolean) {
     let previousScreen;
-    if(waitForScreenUpdate) {
+    if (waitForScreenUpdate) {
       previousScreen = await this.snapshot();
     }
     const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/both'
-    const payload = { action: 'press-and-release' }
+    const payload = {action: 'press-and-release'}
     await axios.post(bothClickUrl, payload)
     this.log(`Click Both  ${filename}`)
 
     // Wait and poll Speculos until the application screen gets updated
-    if(waitForScreenUpdate) {
+    if (waitForScreenUpdate) {
       let watchdog = 5000;
       let currentScreen = await this.snapshot();
-      while(currentScreen.data.equals(previousScreen.data)){
+      while (currentScreen.data.equals(previousScreen.data)) {
         this.log("sleep")
         await Zemu.delay(100);
         watchdog -= 100;
-        if(watchdog <= 0) throw 'Timeout waiting for screen update'
+        if (watchdog <= 0) throw 'Timeout waiting for screen update'
         currentScreen = await this.snapshot();
       }
     }
@@ -603,8 +604,8 @@ export default class Zemu {
   }
 
   private async getPortsToListen(): Promise<void> {
-    const transportPort = await getPort({ port: this.desiredTransportPort })
-    const speculosApiPort = await getPort({ port: this.desiredSpeculosApiPort })
+    const transportPort = await getPort({port: this.desiredTransportPort})
+    const speculosApiPort = await getPort({port: this.desiredSpeculosApiPort})
 
     this.transportPort = transportPort
     this.speculosApiPort = speculosApiPort
