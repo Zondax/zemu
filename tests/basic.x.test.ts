@@ -55,14 +55,14 @@ test('Basic Control - X', async () => {
   try {
     await sim.start(ZEMU_OPTIONS_X)
 
-    await sim.clickLeft()
-    await sim.clickLeft()
-    await sim.clickLeft()
+    await sim.clickLeft(undefined, false)
+    await sim.clickLeft(undefined, false)
+    await sim.clickLeft(undefined, false)
 
     // Move up and down and check screens
     const view0 = await sim.snapshot('tests/tmpX/00000.png')
-    const view1 = await sim.clickRight('tests/tmpX/00001.png')
-    const view2 = await sim.clickLeft('tests/tmpX/00002.png')
+    const view1 = await sim.clickRight('tests/tmpX/00001.png', false)
+    const view2 = await sim.clickLeft('tests/tmpX/00002.png', false)
 
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0)
