@@ -14,8 +14,8 @@
  *  limitations under the License.
  ******************************************************************************* */
 import Zemu, { DEFAULT_START_OPTIONS, StartOptions } from '../src'
-import MinimalApp from "./minapp"
-import { newPolymeshApp } from "@zondax/ledger-substrate";
+import MinimalApp from './minapp'
+import { newPolymeshApp } from '@zondax/ledger-substrate'
 
 const Resolve = require('path').resolve
 
@@ -25,7 +25,7 @@ const DEMO_APP2_PATH_S = Resolve('bin/app_s.elf')
 
 const APP_SEED = 'equip will roof matter pink blind book anxiety banner elbow sun young'
 
-beforeAll( async() => {
+beforeAll(async () => {
   await Zemu.checkAndPullImage()
 })
 
@@ -57,14 +57,14 @@ test('Basic Control - S', async () => {
   try {
     await sim.start(ZEMU_OPTIONS_S)
 
-    await sim.clickLeft()
-    await sim.clickLeft()
-    await sim.clickLeft()
+    await sim.clickLeft(undefined, false)
+    await sim.clickLeft(undefined, false)
+    await sim.clickLeft(undefined, false)
 
     // Move up and down and check screens
     const view0 = await sim.snapshot('tests/tmp/00000.png')
-    const view1 = await sim.clickRight('tests/tmp/00001.png')
-    const view2 = await sim.clickLeft('tests/tmp/00002.png')
+    const view1 = await sim.clickRight('tests/tmp/00001.png', false)
+    const view2 = await sim.clickLeft('tests/tmp/00002.png', false)
 
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0)
@@ -148,7 +148,7 @@ test('sign real app', async function () {
       X11: false,
     }
 
-    await sim.start({ ...defaultOptions, model: "nanos" })
+    await sim.start({ ...defaultOptions, model: 'nanos' })
     const app = newPolymeshApp(sim.getTransport())
     const pathAccount = 0x80000000
     const pathChange = 0x80000000

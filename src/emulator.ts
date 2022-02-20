@@ -65,6 +65,7 @@ export default class EmuContainer {
           process.stdout.write(`[DOCKER] ${status}: ${progress}\n`)
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         function onFinished(err: any, output: any) {
           if (!err) {
             resolve(true)
@@ -101,8 +102,8 @@ export default class EmuContainer {
     speculosApiPort: string
   }) {
     if ('X11' in options && options.X11) {
-      this.log("[ZEMU] X11 support is deprecated and not supported anymore")
-      this.log("[ZEMU] automatically disabling")
+      this.log('[ZEMU] X11 support is deprecated and not supported anymore')
+      this.log('[ZEMU] automatically disabling')
       options.X11 = false
     }
 
@@ -159,7 +160,7 @@ export default class EmuContainer {
 
     this.log(`[ZEMU] Command: ${command}`)
 
-    let portBindings: { [index: string]: { HostPort: string }[] } = {
+    const portBindings: { [index: string]: { HostPort: string }[] } = {
       [`9998/tcp`]: [{ HostPort: options.transportPort }],
       [`5000/tcp`]: [{ HostPort: options.speculosApiPort }],
     }

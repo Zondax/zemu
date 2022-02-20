@@ -65,7 +65,7 @@ export default class MinimalApp {
       const errorCodeData = response.slice(-2)
       const returnCode = errorCodeData[0] * 256 + errorCodeData[1]
 
-      const result : any = {}
+      const result: any = {}
 
       let appName = 'err'
       let appVersion = 'err'
