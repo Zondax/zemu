@@ -562,31 +562,15 @@ export default class Zemu {
     }
   }
 
-  async clickLeft(filename?: string) {
-    const leftClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/left'
-    const payload = {action: 'press-and-release'}
-    await axios.post(leftClickUrl, payload)
-    this.log(`Click Left  ${filename}`)
-    return this.snapshot(filename)
-  }
-
-  async clickRight(filename?: string) {
-    const rightClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/right'
-    const payload = {action: 'press-and-release'}
-    await axios.post(rightClickUrl, payload)
-    this.log(`Click Right ${filename}`)
-    return this.snapshot(filename)
-  }
-
-  async clickBoth(filename?: string, waitForScreenUpdate?: boolean) {
+  async click(endpoint: string, filename?: string, waitForScreenUpdate?: boolean) {
     let previousScreen;
     if (waitForScreenUpdate) {
       previousScreen = await this.snapshot();
     }
-    const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/button/both'
+    const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + endpoint
     const payload = {action: 'press-and-release'}
     await axios.post(bothClickUrl, payload)
-    this.log(`Click Both  ${filename}`)
+    this.log(`Click ${endpoint} -> ${filename}`)
 
     // Wait and poll Speculos until the application screen gets updated
     if (waitForScreenUpdate) {
@@ -601,6 +585,18 @@ export default class Zemu {
       }
     }
     return this.snapshot(filename)
+  }
+
+  async clickLeft(filename?: string, waitForScreenUpdate = true) {
+    return this.click('/button/left', filename, waitForScreenUpdate)
+  }
+
+  async clickRight(filename?: string, waitForScreenUpdate = true) {
+    return this.click('/button/right', filename, waitForScreenUpdate)
+  }
+
+  async clickBoth(filename?: string, waitForScreenUpdate = true) {
+    return this.click('/button/both', filename, waitForScreenUpdate)
   }
 
   private async getPortsToListen(): Promise<void> {
