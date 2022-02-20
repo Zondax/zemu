@@ -8,7 +8,7 @@
 >
 > We recommend using the npmjs package in order to receive updates/fixes.
 
-**This project is under active development - API and usage guidelines are *very* likely to change**
+**This project is under active development - API and usage guidelines are _very_ likely to change**
 
 ## Overview
 
@@ -16,7 +16,7 @@ Integration and end-to-end testing of Ledger Apps is a manual and time consuming
 apps ecosystem is lacking an adequate approach with respect to testing. The Zemu Framework is our solution for this
 problem. We stand on the shoulders of the giant [greenknot’s](https://github.com/greenknot) speculos.
 
-*Zemu is an emulation and testing framework for Ledger Nano S/X devices.*
+_Zemu is an emulation and testing framework for Ledger Nano S/X devices._
 
 ## Features
 
@@ -32,7 +32,7 @@ problem. We stand on the shoulders of the giant [greenknot’s](https://github.c
 
 ## QuickStart
 
-```Zemu``` class provides access and control to your emulated Ledger app running on a docker container.
+`Zemu` class provides access and control to your emulated Ledger app running on a docker container.
 
 Basic testing code:
 
@@ -56,19 +56,19 @@ test("demo", async () => {
 });
 ```
 
-## Basic control commands examples:**
+## Basic control commands examples:\*\*
 
 - Take a screenshot and save it: \
-  ```await sim.snapshot("tests/snapshots/0.png")```
+  `await sim.snapshot("tests/snapshots/0.png")`
 
 - Send "click left": \
-  ```await sim.clickLeft()```
+  `await sim.clickLeft()`
 
 - Send "click right": \
-  ```await sim.clickRight()```
+  `await sim.clickRight()`
 
 - Send "click both": \
-  ```await sim.clickBoth()```
+  `await sim.clickBoth()`
 
 - Wait some time: \
-  ```await Zemu.sleep(500) //Time in [ms]```
+  `await Zemu.sleep(500) //Time in [ms]`

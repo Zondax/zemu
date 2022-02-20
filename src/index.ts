@@ -15,7 +15,7 @@
  ******************************************************************************* */
 import PNG from 'pngjs'
 import fs from 'fs-extra'
-import {RfbClient} from 'rfb2'
+import { RfbClient } from 'rfb2'
 import sleep from 'sleep'
 import getPort from 'get-port'
 import axios from 'axios'
@@ -53,7 +53,7 @@ export const DEFAULT_START_OPTIONS = {
   startDelay: DEFAULT_START_DELAY,
   pressDelay: DEFAULT_KEY_DELAY,
   startText: 'Ready',
-  startTimeout: 1000
+  startTimeout: 1000,
 }
 
 export class StartOptions {
@@ -139,7 +139,7 @@ export default class Zemu {
       height: rect.height,
     })
     png.data = rect.data.slice()
-    const buffer = PNG.PNG.sync.write(png, {colorType: 6})
+    const buffer = PNG.PNG.sync.write(png, { colorType: 6 })
     fs.writeFileSync(filename, buffer)
   }
 
@@ -298,7 +298,7 @@ export default class Zemu {
 
   async fetchSnapshot(url: string) {
     // Exponential back-off retry delay between requests
-    axiosRetry(axios, {retryDelay: axiosRetry.exponentialDelay});
+    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
 
     return await axios({
       method: 'GET',
@@ -324,6 +324,7 @@ export default class Zemu {
       this.saveSnapshot(response.data, filename)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return new Promise((resolve, reject) => {
       const rect = {
         width: modelWindow.width,
@@ -409,7 +410,6 @@ export default class Zemu {
   }
 
   async compareSnapshots(path: string, testcaseName: string, snapshotCount: number): Promise<boolean> {
-
     const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
     const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
@@ -443,7 +443,7 @@ export default class Zemu {
   }
 
   async compareSnapshotsAndApprove(path: string, testcaseName: string, timeout = 5000): Promise<boolean> {
-    return this.navigateAndCompareUntilText(path, testcaseName, "APPROVE", timeout)
+    return this.navigateAndCompareUntilText(path, testcaseName, 'APPROVE', timeout)
   }
 
   async navigateAndCompareUntilText(path: string, testcaseName: string, text: string, timeout = 5000): Promise<boolean> {
@@ -464,7 +464,6 @@ export default class Zemu {
     let found = false
 
     while (!found) {
-
       const currentTime = new Date()
       const elapsed: any = currentTime.getTime() - start.getTime()
 
@@ -475,7 +474,6 @@ export default class Zemu {
       const events = await this.getEvents()
 
       if (current_events_qty != events.length) {
-
         imageIndex += 1
         filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
         current_events_qty = events.length
@@ -494,7 +492,7 @@ export default class Zemu {
         }
       } else {
         // this case we need to pull again in order to move to next screen
-        this.log("No new event, clicking right")
+        this.log('No new event, clicking right')
         imageIndex += 1
         filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
         await this.clickRight(filename)
@@ -504,10 +502,10 @@ export default class Zemu {
   }
 
   async getEvents() {
-    axiosRetry(axios, {retryDelay: axiosRetry.exponentialDelay});
+    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
     const eventsUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/events'
     try {
-      const {data} = await axios.get(eventsUrl)
+      const { data } = await axios.get(eventsUrl)
       return data['events']
     } catch (error) {
       return []
@@ -515,11 +513,10 @@ export default class Zemu {
   }
 
   async deleteEvents() {
-    const events = 'http://localhost:' + this.speculosApiPort?.toString() + '/events'
-    const response = await axios({
+    await axios({
       method: 'DELETE',
-      url: events,
-    });
+      url: 'http://localhost:' + this.speculosApiPort?.toString() + '/events',
+    })
   }
 
   async waitScreenChange(timeout = 5000) {
@@ -563,25 +560,25 @@ export default class Zemu {
   }
 
   async click(endpoint: string, filename?: string, waitForScreenUpdate?: boolean) {
-    let previousScreen;
+    let previousScreen
     if (waitForScreenUpdate) {
-      previousScreen = await this.snapshot();
+      previousScreen = await this.snapshot()
     }
     const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + endpoint
-    const payload = {action: 'press-and-release'}
+    const payload = { action: 'press-and-release' }
     await axios.post(bothClickUrl, payload)
     this.log(`Click ${endpoint} -> ${filename}`)
 
     // Wait and poll Speculos until the application screen gets updated
     if (waitForScreenUpdate) {
-      let watchdog = 5000;
-      let currentScreen = await this.snapshot();
+      let watchdog = 5000
+      let currentScreen = await this.snapshot()
       while (currentScreen.data.equals(previousScreen.data)) {
-        this.log("sleep")
-        await Zemu.delay(100);
-        watchdog -= 100;
+        this.log('sleep')
+        await Zemu.delay(100)
+        watchdog -= 100
         if (watchdog <= 0) throw 'Timeout waiting for screen update'
-        currentScreen = await this.snapshot();
+        currentScreen = await this.snapshot()
       }
     }
     return this.snapshot(filename)
@@ -600,8 +597,8 @@ export default class Zemu {
   }
 
   private async getPortsToListen(): Promise<void> {
-    const transportPort = await getPort({port: this.desiredTransportPort})
-    const speculosApiPort = await getPort({port: this.desiredSpeculosApiPort})
+    const transportPort = await getPort({ port: this.desiredTransportPort })
+    const speculosApiPort = await getPort({ port: this.desiredSpeculosApiPort })
 
     this.transportPort = transportPort
     this.speculosApiPort = speculosApiPort

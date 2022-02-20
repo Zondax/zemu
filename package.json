@@ -21,7 +21,10 @@
   "scripts": {
     "build": "tsc && yarn copy-files",
     "copy-files": "copyfiles -u 0 src/**/*.proto dist/",
-    "test": "yarn build && jest"
+    "test": "yarn build && jest",
+    "linter": "eslint --ext .ts,.tsx,.js,.jsx --ignore-path .eslintignore .",
+    "linter:fix": "yarn linter --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\""
   },
   "bugs": {
     "url": "https://github.com/zondax/zemu/issues"
