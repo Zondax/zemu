@@ -1,4 +1,4 @@
-export const DEFAULT_EMU_IMG = 'zondax/builder-zemu@sha256:be01d0ad6123c9db787f9f379e84bc0cf024453cf1269e32e35ff02767c26b05'
+export const DEFAULT_EMU_IMG = 'zondax/builder-zemu@sha256:9c97b921dbba8f0a221c9419b577371540a7afb29727527857ee4de62307cf2f'
 
 export const TIMEOUT = 1000
 export const DEFAULT_MODEL = 'nanos'

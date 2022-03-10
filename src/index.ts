@@ -185,14 +185,16 @@ export default class Zemu {
   static checkElf(model: string, elfPath: string) {
     const elfCodeNanoS = 0xc0d00001
     const elfCodeNanoX = 0xc0de0001
+    const elfCodeNanoS2 = 0xc0de0001
 
     const elfApp = fs.readFileSync(elfPath)
     const elfInfo = elfy.parse(elfApp)
 
-    if (elfInfo.entry !== elfCodeNanoS && elfInfo.entry !== elfCodeNanoX) {
-      throw new Error('Are you sure is a Nano S/X app ?')
+    if (elfInfo.entry !== elfCodeNanoS &&
+        elfInfo.entry !== elfCodeNanoX &&
+        elfInfo.entry !== elfCodeNanoS2) {
+      throw new Error('Are you sure is a Nano S/S+/X app ?')
     }
-    // FIXME: SDK2.0 entry points have changed
   }
 
   async start(options: StartOptions) {
@@ -291,6 +293,7 @@ export default class Zemu {
       case 'nanos':
         return WINDOW_S
       case 'nanox':
+      case 'nanos2':
         return WINDOW_X
     }
     throw `model ${this.startOptions?.model ?? DEFAULT_MODEL} not recognized`
