@@ -409,7 +409,7 @@ export default class Zemu {
 
     const events = await this.getEvents()
     if (events) {
-      this.log(JSON.stringify(events))
+      events.forEach((x: any) => this.log(`[ZEMU] ${JSON.stringify(x)}`))
     }
 
     return this.compareSnapshots(path, testcaseName, imageIndex)
