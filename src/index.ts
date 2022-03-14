@@ -408,7 +408,9 @@ export default class Zemu {
     }
 
     const events = await this.getEvents()
-    this.log(events)
+    if (events) {
+      this.log(JSON.stringify(events))
+    }
 
     return this.compareSnapshots(path, testcaseName, imageIndex)
   }
