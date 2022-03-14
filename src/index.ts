@@ -190,9 +190,7 @@ export default class Zemu {
     const elfApp = fs.readFileSync(elfPath)
     const elfInfo = elfy.parse(elfApp)
 
-    if (elfInfo.entry !== elfCodeNanoS &&
-        elfInfo.entry !== elfCodeNanoX &&
-        elfInfo.entry !== elfCodeNanoSP) {
+    if (elfInfo.entry !== elfCodeNanoS && elfInfo.entry !== elfCodeNanoX && elfInfo.entry !== elfCodeNanoSP) {
       throw new Error('Are you sure is a Nano S/S+/X app ?')
     }
   }
@@ -408,6 +406,9 @@ export default class Zemu {
         await this.clickRight(filename)
       }
     }
+
+    const events = await this.getEvents()
+    this.log(events)
 
     return this.compareSnapshots(path, testcaseName, imageIndex)
   }
