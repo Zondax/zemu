@@ -15,7 +15,7 @@
  ******************************************************************************* */
 import PNG from 'pngjs'
 import fs from 'fs-extra'
-import { RfbClient } from 'rfb2'
+import {RfbClient} from 'rfb2'
 import sleep from 'sleep'
 import getPort from 'get-port'
 import axios from 'axios'
@@ -53,6 +53,7 @@ export const DEFAULT_START_OPTIONS = {
   startDelay: DEFAULT_START_DELAY,
   pressDelay: DEFAULT_KEY_DELAY,
   startText: 'Ready',
+  caseSensitive: false,
   startTimeout: 1000,
 }
 
@@ -64,6 +65,7 @@ export class StartOptions {
   custom = ''
   startDelay = DEFAULT_START_DELAY
   startText = 'Ready'
+  caseSensitive = false
   startTimeout = 1000
 }
 
@@ -139,7 +141,7 @@ export default class Zemu {
       height: rect.height,
     })
     png.data = rect.data.slice()
-    const buffer = PNG.PNG.sync.write(png, { colorType: 6 })
+    const buffer = PNG.PNG.sync.write(png, {colorType: 6})
     fs.writeFileSync(filename, buffer)
   }
 
@@ -233,7 +235,7 @@ export default class Zemu {
       this.log(`Get initial snapshot`)
 
       // Captures main screen
-      await this.waitForText(this.startOptions.startText, this.startOptions.startTimeout)
+      await this.waitForText(this.startOptions.startText, this.startOptions.startTimeout, this.startOptions.caseSensitive)
       this.mainMenuSnapshot = await this.snapshot()
     } catch (e) {
       this.log(`[ZEMU] ${e}`)
@@ -299,7 +301,7 @@ export default class Zemu {
 
   async fetchSnapshot(url: string) {
     // Exponential back-off retry delay between requests
-    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
+    axiosRetry(axios, {retryDelay: axiosRetry.exponentialDelay})
 
     return await axios({
       method: 'GET',
@@ -508,10 +510,10 @@ export default class Zemu {
   }
 
   async getEvents() {
-    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
+    axiosRetry(axios, {retryDelay: axiosRetry.exponentialDelay})
     const eventsUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/events'
     try {
-      const { data } = await axios.get(eventsUrl)
+      const {data} = await axios.get(eventsUrl)
       return data['events']
     } catch (error) {
       return []
@@ -544,7 +546,7 @@ export default class Zemu {
     this.log(`Screen changed`)
   }
 
-  async waitForText(text: string, timeout = 1000) {
+  async waitForText(text: string, timeout = 1000, caseSensitive = false) {
     const start = new Date()
     let found = false
 
@@ -557,8 +559,14 @@ export default class Zemu {
 
       const events = await this.getEvents()
       events.forEach((element: any) => {
-        if (element['text'].includes(text)) {
-          found = true
+        if (caseSensitive) {
+          if (element['text'].includes(text)) {
+            found = true
+          }
+        } else {
+          if (element['text'].toLowerCase().includes(text.toLowerCase())) {
+            found = true
+          }
         }
       })
       await Zemu.delay(500)
@@ -571,7 +579,7 @@ export default class Zemu {
       previousScreen = await this.snapshot()
     }
     const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + endpoint
-    const payload = { action: 'press-and-release' }
+    const payload = {action: 'press-and-release'}
     await axios.post(bothClickUrl, payload)
     this.log(`Click ${endpoint} -> ${filename}`)
 
@@ -603,8 +611,8 @@ export default class Zemu {
   }
 
   private async getPortsToListen(): Promise<void> {
-    const transportPort = await getPort({ port: this.desiredTransportPort })
-    const speculosApiPort = await getPort({ port: this.desiredSpeculosApiPort })
+    const transportPort = await getPort({port: this.desiredTransportPort})
+    const speculosApiPort = await getPort({port: this.desiredSpeculosApiPort})
 
     this.transportPort = transportPort
     this.speculosApiPort = speculosApiPort
