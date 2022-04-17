@@ -1,3 +1,5 @@
+// noinspection SpellCheckingInspection
+
 /** ******************************************************************************
  *  (c) 2020 Zondax GmbH
  *
@@ -87,8 +89,8 @@ test('Wait for change / timeout', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
   try {
     await sim.start(ZEMU_OPTIONS_S)
-    const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000)
-    await expect(result).rejects.toEqual('Timeout waiting for screen to change (2000 ms)')
+    const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 5000)
+    await expect(result).rejects.toEqual('Timeout waiting for screen to change (5000 ms)')
   } finally {
     await sim.close()
   }

@@ -15,7 +15,6 @@
  ******************************************************************************* */
 import PNG from 'pngjs'
 import fs from 'fs-extra'
-import {RfbClient} from 'rfb2'
 import sleep from 'sleep'
 import getPort from 'get-port'
 import axios from 'axios'
@@ -33,7 +32,8 @@ import {
   DEFAULT_HOST,
   DEFAULT_KEY_DELAY,
   DEFAULT_MODEL,
-  DEFAULT_START_DELAY, DEFAULT_START_TIMEOUT,
+  DEFAULT_START_DELAY,
+  DEFAULT_START_TIMEOUT,
   KILL_TIMEOUT,
   WINDOW_S,
   WINDOW_X,
@@ -93,10 +93,10 @@ export default class Zemu {
   private elfPath: string
   private grpcManager: GRPCRouter | null | undefined
   private mainMenuSnapshot: null
-  private vncSession: RfbClient | null
   private libElfs: { [p: string]: string }
   private emuContainer: EmuContainer
   private transport: Transport | undefined
+  private containerName: string
 
   constructor(
     elfPath: string,
@@ -111,7 +111,6 @@ export default class Zemu {
     this.elfPath = elfPath
     this.libElfs = libElfs
     this.mainMenuSnapshot = null
-    this.vncSession = null
 
     if (this.elfPath == null) {
       throw new Error('elfPath cannot be null!')
@@ -127,22 +126,8 @@ export default class Zemu {
       }
     })
 
-    const containerName = BASE_NAME + rndstr.generate(5)
-    this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, DEFAULT_EMU_IMG, containerName)
-  }
-
-  getSession(): any {
-    return this.vncSession
-  }
-
-  static saveRGBA2Png(rect: { width: number; height: number; data: Buffer }, filename: string) {
-    const png = new PNG.PNG({
-      width: rect.width,
-      height: rect.height,
-    })
-    png.data = rect.data.slice()
-    const buffer = PNG.PNG.sync.write(png, {colorType: 6})
-    fs.writeFileSync(filename, buffer)
+    this.containerName = BASE_NAME + rndstr.generate()
+    this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, DEFAULT_EMU_IMG, this.containerName)
   }
 
   static LoadPng2RGB(filename: string) {
@@ -260,12 +245,11 @@ export default class Zemu {
         // https://github.com/LedgerHQ/ledgerjs/blob/0ec9a60fe57d75dff26a69c213fd824aa321231c/packages/hw-transport-http/src/withStaticURLs.ts#L89
         this.transport = await (TransportHttp(transport_url) as any).open(transport_url)
         connected = true
-      }
-      catch {
+      } catch (e) {
+        this.log(`WAIT ${this.containerName} ${elapsed} - ${e} ${transport_url}`)
         connected = false
       }
     }
-
   }
 
   log(message: string) {
@@ -312,9 +296,9 @@ export default class Zemu {
 
   async fetchSnapshot(url: string) {
     // Exponential back-off retry delay between requests
-    axiosRetry(axios, {retryDelay: axiosRetry.exponentialDelay})
+    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
 
-    return await axios({
+    return axios({
       method: 'GET',
       url: url,
       responseType: 'arraybuffer',
@@ -420,7 +404,7 @@ export default class Zemu {
       }
     }
 
-    this.dumpEvents()
+    await this.dumpEvents()
 
     return this.compareSnapshots(path, testcaseName, imageIndex)
   }
@@ -518,10 +502,10 @@ export default class Zemu {
   }
 
   async getEvents() {
-    axiosRetry(axios, {retryDelay: axiosRetry.exponentialDelay})
+    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
     const eventsUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/events'
     try {
-      const {data} = await axios.get(eventsUrl)
+      const { data } = await axios.get(eventsUrl)
       return data['events']
     } catch (error) {
       return []
@@ -561,7 +545,7 @@ export default class Zemu {
     this.log(`Screen changed`)
   }
 
-  async waitForText(text: string, timeout = 1000, caseSensitive = false) {
+  async waitForText(text: string, timeout = 5000, caseSensitive = false) {
     const start = new Date()
     let found = false
 
@@ -569,7 +553,7 @@ export default class Zemu {
       const currentTime = new Date()
       const elapsed: any = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
-        throw `Timeout waiting for text (${text})`
+        throw `Timeout (${timeout}) waiting for text (${text})`
       }
 
       const events = await this.getEvents()
@@ -582,7 +566,7 @@ export default class Zemu {
           q = q.toLowerCase()
         }
 
-        found ||= (v === q)
+        found ||= v === q
       })
       await Zemu.delay(100)
     }
@@ -594,7 +578,7 @@ export default class Zemu {
       previousScreen = await this.snapshot()
     }
     const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + endpoint
-    const payload = {action: 'press-and-release'}
+    const payload = { action: 'press-and-release' }
     await axios.post(bothClickUrl, payload)
     this.log(`Click ${endpoint} -> ${filename}`)
 
@@ -627,8 +611,8 @@ export default class Zemu {
 
   private async assignPortsToListen(): Promise<void> {
     if (!this.transportPort || !this.speculosApiPort) {
-      const transportPort = await getPort({port: this.desiredTransportPort})
-      const speculosApiPort = await getPort({port: this.desiredSpeculosApiPort})
+      const transportPort = await getPort({ port: this.desiredTransportPort })
+      const speculosApiPort = await getPort({ port: this.desiredSpeculosApiPort })
 
       this.transportPort = transportPort
       this.speculosApiPort = speculosApiPort

@@ -176,8 +176,7 @@ export default class EmuContainer {
       `DISPLAY=${displayEnvironment}`, // needed if X forwarding
     ]
 
-    this.log(`[ZEMU] Creating Container`)
-
+    this.log(`[ZEMU] Creating Container ${this.image} - ${this.name} `)
     this.currentContainer = await docker.createContainer({
       Image: this.image,
       name: this.name,
@@ -216,13 +215,13 @@ export default class EmuContainer {
       try {
         await container.stop({ t: 0 })
       } catch (e) {
-        this.log(`[ZEMU] ${e}`)
+        this.log(`[ZEMU] Stopping: ${e}`)
       }
       this.log(`[ZEMU] Stopped`)
       try {
         await container.remove()
-      } catch (e) {
-        this.log(`[ZEMU] ${e}`)
+      } catch {
+        // eslint-disable-next-line no-empty
       }
       this.log(`[ZEMU] Removed`)
     }

@@ -1,3 +1,5 @@
+// noinspection SpellCheckingInspection
+
 /** ******************************************************************************
  *  (c) 2020 Zondax GmbH
  *

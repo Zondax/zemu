@@ -22,7 +22,7 @@
     "build": "tsc && yarn copy-files",
     "copy-files": "copyfiles -u 0 src/**/*.proto dist/",
     "test": "yarn build && jest",
-    "linter": "eslint --ext .ts,.tsx,.js,.jsx --ignore-path .eslintignore .",
+    "linter": "eslint --ext .ts,.tsx,.js,.jsx --ignore-path .eslintignore . --max-warnings 0",
     "linter:fix": "yarn linter --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\""
   },
@@ -43,7 +43,6 @@
     "path": "^0.12.7",
     "pngjs": "^6.0.0",
     "randomstring": "^1.2.1",
-    "rfb2": "^0.2.2",
     "sleep": "^6.3.0"
   },
   "devDependencies": {
