@@ -33,7 +33,7 @@ import {
   DEFAULT_HOST,
   DEFAULT_KEY_DELAY,
   DEFAULT_MODEL,
-  DEFAULT_START_DELAY,
+  DEFAULT_START_DELAY, DEFAULT_START_TIMEOUT,
   KILL_TIMEOUT,
   WINDOW_S,
   WINDOW_X,
@@ -54,7 +54,7 @@ export const DEFAULT_START_OPTIONS = {
   pressDelay: DEFAULT_KEY_DELAY,
   startText: 'Ready',
   caseSensitive: false,
-  startTimeout: 1000,
+  startTimeout: DEFAULT_START_TIMEOUT,
 }
 
 export class StartOptions {
@@ -205,14 +205,12 @@ export default class Zemu {
 
     try {
       await Zemu.stopAllEmuContainers()
-
-      if (!this.transportPort || !this.speculosApiPort) {
-        await this.getPortsToListen()
-      }
+      await this.assignPortsToListen()
 
       if (!this.transportPort || !this.speculosApiPort) {
         const e = new Error("The Speculos API port or/and transport port couldn't be reserved")
         this.log(`[ZEMU] ${e}`)
+        // noinspection ExceptionCaughtLocallyJS
         throw e
       }
 
@@ -223,8 +221,7 @@ export default class Zemu {
         speculosApiPort: this.speculosApiPort.toString(),
       })
 
-      this.log(`Started Container`)
-
+      this.log(`Connecting to container`)
       // eslint-disable-next-liwaine func-names
       await this.connect().catch(error => {
         this.log(`${error}`)
@@ -232,10 +229,11 @@ export default class Zemu {
         throw error
       })
 
-      this.log(`Get initial snapshot`)
-
       // Captures main screen
+      this.log(`Wait for start text`)
       await this.waitForText(this.startOptions.startText, this.startOptions.startTimeout, this.startOptions.caseSensitive)
+
+      this.log(`Get initial snapshot`)
       this.mainMenuSnapshot = await this.snapshot()
     } catch (e) {
       this.log(`[ZEMU] ${e}`)
@@ -244,17 +242,30 @@ export default class Zemu {
   }
 
   async connect() {
-    // FIXME: Can we detect open ports?
-    const waitDelay = this.startOptions?.startDelay ?? DEFAULT_START_DELAY
-
-    this.log(`Wait for ${waitDelay} ms`)
-    Zemu.delay(waitDelay)
-
     const transport_url = `${this.transportProtocol}://${this.host}:${this.transportPort}`
+    const start = new Date()
+    let connected = false
+    const maxWait = this.startOptions?.startDelay ?? DEFAULT_START_DELAY
 
-    // Here it should be "StaticTransport" type, in order to be able to use the static method "open". That method belogs to StaticTransport
-    // https://github.com/LedgerHQ/ledgerjs/blob/0ec9a60fe57d75dff26a69c213fd824aa321231c/packages/hw-transport-http/src/withStaticURLs.ts#L89
-    this.transport = await (TransportHttp(transport_url) as any).open(transport_url)
+    while (!connected) {
+      const currentTime = new Date()
+      const elapsed: any = currentTime.getTime() - start.getTime()
+      if (elapsed > maxWait) {
+        throw `Timeout waiting to connect`
+      }
+      Zemu.delay(100)
+
+      try {
+        // Here it should be "StaticTransport" type, in order to be able to use the static method "open". That method belongs to StaticTransport
+        // https://github.com/LedgerHQ/ledgerjs/blob/0ec9a60fe57d75dff26a69c213fd824aa321231c/packages/hw-transport-http/src/withStaticURLs.ts#L89
+        this.transport = await (TransportHttp(transport_url) as any).open(transport_url)
+        connected = true
+      }
+      catch {
+        connected = false
+      }
+    }
+
   }
 
   log(message: string) {
@@ -409,10 +420,7 @@ export default class Zemu {
       }
     }
 
-    const events = await this.getEvents()
-    if (events) {
-      events.forEach((x: any) => this.log(`[ZEMU] ${JSON.stringify(x)}`))
-    }
+    this.dumpEvents()
 
     return this.compareSnapshots(path, testcaseName, imageIndex)
   }
@@ -527,6 +535,13 @@ export default class Zemu {
     })
   }
 
+  async dumpEvents() {
+    const events = await this.getEvents()
+    if (events) {
+      events.forEach((x: any) => this.log(`[ZEMU] ${JSON.stringify(x)}`))
+    }
+  }
+
   async waitScreenChange(timeout = 5000) {
     const start = new Date()
     const prev_events_qty = (await this.getEvents()).length
@@ -559,17 +574,17 @@ export default class Zemu {
 
       const events = await this.getEvents()
       events.forEach((element: any) => {
-        if (caseSensitive) {
-          if (element['text'].includes(text)) {
-            found = true
-          }
-        } else {
-          if (element['text'].toLowerCase().includes(text.toLowerCase())) {
-            found = true
-          }
+        let v = element['text']
+        let q = text
+
+        if (!caseSensitive) {
+          v = v.toLowerCase()
+          q = q.toLowerCase()
         }
+
+        found ||= (v === q)
       })
-      await Zemu.delay(500)
+      await Zemu.delay(100)
     }
   }
 
@@ -610,11 +625,13 @@ export default class Zemu {
     return this.click('/button/both', filename, waitForScreenUpdate)
   }
 
-  private async getPortsToListen(): Promise<void> {
-    const transportPort = await getPort({port: this.desiredTransportPort})
-    const speculosApiPort = await getPort({port: this.desiredSpeculosApiPort})
+  private async assignPortsToListen(): Promise<void> {
+    if (!this.transportPort || !this.speculosApiPort) {
+      const transportPort = await getPort({port: this.desiredTransportPort})
+      const speculosApiPort = await getPort({port: this.desiredSpeculosApiPort})
 
-    this.transportPort = transportPort
-    this.speculosApiPort = speculosApiPort
+      this.transportPort = transportPort
+      this.speculosApiPort = speculosApiPort
+    }
   }
 }
