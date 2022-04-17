@@ -70,3 +70,5 @@ TODO\.md
 \dist
 \tests/snapshots-tmp
 yarn.lock
+
+package-lock.json
