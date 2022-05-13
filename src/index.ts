@@ -566,7 +566,7 @@ export default class Zemu {
           q = q.toLowerCase()
         }
 
-        found ||= v === q
+        found ||= v.includes(q)
       })
       await Zemu.delay(100)
     }
