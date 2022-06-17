@@ -140,15 +140,19 @@ export default class EmuContainer {
       }
     }
 
-    let SDKoption = ''
-    if (options.sdk) {
-      this.log(`[ZEMU] Using SDK ${options.model}`)
-      SDKoption = ` -k ${options.sdk} `
-    }
-
     let modelOptions = 'nanos'
     if (options.model) {
       modelOptions = options.model
+    }
+
+    let SDKoption = ''
+    if (options.model == "nanosp") {
+      options.sdk = "1.0.3"
+    }
+
+    if (options.sdk) {
+      this.log(`[ZEMU] Using SDK ${options.model}`)
+      SDKoption = ` -k ${options.sdk} `
     }
 
     let customOptions = ''
