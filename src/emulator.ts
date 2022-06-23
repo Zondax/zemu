@@ -140,27 +140,18 @@ export default class EmuContainer {
       }
     }
 
-    let modelOptions = 'nanos'
-    if (options.model) {
-      modelOptions = options.model
-    }
+    const modelOptions = options?.model ? options.model : 'nanos'
+    if (modelOptions === 'nanosp') options.sdk = '1.0.3'
 
-    let SDKoption = ''
-    if (options.model == "nanosp") {
-      options.sdk = "1.0.3"
-    }
-
-    if (options.sdk) {
-      this.log(`[ZEMU] Using SDK ${options.model}`)
-      SDKoption = ` -k ${options.sdk} `
-    }
+    const sdkOption = options?.sdk ? ` -k ${options.sdk} ` : ''
+    if (sdkOption) this.log(`[ZEMU] Using SDK ${modelOptions} with version ${options.sdk}`)
 
     let customOptions = ''
     if (options.custom) {
       customOptions = options.custom
     }
 
-    const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${SDKoption} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
+    const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${sdkOption} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
 
     this.log(`[ZEMU] Command: ${command}`)
 
