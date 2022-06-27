@@ -611,6 +611,9 @@ export default class Zemu {
         if (watchdog <= 0) throw 'Timeout waiting for screen update'
         currentScreen = await this.snapshot()
       }
+    } else {
+      // A minimum delay is required
+      await Zemu.delay(100)
     }
     return this.snapshot(filename)
   }
