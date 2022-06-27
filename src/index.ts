@@ -363,50 +363,60 @@ export default class Zemu {
     return `${i}`.padStart(5, '0')
   }
 
-  async navigateAndCompareSnapshots(path: string, testcaseName: string, clickSchedule: number[]) {
-    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
-    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
-    fs.ensureDirSync(snapshotPrefixGolden)
-    fs.ensureDirSync(snapshotPrefixTmp)
 
-    let imageIndex = 0
-    let filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
-    this.log(`---------------------------`)
-    this.log(`Start        ${filename}`)
-    await this.snapshot(filename)
-    this.log(`Instructions ${clickSchedule}`)
+  async navigate(path: string, testcaseName: string, clickSchedule: number[],
+                waitForScreenUpdate = true, startImgIndex = 0) {
 
-    for (let i = 0; i < clickSchedule.length; i++) {
-      const value = clickSchedule[i]
-      if (value == 0) {
-        imageIndex += 1
-        filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
-        await this.clickBoth(`${filename}`, true)
-        continue
-      }
+      const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
+      const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
-      if (value < 0) {
-        // Move backwards
-        for (let j = 0; j < -value; j += 1) {
+      fs.ensureDirSync(snapshotPrefixGolden)
+      fs.ensureDirSync(snapshotPrefixTmp)
+
+      let imageIndex = startImgIndex
+      let filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+      this.log(`---------------------------`)
+      this.log(`Start        ${filename}`)
+      await this.snapshot(filename)
+      this.log(`Instructions ${clickSchedule}`)
+
+      for (let i = 0; i < clickSchedule.length; i++) {
+        const value = clickSchedule[i]
+        if (value == 0) {
           imageIndex += 1
           filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
-          await this.clickLeft(filename)
+          await this.clickBoth(filename, waitForScreenUpdate)
+          continue
         }
-        continue
+
+        if (value < 0) {
+          // Move backwards
+          for (let j = 0; j < -value; j += 1) {
+            imageIndex += 1
+            filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+            await this.clickLeft(filename, waitForScreenUpdate)
+          }
+          continue
+        }
+
+        // Move forward
+        for (let j = 0; j < value; j += 1) {
+          imageIndex += 1
+          filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+          await this.clickRight(filename, waitForScreenUpdate)
+        }
       }
 
-      // Move forward
-      for (let j = 0; j < value; j += 1) {
-        imageIndex += 1
-        filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
-        await this.clickRight(filename)
-      }
-    }
+      await this.dumpEvents()
+      return imageIndex
+  }
 
-    await this.dumpEvents()
+  async navigateAndCompareSnapshots(path: string, testcaseName: string, clickSchedule: number[],
+                                    waitForScreenUpdate = true, startImgIndex = 0) {
 
-    return this.compareSnapshots(path, testcaseName, imageIndex)
+    const lastImgIndex = await this.navigate(path, testcaseName, clickSchedule, waitForScreenUpdate, startImgIndex)
+    return this.compareSnapshots(path, testcaseName, lastImgIndex)
   }
 
   async compareSnapshots(path: string, testcaseName: string, snapshotCount: number): Promise<boolean> {
@@ -442,63 +452,71 @@ export default class Zemu {
     return this.navigateAndCompareSnapshots(path, testcaseName, instructions)
   }
 
-  async compareSnapshotsAndApprove(path: string, testcaseName: string, timeout = 5000): Promise<boolean> {
-    return this.navigateAndCompareUntilText(path, testcaseName, 'APPROVE', timeout)
+  async compareSnapshotsAndApprove(path: string, testcaseName: string, waitForScreenUpdate = true,
+                                   startImgIndex = 0, timeout = 5000): Promise<boolean> {
+    return this.navigateAndCompareUntilText(path, testcaseName, 'APPROVE', waitForScreenUpdate, startImgIndex, timeout)
   }
 
-  async navigateAndCompareUntilText(path: string, testcaseName: string, text: string, timeout = 5000): Promise<boolean> {
-    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
-    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+  async navigateUntilText(path: string, testcaseName: string, text: string, waitForScreenUpdate = true,
+                          startImgIndex = 0, timeout = 5000): Promise<number> {
+      const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
+      const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
-    fs.ensureDirSync(snapshotPrefixGolden)
-    fs.ensureDirSync(snapshotPrefixTmp)
+      fs.ensureDirSync(snapshotPrefixGolden)
+      fs.ensureDirSync(snapshotPrefixTmp)
 
-    let imageIndex = 0
-    let filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
-    await this.snapshot(filename)
+      let imageIndex = startImgIndex
+      let filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+      await this.snapshot(filename)
 
-    const start = new Date()
-    const prev_events_qty = (await this.getEvents()).length
-    let current_events_qty = prev_events_qty
+      const start = new Date()
+      const prev_events_qty = (await this.getEvents()).length
+      let current_events_qty = prev_events_qty
 
-    let found = false
+      let found = false
 
-    while (!found) {
-      const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      while (!found) {
+        const currentTime = new Date()
+        const elapsed: any = currentTime.getTime() - start.getTime()
 
-      if (elapsed > timeout) {
-        throw `Timeout waiting for screen containing ${text}`
-      }
-
-      const events = await this.getEvents()
-
-      if (current_events_qty != events.length) {
-        imageIndex += 1
-        filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
-        current_events_qty = events.length
-
-        events.forEach((element: any) => {
-          if (element['text'].includes(text)) {
-            found = true
-          }
-        })
-
-        if (found) {
-          await this.clickBoth(filename)
-        } else {
-          // navigate to next screen
-          await this.clickRight(filename)
+        if (elapsed > timeout) {
+          throw `Timeout waiting for screen containing ${text}`
         }
-      } else {
-        // this case we need to pull again in order to move to next screen
-        this.log('No new event, clicking right')
-        imageIndex += 1
-        filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
-        await this.clickRight(filename)
+
+        const events = await this.getEvents()
+
+        if (current_events_qty != events.length) {
+          imageIndex += 1
+          filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+          current_events_qty = events.length
+
+          events.forEach((element: any) => {
+            if (element['text'].includes(text)) {
+              found = true
+            }
+          })
+
+          if (found) {
+            await this.clickBoth(filename, waitForScreenUpdate)
+          } else {
+            // navigate to next screen
+            await this.clickRight(filename, waitForScreenUpdate)
+          }
+        } else {
+          // this case we need to pull again in order to move to next screen
+          this.log('No new event, clicking right')
+          imageIndex += 1
+          filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
+          await this.clickRight(filename, waitForScreenUpdate)
+        }
       }
-    }
-    return this.compareSnapshots(path, testcaseName, imageIndex)
+      return imageIndex
+  }
+
+  async navigateAndCompareUntilText(path: string, testcaseName: string, text: string, waitForScreenUpdate = true,
+                                    startImgIndex = 0, timeout = 5000): Promise<boolean> {
+    const lastImgIndex = await this.navigateUntilText(path, testcaseName, text, waitForScreenUpdate, startImgIndex, timeout)
+    return this.compareSnapshots(path, testcaseName, lastImgIndex)
   }
 
   async getEvents() {
