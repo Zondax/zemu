@@ -61,6 +61,9 @@ export class StartOptions {
   model = 'nanos'
   sdk = ''
   logging = false
+  /**
+  * @deprecated [ZEMU] X11 support is deprecated and not supported anymore
+  */
   X11 = false
   custom = ''
   startDelay = DEFAULT_START_DELAY
@@ -441,6 +444,9 @@ export default class Zemu {
     return true
   }
 
+  /**
+  * @deprecated The method will be deprecated soon. Try to use navigateAndCompareSnapshots instead
+  */
   async compareSnapshotsAndAccept(path: string, testcaseName: string, snapshotCount: number, backClickCount = 0) {
     const instructions = []
     if (snapshotCount > 0) instructions.push(snapshotCount)
