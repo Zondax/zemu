@@ -348,6 +348,7 @@ export default class Zemu {
 
     this.log(`Wait for screen change`)
 
+
     while (inputSnapshotBufferHex.data.equals(currentSnapshotBufferHex.data)) {
       const currentTime = new Date()
       const elapsed: any = currentTime.getTime() - start.getTime()
@@ -569,9 +570,11 @@ export default class Zemu {
     this.log(`Screen changed`)
   }
 
-  async waitForText(text: string, timeout = 5000, caseSensitive = false) {
+  async waitForText(text: any, timeout = 5000, caseSensitive = false) {
     const start = new Date()
     let found = false
+    const flags = !caseSensitive? 'i' : ''
+    const startRegex = new RegExp(text, flags);
 
     while (!found) {
       const currentTime = new Date()
@@ -582,15 +585,8 @@ export default class Zemu {
 
       const events = await this.getEvents()
       events.forEach((element: any) => {
-        let v = element['text']
-        let q = text
-
-        if (!caseSensitive) {
-          v = v.toLowerCase()
-          q = q.toLowerCase()
-        }
-
-        found ||= v.includes(q)
+        const v = element['text']
+        found = startRegex.test(v)
       })
       await Zemu.delay(100)
     }
