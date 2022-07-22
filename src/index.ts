@@ -416,11 +416,31 @@ export default class Zemu {
       return imageIndex
   }
 
+  async navigateAndMakeSnapshots(path: string, testcaseName: string, clickSchedule: number[],
+    waitForScreenUpdate = true, startImgIndex = 0) {
+
+      const lastImgIndex = await this.navigate(path, testcaseName, clickSchedule, waitForScreenUpdate, startImgIndex)
+      return this.makeSnapshots(path, testcaseName, lastImgIndex)
+    }
+
   async navigateAndCompareSnapshots(path: string, testcaseName: string, clickSchedule: number[],
                                     waitForScreenUpdate = true, startImgIndex = 0) {
 
     const lastImgIndex = await this.navigate(path, testcaseName, clickSchedule, waitForScreenUpdate, startImgIndex)
     return this.compareSnapshots(path, testcaseName, lastImgIndex)
+  }
+
+  async makeSnapshots(path: string, testcaseName: string, snapshotCount: number): Promise<boolean> {
+    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+
+    this.log(`tmp         ${snapshotPrefixTmp}`)
+
+    for (let j = 0; j < snapshotCount + 1; j += 1) {
+      this.log(`Making     ${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`)
+      Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`)
+    }
+
+    return true
   }
 
   async compareSnapshots(path: string, testcaseName: string, snapshotCount: number): Promise<boolean> {
