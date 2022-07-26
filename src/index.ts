@@ -496,7 +496,7 @@ export default class Zemu {
       let filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
       await this.snapshot(filename)
 
-      const start = new Date()
+      let start = new Date()
       const prev_events_qty = (await this.getEvents()).length
       let current_events_qty = prev_events_qty
 
@@ -528,6 +528,7 @@ export default class Zemu {
           } else {
             // navigate to next screen
             await this.clickRight(filename, waitForScreenUpdate)
+            start = new Date()
           }
         } else {
           // this case we need to pull again in order to move to next screen
@@ -535,6 +536,7 @@ export default class Zemu {
           imageIndex += 1
           filename = `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png`
           await this.clickRight(filename, waitForScreenUpdate)
+          start = new Date()
         }
       }
       return imageIndex
