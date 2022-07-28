@@ -379,7 +379,7 @@ export default class Zemu {
       fs.ensureDirSync(snapshotPrefixTmp)
 
       let imageIndex = startImgIndex
-      const filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+      let filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
       this.log(`---------------------------`)
       this.log(`Start        ${filename}`)
       await this.snapshot(filename)
@@ -389,7 +389,7 @@ export default class Zemu {
         const value = clickSchedule[i]
         if (value == 0) {
           imageIndex += 1
-          const filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+          filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
           await this.clickBoth(filename, waitForScreenUpdate)
           continue
         }
@@ -398,7 +398,7 @@ export default class Zemu {
           // Move backwards
           for (let j = 0; j < -value; j += 1) {
             imageIndex += 1
-            const filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+            filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
             await this.clickLeft(filename, waitForScreenUpdate)
           }
           continue
@@ -407,7 +407,7 @@ export default class Zemu {
         // Move forward
         for (let j = 0; j < value; j += 1) {
           imageIndex += 1
-          const filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+          filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
           await this.clickRight(filename, waitForScreenUpdate)
         }
       }
@@ -473,7 +473,7 @@ export default class Zemu {
       fs.ensureDirSync(snapshotPrefixTmp)
 
       let imageIndex = startImgIndex
-      const filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+      let filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
       await this.snapshot(filename)
 
       let start = new Date()
@@ -491,30 +491,23 @@ export default class Zemu {
         }
 
         const events = await this.getEvents()
-
+        imageIndex += 1
+        filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+        
         if (current_events_qty != events.length) {
-          imageIndex += 1
-          const filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+          
           current_events_qty = events.length
-
           events.forEach((element: any) => {
             if (element['text'].includes(text)) {
               found = true
             }
           })
+        } 
 
-          if (found) {
-            await this.clickBoth(filename, waitForScreenUpdate)
-          } else {
-            // navigate to next screen
-            await this.clickRight(filename, waitForScreenUpdate)
-            start = new Date()
-          }
+        if (found) {
+          await this.clickBoth(filename, waitForScreenUpdate)
         } else {
-          // this case we need to pull again in order to move to next screen
-          this.log('No new event, clicking right')
-          imageIndex += 1
-          const filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+          // navigate to next screen
           await this.clickRight(filename, waitForScreenUpdate)
           start = new Date()
         }
