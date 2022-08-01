@@ -367,6 +367,9 @@ export default class Zemu {
     return `${i}`.padStart(5, '0')
   }
 
+  getSnapshotPath(snapshotPrefix: string, index: number, takeSnapshots: boolean) {
+    return takeSnapshots ? `${snapshotPrefix}/${this.formatIndexString(index)}.png` : undefined
+  }
 
 
   async navigate(path: string, testcaseName: string, clickSchedule: number[],
@@ -379,36 +382,30 @@ export default class Zemu {
       fs.ensureDirSync(snapshotPrefixTmp)
 
       let imageIndex = startImgIndex
-      let filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+      let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
       this.log(`---------------------------`)
       this.log(`Start        ${filename}`)
       await this.snapshot(filename)
       this.log(`Instructions ${clickSchedule}`)
 
-      for (let i = 0; i < clickSchedule.length; i++) {
-        const value = clickSchedule[i]
+      for (const value of clickSchedule) {
+        // Both click action
         if (value == 0) {
           imageIndex += 1
-          filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+          filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
           await this.clickBoth(filename, waitForScreenUpdate)
           continue
         }
 
-        if (value < 0) {
-          // Move backwards
-          for (let j = 0; j < -value; j += 1) {
-            imageIndex += 1
-            filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
-            await this.clickLeft(filename, waitForScreenUpdate)
-          }
-          continue
-        }
-
-        // Move forward
-        for (let j = 0; j < value; j += 1) {
+        // Move forward/backwards
+        for (let j = 0; j < Math.abs(value); j += 1) {
           imageIndex += 1
-          filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
-          await this.clickRight(filename, waitForScreenUpdate)
+          filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
+          if (value < 0) {
+            await this.clickLeft(filename, waitForScreenUpdate)
+          } else {
+            await this.clickRight(filename, waitForScreenUpdate)
+          }
         }
       }
 
@@ -473,7 +470,7 @@ export default class Zemu {
       fs.ensureDirSync(snapshotPrefixTmp)
 
       let imageIndex = startImgIndex
-      let filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
+      let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
       await this.snapshot(filename)
 
       let start = new Date()
@@ -492,24 +489,25 @@ export default class Zemu {
 
         const events = await this.getEvents()
         imageIndex += 1
-        filename = takeSnapshots ? `${snapshotPrefixTmp}/${this.formatIndexString(imageIndex)}.png` : undefined
-        
+        filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
+
         if (current_events_qty != events.length) {
-          
+
           current_events_qty = events.length
-          events.forEach((element: any) => {
-            if (element['text'].includes(text)) {
+          for (const eventEntry of events) {
+            if(eventEntry['text'].includes(text)) {
               found = true
+              break
             }
-          })
-        } 
+          }
+        }
 
         if (found) {
           await this.clickBoth(filename, waitForScreenUpdate)
         } else {
           // navigate to next screen
           await this.clickRight(filename, waitForScreenUpdate)
-          start = new Date()
+          start = currentTime
         }
       }
       return imageIndex
@@ -584,7 +582,7 @@ export default class Zemu {
         const v = element['text']
         found = startRegex.test(v)
       })
-      await Zemu.delay(100)
+      Zemu.delay(100)
     }
   }
 
