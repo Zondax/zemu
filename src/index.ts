@@ -374,8 +374,10 @@ export default class Zemu {
     const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
     const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
-    fs.ensureDirSync(snapshotPrefixGolden)
-    fs.ensureDirSync(snapshotPrefixTmp)
+    if (takeSnapshots) {
+      fs.ensureDirSync(snapshotPrefixGolden)
+      fs.ensureDirSync(snapshotPrefixTmp)
+    }
 
     let imageIndex = startImgIndex
     let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
@@ -479,8 +481,10 @@ export default class Zemu {
     const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
     const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
-    fs.ensureDirSync(snapshotPrefixGolden)
-    fs.ensureDirSync(snapshotPrefixTmp)
+    if (takeSnapshots) {
+      fs.ensureDirSync(snapshotPrefixGolden)
+      fs.ensureDirSync(snapshotPrefixTmp)
+    }
 
     let imageIndex = startImgIndex
     let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
