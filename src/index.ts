@@ -15,16 +15,13 @@
  ******************************************************************************* */
 import PNG from 'pngjs'
 import fs from 'fs-extra'
-import sleep from 'sleep'
 import getPort from 'get-port'
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
 
-// @ts-ignore
 import TransportHttp from '@ledgerhq/hw-transport-http'
 // @ts-ignore
 import elfy from 'elfy'
-// @ts-ignore
 import GRPCRouter from './grpc'
 import {
   BASE_NAME,
@@ -138,12 +135,8 @@ export default class Zemu {
     return PNG.PNG.sync.read(tmpBuffer)
   }
 
-  static delay(v: number) {
-    if (v) {
-      sleep.msleep(v)
-    } else {
-      sleep.msleep(DEFAULT_KEY_DELAY)
-    }
+  static delay(v: number = DEFAULT_KEY_DELAY) {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, v)
   }
 
   static sleep(ms: number) {
@@ -354,7 +347,7 @@ export default class Zemu {
       if (elapsed > timeout) {
         throw `Timeout waiting for screen to change (${timeout} ms)`
       }
-      await Zemu.delay(500)
+      Zemu.delay(500)
       this.log(`Check [${elapsed}ms]`)
       currentSnapshotBufferHex = this.convertBufferToPNG((await this.snapshot()).data)
     }
@@ -582,7 +575,7 @@ export default class Zemu {
       if (elapsed > timeout) {
         throw `Timeout waiting for screen to change (${timeout} ms)`
       }
-      await Zemu.delay(500)
+      Zemu.delay(500)
       this.log(`Check [${elapsed}ms]`)
       current_events_qty = (await this.getEvents()).length
     }
@@ -627,14 +620,14 @@ export default class Zemu {
       let currentScreen = await this.snapshot()
       while (currentScreen.data.equals(previousScreen.data)) {
         this.log('sleep')
-        await Zemu.delay(100)
+        Zemu.delay(100)
         watchdog -= 100
         if (watchdog <= 0) throw 'Timeout waiting for screen update'
         currentScreen = await this.snapshot()
       }
     } else {
       // A minimum delay is required
-      await Zemu.delay(100)
+      Zemu.delay(100)
     }
     return this.snapshot(filename)
   }

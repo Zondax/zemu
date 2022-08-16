@@ -42,8 +42,7 @@
     "get-port": "^5.1.1",
     "path": "^0.12.7",
     "pngjs": "^6.0.0",
-    "randomstring": "^1.2.1",
-    "sleep": "^6.3.0"
+    "randomstring": "^1.2.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
