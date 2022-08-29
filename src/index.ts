@@ -84,7 +84,7 @@ export default class Zemu {
   private startOptions: StartOptions | undefined
   private host: string
   private transportPort?: number
-  private speculosApiPort?: number
+  protected speculosApiPort?: number
 
   private desiredTransportPort?: number
   private desiredSpeculosApiPort?: number
