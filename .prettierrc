@@ -5,5 +5,6 @@
   "semi": false,
   "useTabs": false,
   "printWidth": 140,
-  "tabWidth": 2
+  "tabWidth": 2,
+  "proseWrap": "always"
 }
