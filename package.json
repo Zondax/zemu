@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.12",
-    "@types/jest": "^28.1.1",
+    "@types/jest": "^29.1.2",
     "@types/ledgerhq__hw-transport": "^4.21.4",
     "@types/pngjs": "^6.0.1",
     "@types/sleep": "^0.0.8",
