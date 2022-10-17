@@ -48,7 +48,7 @@ jobs:
   publish:
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    needs: [ build, test ]
+    needs: [build, test]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -58,14 +58,15 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16.13.0'
-          registry-url: "https://registry.npmjs.org"
-          scope: "@zondax"
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@zondax'
       - name: Install yarn
         run: npm install -g yarn
       - name: Build package
         run: |
           yarn install
           yarn build
+      - run: mv README-npm README.md
       - name: Get latest release version number
         id: get_version
         uses: battila7/get-version-action@v2
