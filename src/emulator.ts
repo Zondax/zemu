@@ -24,7 +24,6 @@ export default class EmuContainer {
   private logging: boolean
   private readonly elfLocalPath: string
   private readonly name: string
-  private startDelay: number
   private readonly image: any
   private libElfs: any
   private currentContainer: any | null
@@ -36,7 +35,6 @@ export default class EmuContainer {
     this.libElfs = libElfs
     this.name = name
     this.logging = false
-    this.startDelay = 200
   }
 
   static async killContainerByName(name: string) {
@@ -93,25 +91,15 @@ export default class EmuContainer {
 
   async runContainer(options: {
     logging: any
-    startDelay: any
-    X11: boolean
     custom: string
     model: string
     sdk: string
     transportPort: string
     speculosApiPort: string
   }) {
-    if ('X11' in options && options.X11) {
-      this.log('[ZEMU] X11 support is deprecated and not supported anymore')
-      this.log('[ZEMU] automatically disabling')
-      options.X11 = false
-    }
-
-    // eslint-disable-next-line global-require
     const docker = new Docker()
 
     this.logging = options.logging
-    this.startDelay = options.startDelay
 
     const appFilename = path.basename(this.elfLocalPath)
     const appDir = path.dirname(this.elfLocalPath)
@@ -124,22 +112,6 @@ export default class EmuContainer {
       libArgs += ` -l ${libName}:${DEFAULT_APP_PATH}/${libFilename}`
     })
 
-    let displaySetting = '--display headless'
-    let displayEnvironment = ''
-
-    // Disable X11 in CI
-    if (!('CI' in process.env) || process.env.CI === 'false') {
-      if ('X11' in options && options.X11) {
-        displaySetting = ''
-        dirBindings.push('/tmp/.X11-unix:/tmp/.X11-unix:ro')
-      }
-
-      displayEnvironment = process.env.DISPLAY ? process.env.DISPLAY : displayEnvironment
-      if (process.platform === 'darwin') {
-        displayEnvironment = 'host.docker.internal:0'
-      }
-    }
-
     const modelOptions = options?.model ? options.model : 'nanos'
     if (modelOptions === 'nanosp') options.sdk = '1.0.3'
 
@@ -151,6 +123,7 @@ export default class EmuContainer {
       customOptions = options.custom
     }
 
+    const displaySetting = '--display headless'
     const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${sdkOption} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
 
     this.log(`[ZEMU] Command: ${command}`)
@@ -164,11 +137,12 @@ export default class EmuContainer {
       portBindings[`1234/tcp`] = [{ HostPort: '1234' }]
     }
 
+    const displayEnvironment: string = process.platform === 'darwin' ? 'host.docker.internal:0' : process.env.DISPLAY ?? ''
     const environment = [
-      `SCP_PRIVKEY=${DEV_CERT_PRIVATE_KEY}`,
-      `BOLOS_SDK=${BOLOS_SDK}`,
-      `BOLOS_ENV=/opt/bolos`,
-      `DISPLAY=${displayEnvironment}`, // needed if X forwarding
+      `SCP_PRIVKEY='${DEV_CERT_PRIVATE_KEY}'`,
+      `BOLOS_SDK='${BOLOS_SDK}'`,
+      `BOLOS_ENV='/opt/bolos'`,
+      `DISPLAY='${displayEnvironment}'`,
     ]
 
     this.log(`[ZEMU] Creating Container ${this.image} - ${this.name} `)

@@ -49,10 +49,8 @@ export const DEFAULT_START_OPTIONS = {
   model: DEFAULT_MODEL,
   sdk: '',
   logging: false,
-  X11: false,
   custom: '',
   startDelay: DEFAULT_START_DELAY,
-  pressDelay: DEFAULT_KEY_DELAY,
   startText: 'Ready',
   caseSensitive: false,
   startTimeout: DEFAULT_START_TIMEOUT,
@@ -62,10 +60,6 @@ export class StartOptions {
   model = 'nanos'
   sdk = ''
   logging = false
-  /**
-   * @deprecated [ZEMU] X11 support is deprecated and not supported anymore
-   */
-  X11 = false
   custom = ''
   startDelay = DEFAULT_START_DELAY
   startText = 'Ready'
