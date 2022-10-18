@@ -138,10 +138,10 @@ export default class Zemu {
   }
 
   static sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise<void>(resolve => setTimeout(resolve, ms))
   }
 
-  static async delayedPromise(p: any, delay: number) {
+  static async delayedPromise(p: Promise<any>, delay: number) {
     await Promise.race([
       p,
       new Promise(resolve => {
@@ -228,7 +228,7 @@ export default class Zemu {
 
     while (!connected) {
       const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > maxWait) {
         throw `Timeout waiting to connect`
       }
@@ -343,7 +343,7 @@ export default class Zemu {
 
     while (inputSnapshotBufferHex.data.equals(currentSnapshotBufferHex.data)) {
       const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
         throw `Timeout waiting for screen to change (${timeout} ms)`
       }
@@ -513,7 +513,7 @@ export default class Zemu {
 
     while (!found) {
       const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      const elapsed = currentTime.getTime() - start.getTime()
 
       if (elapsed > timeout) {
         throw `Timeout waiting for screen containing ${text}`
@@ -590,7 +590,7 @@ export default class Zemu {
 
     while (prev_events_qty === current_events_qty) {
       const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
         throw `Timeout waiting for screen to change (${timeout} ms)`
       }
@@ -601,7 +601,7 @@ export default class Zemu {
     this.log(`Screen changed`)
   }
 
-  async waitForText(text: any, timeout = 5000, caseSensitive = false) {
+  async waitForText(text: string | RegExp, timeout = 60000, caseSensitive = false) {
     const start = new Date()
     let found = false
     const flags = !caseSensitive ? 'i' : ''
@@ -609,7 +609,7 @@ export default class Zemu {
 
     while (!found) {
       const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
         throw `Timeout (${timeout}) waiting for text (${text})`
       }
