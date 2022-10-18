@@ -39,47 +39,48 @@ export default class EmuContainer {
 
   static async killContainerByName(name: string) {
     const docker = new Docker()
-    await new Promise(resolve => {
-      docker.listContainers({ all: true, filters: { name: [name] } }, function (err: any, containers: any[]) {
-        containers.forEach(function (containerInfo) {
-          docker.getContainer(containerInfo.Id).remove({ force: true }, function () {
-            // console.log("container removed");
+    return new Promise<void>(resolve => {
+      docker.listContainers({ all: true, filters: { name: [name] } }, (listError, containers: ContainerInfo[] | undefined) => {
+        if (listError) throw listError
+        if (!containers?.length) {
+          console.log('No containers found')
+          return
+        }
+        containers.forEach(containerInfo => {
+          docker.getContainer(containerInfo.Id).remove({ force: true }, removeError => {
+            if (removeError) throw removeError
           })
         })
-        return resolve(true)
       })
+      resolve()
     })
   }
 
   static async checkAndPullImage(imageName: string) {
     const docker = new Docker()
-    await new Promise(resolve => {
-      docker.pull(imageName, (err: any, stream: any) => {
-        function onProgress(event: any) {
-          // eslint-disable-next-line no-prototype-builtins
-          const progress = event.hasOwnProperty('progress') ? event.progress : ''
-          // eslint-disable-next-line no-prototype-builtins
-          const status = event.hasOwnProperty('status') ? event.status : ''
-          process.stdout.write(`[DOCKER] ${status}: ${progress}\n`)
-        }
+    return docker.pull(imageName, (err: any, stream: any) => {
+      function onProgress(event: any) {
+        // eslint-disable-next-line no-prototype-builtins
+        const progress = event.hasOwnProperty('progress') ? event.progress : ''
+        // eslint-disable-next-line no-prototype-builtins
+        const status = event.hasOwnProperty('status') ? event.status : ''
+        process.stdout.write(`[DOCKER] ${status}: ${progress}\n`)
+      }
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        function onFinished(err: any, output: any) {
-          if (!err) {
-            resolve(true)
-          } else {
-            process.stdout.write(`[DOCKER] ${err}\n`)
-            process.exit(1)
-          }
-        }
-
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      function onFinished(err: any, output: any) {
         if (err) {
           process.stdout.write(`[DOCKER] ${err}\n`)
-          throw new Error(err)
+          throw err
         }
+      }
 
-        docker.modem.followProgress(stream, onFinished, onProgress)
-      })
+      if (err) {
+        process.stdout.write(`[DOCKER] ${err}\n`)
+        throw new Error(err)
+      }
+
+      docker.modem.followProgress(stream, onFinished, onProgress)
     })
   }
 
@@ -150,7 +151,6 @@ export default class EmuContainer {
       Image: this.image,
       name: this.name,
       Tty: true,
-      Privileged: true,
       AttachStdout: true,
       AttachStderr: true,
       User: '1000',
@@ -165,13 +165,13 @@ export default class EmuContainer {
     this.log(`[ZEMU] Connected ${this.currentContainer.id}`)
 
     if (this.logging) {
-      this.currentContainer.attach({ stream: true, stdout: true, stderr: true }, function (err: any, stream: any) {
+      this.currentContainer.attach({ stream: true, stdout: true, stderr: true }, (err: any, stream: any) => {
         stream.pipe(process.stdout)
       })
       this.log(`[ZEMU] Attached ${this.currentContainer.id}`)
     }
 
-    await this.currentContainer.start({})
+    await this.currentContainer.start()
 
     this.log(`[ZEMU] Started ${this.currentContainer.id}`)
   }
@@ -185,12 +185,14 @@ export default class EmuContainer {
         await container.stop({ t: 0 })
       } catch (e) {
         this.log(`[ZEMU] Stopping: ${e}`)
+        throw e
       }
       this.log(`[ZEMU] Stopped`)
       try {
         await container.remove()
-      } catch {
-        // eslint-disable-next-line no-empty
+      } catch (err) {
+        this.log('[ZEMU] Unable to remove container')
+        throw err
       }
       this.log(`[ZEMU] Removed`)
     }
