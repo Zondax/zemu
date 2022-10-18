@@ -411,21 +411,17 @@ export default class Zemu {
     return imageIndex
   }
 
-  async takeSnapshotAndOverwrite(
-    path: string,
-    testcaseName: string,
-    imageIndex: number,
-  ) {
-    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+  async takeSnapshotAndOverwrite(path: string, testcaseName: string, imageIndex: number) {
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
     fs.ensureDirSync(snapshotPrefixTmp)
     const filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, true)
 
     try {
       if (typeof filename === 'undefined') throw Error
       fs.unlinkSync(filename)
-    } catch(err) {
+    } catch (err) {
       console.log(err)
-      throw new Error('Snapshot does not exist');
+      throw new Error('Snapshot does not exist')
     }
     await this.snapshot(filename)
   }
