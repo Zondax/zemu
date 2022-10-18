@@ -24,11 +24,11 @@ export default class EmuContainer {
   private logging: boolean
   private readonly elfLocalPath: string
   private readonly name: string
-  private readonly image: any
-  private libElfs: any
-  private currentContainer: any | null
+  private readonly image: string
+  private libElfs: { [p: string]: string }
+  private currentContainer: Container | undefined | null
 
-  constructor(elfLocalPath: string, libElfs: any, image: any, name: string) {
+  constructor(elfLocalPath: string, libElfs: { [p: string]: string }, image: string, name: string) {
     // eslint-disable-next-line global-require
     this.image = image
     this.elfLocalPath = elfLocalPath
@@ -90,7 +90,7 @@ export default class EmuContainer {
   }
 
   async runContainer(options: {
-    logging: any
+    logging: boolean
     custom: string
     model: string
     sdk: string
