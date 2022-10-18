@@ -13,8 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-const path = require('path')
-const Docker = require('dockerode')
+import path from 'path'
+import Docker, { Container, ContainerInfo } from 'dockerode'
 
 export const DEV_CERT_PRIVATE_KEY = 'ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b'
 export const BOLOS_SDK = '/project/deps/nanos-secure-sdk'

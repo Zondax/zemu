@@ -13,16 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import PNG from 'pngjs'
-import fs from 'fs-extra'
-import getPort from 'get-port'
+
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
+import fs from 'fs-extra'
+import getPort from 'get-port'
+import PNG from 'pngjs'
 
-import TransportHttp from '@ledgerhq/hw-transport-http'
-// @ts-ignore
+import HttpTransport from '@ledgerhq/hw-transport-http'
+import Transport from '@ledgerhq/hw-transport'
+
+// @ts-expect-error
 import elfy from 'elfy'
-import GRPCRouter from './grpc'
+import { resolve } from 'path'
+import rndstr from 'randomstring'
+
 import {
   BASE_NAME,
   DEFAULT_EMU_IMG,
@@ -35,11 +40,10 @@ import {
   WINDOW_S,
   WINDOW_X,
 } from './constants'
-import EmuContainer from './emulator'
-import Transport from '@ledgerhq/hw-transport'
 
-const Resolve = require('path').resolve
-const rndstr = require('randomstring')
+import EmuContainer from './emulator'
+import GRPCRouter from './grpc'
+
 
 export const DEFAULT_START_OPTIONS = {
   model: DEFAULT_MODEL,
@@ -371,8 +375,8 @@ export default class Zemu {
     takeSnapshots = true,
     startImgIndex = 0,
   ) {
-    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
-    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
     if (takeSnapshots) {
       fs.ensureDirSync(snapshotPrefixGolden)
@@ -439,8 +443,8 @@ export default class Zemu {
   }
 
   async compareSnapshots(path: string, testcaseName: string, snapshotCount: number): Promise<boolean> {
-    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
-    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
     this.log(`golden      ${snapshotPrefixGolden}`)
     this.log(`tmp         ${snapshotPrefixTmp}`)
@@ -493,8 +497,8 @@ export default class Zemu {
     startImgIndex = 0,
     timeout = 5000,
   ): Promise<number> {
-    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
-    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
     if (takeSnapshots) {
       fs.ensureDirSync(snapshotPrefixGolden)
