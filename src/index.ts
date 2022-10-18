@@ -35,6 +35,7 @@ import {
   DEFAULT_KEY_DELAY,
   DEFAULT_MODEL,
   DEFAULT_START_DELAY,
+  DEFAULT_START_TEXT,
   DEFAULT_START_TIMEOUT,
   KILL_TIMEOUT,
   WINDOW_S,
@@ -44,27 +45,26 @@ import {
 import EmuContainer from './emulator'
 import GRPCRouter from './grpc'
 
-
-export const DEFAULT_START_OPTIONS = {
+export const DEFAULT_START_OPTIONS: StartOptions = {
   model: DEFAULT_MODEL,
   sdk: '',
   logging: false,
   custom: '',
   startDelay: DEFAULT_START_DELAY,
-  startText: 'Ready',
+  startText: DEFAULT_START_TEXT,
   caseSensitive: false,
   startTimeout: DEFAULT_START_TIMEOUT,
 }
 
 export class StartOptions {
-  model = 'nanos'
-  sdk = ''
   logging = false
-  custom = ''
   startDelay = DEFAULT_START_DELAY
-  startText = 'Ready'
+  custom = ''
+  model = DEFAULT_MODEL
+  sdk = ''
+  startText = DEFAULT_START_TEXT
   caseSensitive = false
-  startTimeout = 1000
+  startTimeout = DEFAULT_START_TIMEOUT
 }
 
 export interface Snapshot {
