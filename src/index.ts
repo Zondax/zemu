@@ -221,7 +221,7 @@ export default class Zemu {
   }
 
   async connect() {
-    const transport_url = `${this.transportProtocol}://${this.host}:${this.transportPort}`
+    const transportUrl = `${this.transportProtocol}://${this.host}:${this.transportPort}`
     const start = new Date()
     let connected = false
     const maxWait = this.startOptions?.startDelay ?? DEFAULT_START_DELAY
@@ -235,12 +235,14 @@ export default class Zemu {
       Zemu.delay(100)
 
       try {
-        // Here it should be "StaticTransport" type, in order to be able to use the static method "open". That method belongs to StaticTransport
-        // https://github.com/LedgerHQ/ledgerjs/blob/0ec9a60fe57d75dff26a69c213fd824aa321231c/packages/hw-transport-http/src/withStaticURLs.ts#L89
-        this.transport = await (TransportHttp(transport_url) as any).open(transport_url)
+        // here we should be able to import directly HttpTransport, instead of that Ledger
+        // offers a wrapper that returns a `StaticTransport` instance
+        // we need to expect the error to avoid typing errors
+        // @ts-expect-error
+        this.transport = await HttpTransport(transportUrl).open(transportUrl)
         connected = true
       } catch (e) {
-        this.log(`WAIT ${this.containerName} ${elapsed} - ${e} ${transport_url}`)
+        this.log(`WAIT ${this.containerName} ${elapsed} - ${e} ${transportUrl}`)
         connected = false
       }
     }
