@@ -183,7 +183,6 @@ export default class Zemu {
     Zemu.checkElf(this.startOptions.model ?? DEFAULT_MODEL, this.elfPath)
 
     try {
-      await Zemu.stopAllEmuContainers()
       await this.assignPortsToListen()
 
       if (!this.transportPort || !this.speculosApiPort) {
@@ -232,7 +231,7 @@ export default class Zemu {
       if (elapsed > maxWait) {
         throw `Timeout waiting to connect`
       }
-      Zemu.delay(100)
+      Zemu.delay()
 
       try {
         // here we should be able to import directly HttpTransport, instead of that Ledger
@@ -333,7 +332,7 @@ export default class Zemu {
     return this.mainMenuSnapshot
   }
 
-  async waitUntilScreenIsNot(screen: any, timeout = 10000) {
+  async waitUntilScreenIsNot(screen: any, timeout = 60000) {
     const start = new Date()
 
     const inputSnapshotBufferHex = this.convertBufferToPNG((await screen).data)
@@ -347,7 +346,7 @@ export default class Zemu {
       if (elapsed > timeout) {
         throw `Timeout waiting for screen to change (${timeout} ms)`
       }
-      Zemu.delay(500)
+      Zemu.delay()
       this.log(`Check [${elapsed}ms]`)
       currentSnapshotBufferHex = this.convertBufferToPNG((await this.snapshot()).data)
     }
@@ -479,7 +478,7 @@ export default class Zemu {
     testcaseName: string,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = 5000,
+    timeout = 30000,
   ): Promise<boolean> {
     return this.navigateAndCompareUntilText(path, testcaseName, 'APPROVE', waitForScreenUpdate, startImgIndex, timeout)
   }
@@ -491,7 +490,7 @@ export default class Zemu {
     waitForScreenUpdate = true,
     takeSnapshots = true,
     startImgIndex = 0,
-    timeout = 5000,
+    timeout = 30000,
   ): Promise<number> {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
@@ -540,7 +539,7 @@ export default class Zemu {
     text: string,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = 5000,
+    timeout = 30000,
   ): Promise<boolean> {
     const takeSnapshots = true
     const lastImgIndex = await this.navigateUntilText(path, testcaseName, text, waitForScreenUpdate, takeSnapshots, startImgIndex, timeout)
@@ -572,7 +571,7 @@ export default class Zemu {
     }
   }
 
-  async waitScreenChange(timeout = 5000) {
+  async waitScreenChange(timeout = 30000) {
     const start = new Date()
     const prev_events_qty = (await this.getEvents()).length
     let current_events_qty = prev_events_qty
@@ -584,7 +583,7 @@ export default class Zemu {
       if (elapsed > timeout) {
         throw `Timeout waiting for screen to change (${timeout} ms)`
       }
-      Zemu.delay(500)
+      Zemu.delay()
       this.log(`Check [${elapsed}ms]`)
       current_events_qty = (await this.getEvents()).length
     }
@@ -606,7 +605,7 @@ export default class Zemu {
 
       const events = await this.getEvents()
       found = events.some((event: any) => startRegex.test(event.text))
-      Zemu.delay(100)
+      Zemu.delay()
     }
   }
 
@@ -621,18 +620,18 @@ export default class Zemu {
 
     // Wait and poll Speculos until the application screen gets updated
     if (waitForScreenUpdate) {
-      let watchdog = 5000
+      let watchdog = 30000
       let currentScreen = await this.snapshot()
       while (currentScreen.data.equals(previousScreen.data)) {
         this.log('sleep')
-        Zemu.delay(100)
-        watchdog -= 100
+        Zemu.delay()
+        watchdog -= DEFAULT_KEY_DELAY
         if (watchdog <= 0) throw 'Timeout waiting for screen update'
         currentScreen = await this.snapshot()
       }
     } else {
       // A minimum delay is required
-      Zemu.delay(100)
+      Zemu.delay()
     }
     return this.snapshot(filename)
   }
