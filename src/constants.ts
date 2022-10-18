@@ -5,7 +5,7 @@ export const DEFAULT_START_TEXT = 'Ready'
 export const DEFAULT_START_DELAY = 20000
 export const DEFAULT_KEY_DELAY = 250
 export const DEFAULT_HOST = '127.0.0.1'
-export const BASE_NAME = 'zemu-656d75-'
+export const BASE_NAME = 'zemu-test-'
 export const DEFAULT_START_TIMEOUT = 20000
 export const KILL_TIMEOUT = 5000
 
