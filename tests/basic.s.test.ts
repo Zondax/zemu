@@ -27,24 +27,19 @@ const DEMO_APP2_PATH_S = Resolve('bin/app_s.elf')
 
 const APP_SEED = 'equip will roof matter pink blind book anxiety banner elbow sun young'
 
-beforeAll(async () => {
-  await Zemu.checkAndPullImage()
-})
-
 const ZEMU_OPTIONS_S: StartOptions = {
   ...DEFAULT_START_OPTIONS,
-  X11: false,
   logging: true,
   custom: `-s "${APP_SEED}" `,
 }
 
-test('File-Missing', () => {
+test.concurrent('File-Missing', () => {
   expect(() => {
     new Zemu('it_does_not_exist')
   }).toThrow(/Did you compile/)
 })
 
-test('Start&Close-NanoS', async () => {
+test.concurrent('Start&Close-NanoS', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
   expect(sim).not.toBeNull()
   try {
@@ -54,7 +49,7 @@ test('Start&Close-NanoS', async () => {
   }
 })
 
-test('Basic Control - S', async () => {
+test.concurrent('Basic Control - S', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
   try {
     await sim.start(ZEMU_OPTIONS_S)
@@ -65,8 +60,8 @@ test('Basic Control - S', async () => {
 
     // Move up and down and check screens
     const view0 = await sim.snapshot('tests/tmp/00000.png')
-    const view1 = await sim.clickRight('tests/tmp/00001.png', false)
-    const view2 = await sim.clickLeft('tests/tmp/00002.png', false)
+    const view1 = await sim.clickRight('tests/tmp/00001.png')
+    const view2 = await sim.clickLeft('tests/tmp/00002.png')
 
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0)
@@ -76,7 +71,7 @@ test('Basic Control - S', async () => {
   }
 })
 
-test('Load/Compare Snapshots', async () => {
+test.concurrent('Load/Compare Snapshots', async () => {
   const image1A = Zemu.LoadPng2RGB('tests/snapshots/image1A.png')
   const image1B = Zemu.LoadPng2RGB('tests/snapshots/image1B.png')
   const image2A = Zemu.LoadPng2RGB('tests/snapshots/image2A.png')
@@ -85,7 +80,7 @@ test('Load/Compare Snapshots', async () => {
   expect(image1A).not.toEqual(image2A)
 })
 
-test('Wait for change / timeout', async () => {
+test.concurrent('Wait for change / timeout', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
   try {
     await sim.start(ZEMU_OPTIONS_S)
@@ -96,7 +91,7 @@ test('Wait for change / timeout', async () => {
   }
 })
 
-test('Snapshot and compare', async () => {
+test.concurrent('Snapshot and compare', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
   try {
     await sim.start(ZEMU_OPTIONS_S)
@@ -106,7 +101,7 @@ test('Snapshot and compare', async () => {
   }
 })
 
-test('Snapshot and compare 2', async () => {
+test.concurrent('Snapshot and compare 2', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
   try {
     await sim.start(ZEMU_OPTIONS_S)
@@ -118,7 +113,7 @@ test('Snapshot and compare 2', async () => {
 })
 
 // eslint-disable-next-line jest/expect-expect
-test('GRPC Server start-stop', async () => {
+test.concurrent('GRPC Server start-stop', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
   await sim.start(ZEMU_OPTIONS_S)
   sim.startGRPCServer('localhost', 3002)
@@ -126,7 +121,7 @@ test('GRPC Server start-stop', async () => {
   await sim.close()
 })
 
-test('Get app info', async () => {
+test.concurrent('Get app info', async () => {
   const sim = new Zemu(DEMO_APP_PATH_S)
   expect(sim).not.toBeNull()
   try {
@@ -140,7 +135,7 @@ test('Get app info', async () => {
   }
 })
 
-test('sign real app', async function () {
+test.concurrent('sign real app', async function () {
   const sim = new Zemu(DEMO_APP2_PATH_S)
   try {
     const defaultOptions = {
