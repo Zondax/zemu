@@ -506,8 +506,6 @@ export default class Zemu {
     await this.snapshot(filename)
 
     let start = new Date()
-    const prev_events_qty = (await this.getEvents()).length
-    let current_events_qty = prev_events_qty
 
     let found = false
 
@@ -523,22 +521,14 @@ export default class Zemu {
       imageIndex += 1
       filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
 
-      if (current_events_qty != events.length) {
-        current_events_qty = events.length
-        for (const eventEntry of events) {
-          if (eventEntry['text'].includes(text)) {
-            found = true
-            break
-          }
-        }
-      }
+      found = events.some((event: any) => event.text.includes(text))
 
       if (found) {
         await this.clickBoth(filename, waitForScreenUpdate)
       } else {
         // navigate to next screen
         await this.clickRight(filename, waitForScreenUpdate)
-        start = currentTime
+        start = new Date()
       }
     }
     return imageIndex
@@ -615,19 +605,15 @@ export default class Zemu {
       }
 
       const events = await this.getEvents()
-      events.forEach((element: any) => {
-        const v = element['text']
-        found = startRegex.test(v)
-      })
+      found = events.some((event: any) => startRegex.test(event.text))
       Zemu.delay(100)
     }
   }
 
   async click(endpoint: string, filename?: string, waitForScreenUpdate?: boolean) {
     let previousScreen
-    if (waitForScreenUpdate) {
-      previousScreen = await this.snapshot()
-    }
+    if (waitForScreenUpdate) previousScreen = await this.snapshot()
+
     const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + endpoint
     const payload = { action: 'press-and-release' }
     await axios.post(bothClickUrl, payload)
