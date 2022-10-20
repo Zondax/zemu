@@ -619,20 +619,9 @@ export default class Zemu {
     this.log(`Click ${endpoint} -> ${filename}`)
 
     // Wait and poll Speculos until the application screen gets updated
-    if (waitForScreenUpdate) {
-      let watchdog = 30000
-      let currentScreen = await this.snapshot()
-      while (currentScreen.data.equals(previousScreen.data)) {
-        this.log('sleep')
-        Zemu.delay()
-        watchdog -= DEFAULT_KEY_DELAY
-        if (watchdog <= 0) throw 'Timeout waiting for screen update'
-        currentScreen = await this.snapshot()
-      }
-    } else {
-      // A minimum delay is required
-      Zemu.delay()
-    }
+    if (waitForScreenUpdate) await this.waitUntilScreenIsNot(previousScreen)
+    else Zemu.delay() // A minimum delay is required
+
     return this.snapshot(filename)
   }
 
