@@ -433,7 +433,7 @@ export default class Zemu {
     return this.compareSnapshots(path, testcaseName, lastImgIndex)
   }
 
-  async compareSnapshots(path: string, testcaseName: string, snapshotCount: number): Promise<boolean> {
+  compareSnapshots(path: string, testcaseName: string, snapshotCount: number): boolean {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
@@ -451,7 +451,6 @@ export default class Zemu {
         throw new Error(`Image [${this.formatIndexString(j)}] do not match!`)
       }
     }
-
     return true
   }
 
