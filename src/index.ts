@@ -310,22 +310,18 @@ export default class Zemu {
 
   async snapshot(filename?: string): Promise<any> {
     const snapshotUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/screenshot'
-    const response = await this.fetchSnapshot(snapshotUrl)
+    const { data } = await this.fetchSnapshot(snapshotUrl)
     const modelWindow = this.getWindowRect()
 
-    if (filename) {
-      this.saveSnapshot(response.data, filename)
+    if (filename) this.saveSnapshot(data, filename)
+
+    const rect = {
+      height: modelWindow.height,
+      width: modelWindow.width,
+      data,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise((resolve, reject) => {
-      const rect = {
-        width: modelWindow.width,
-        height: modelWindow.height,
-        data: response.data,
-      }
-      resolve(rect)
-    })
+    return rect
   }
 
   async getMainMenuSnapshot() {
