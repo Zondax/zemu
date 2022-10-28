@@ -13,16 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import PNG from 'pngjs'
-import fs from 'fs-extra'
-import getPort from 'get-port'
+
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
+import fs from 'fs-extra'
+import getPort from 'get-port'
+import PNG from 'pngjs'
 
-import TransportHttp from '@ledgerhq/hw-transport-http'
-// @ts-ignore
+import HttpTransport from '@ledgerhq/hw-transport-http'
+import Transport from '@ledgerhq/hw-transport'
+
+// @ts-expect-error
 import elfy from 'elfy'
-import GRPCRouter from './grpc'
+import { resolve } from 'path'
+import rndstr from 'randomstring'
+
 import {
   BASE_NAME,
   DEFAULT_EMU_IMG,
@@ -30,43 +35,36 @@ import {
   DEFAULT_KEY_DELAY,
   DEFAULT_MODEL,
   DEFAULT_START_DELAY,
+  DEFAULT_START_TEXT,
   DEFAULT_START_TIMEOUT,
   KILL_TIMEOUT,
   WINDOW_S,
   WINDOW_X,
 } from './constants'
+
 import EmuContainer from './emulator'
-import Transport from '@ledgerhq/hw-transport'
+import GRPCRouter from './grpc'
 
-const Resolve = require('path').resolve
-const rndstr = require('randomstring')
-
-export const DEFAULT_START_OPTIONS = {
+export const DEFAULT_START_OPTIONS: StartOptions = {
   model: DEFAULT_MODEL,
   sdk: '',
   logging: false,
-  X11: false,
   custom: '',
   startDelay: DEFAULT_START_DELAY,
-  pressDelay: DEFAULT_KEY_DELAY,
-  startText: 'Ready',
+  startText: DEFAULT_START_TEXT,
   caseSensitive: false,
   startTimeout: DEFAULT_START_TIMEOUT,
 }
 
 export class StartOptions {
-  model = 'nanos'
-  sdk = ''
   logging = false
-  /**
-   * @deprecated [ZEMU] X11 support is deprecated and not supported anymore
-   */
-  X11 = false
-  custom = ''
   startDelay = DEFAULT_START_DELAY
-  startText = 'Ready'
+  custom = ''
+  model = DEFAULT_MODEL
+  sdk = ''
+  startText = DEFAULT_START_TEXT
   caseSensitive = false
-  startTimeout = 1000
+  startTimeout = DEFAULT_START_TIMEOUT
 }
 
 export interface Snapshot {
@@ -126,7 +124,7 @@ export default class Zemu {
       }
     })
 
-    this.containerName = BASE_NAME + rndstr.generate()
+    this.containerName = BASE_NAME + rndstr.generate(12) // generate 12 chars long string
     this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, DEFAULT_EMU_IMG, this.containerName)
   }
 
@@ -140,10 +138,10 @@ export default class Zemu {
   }
 
   static sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise<void>(resolve => setTimeout(resolve, ms))
   }
 
-  static async delayedPromise(p: any, delay: number) {
+  static async delayedPromise(p: Promise<any>, delay: number) {
     await Promise.race([
       p,
       new Promise(resolve => {
@@ -185,7 +183,6 @@ export default class Zemu {
     Zemu.checkElf(this.startOptions.model ?? DEFAULT_MODEL, this.elfPath)
 
     try {
-      await Zemu.stopAllEmuContainers()
       await this.assignPortsToListen()
 
       if (!this.transportPort || !this.speculosApiPort) {
@@ -223,26 +220,28 @@ export default class Zemu {
   }
 
   async connect() {
-    const transport_url = `${this.transportProtocol}://${this.host}:${this.transportPort}`
+    const transportUrl = `${this.transportProtocol}://${this.host}:${this.transportPort}`
     const start = new Date()
     let connected = false
     const maxWait = this.startOptions?.startDelay ?? DEFAULT_START_DELAY
 
     while (!connected) {
       const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > maxWait) {
         throw `Timeout waiting to connect`
       }
-      Zemu.delay(100)
+      Zemu.delay()
 
       try {
-        // Here it should be "StaticTransport" type, in order to be able to use the static method "open". That method belongs to StaticTransport
-        // https://github.com/LedgerHQ/ledgerjs/blob/0ec9a60fe57d75dff26a69c213fd824aa321231c/packages/hw-transport-http/src/withStaticURLs.ts#L89
-        this.transport = await (TransportHttp(transport_url) as any).open(transport_url)
+        // here we should be able to import directly HttpTransport, instead of that Ledger
+        // offers a wrapper that returns a `StaticTransport` instance
+        // we need to expect the error to avoid typing errors
+        // @ts-expect-error
+        this.transport = await HttpTransport(transportUrl).open(transportUrl)
         connected = true
       } catch (e) {
-        this.log(`WAIT ${this.containerName} ${elapsed} - ${e} ${transport_url}`)
+        this.log(`WAIT ${this.containerName} ${elapsed} - ${e} ${transportUrl}`)
         connected = false
       }
     }
@@ -311,45 +310,41 @@ export default class Zemu {
 
   async snapshot(filename?: string): Promise<any> {
     const snapshotUrl = 'http://localhost:' + this.speculosApiPort?.toString() + '/screenshot'
-    const response = await this.fetchSnapshot(snapshotUrl)
+    const { data } = await this.fetchSnapshot(snapshotUrl)
     const modelWindow = this.getWindowRect()
 
-    if (filename) {
-      this.saveSnapshot(response.data, filename)
+    if (filename) this.saveSnapshot(data, filename)
+
+    const rect = {
+      height: modelWindow.height,
+      width: modelWindow.width,
+      data,
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    return new Promise((resolve, reject) => {
-      const rect = {
-        width: modelWindow.width,
-        height: modelWindow.height,
-        data: response.data,
-      }
-      resolve(rect)
-    })
+    return rect
   }
 
   async getMainMenuSnapshot() {
     return this.mainMenuSnapshot
   }
 
-  async waitUntilScreenIsNot(screen: any, timeout = 10000) {
+  async waitUntilScreenIsNot(screen: any, timeout = 60000) {
     const start = new Date()
 
-    const inputSnapshotBufferHex = this.convertBufferToPNG((await screen).data)
-    let currentSnapshotBufferHex = this.convertBufferToPNG((await this.snapshot()).data)
+    const inputSnapshotBufferHex = (await screen).data
+    let currentSnapshotBufferHex = inputSnapshotBufferHex
 
     this.log(`Wait for screen change`)
 
-    while (inputSnapshotBufferHex.data.equals(currentSnapshotBufferHex.data)) {
+    while (inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
       const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
         throw `Timeout waiting for screen to change (${timeout} ms)`
       }
-      Zemu.delay(500)
+      Zemu.delay()
       this.log(`Check [${elapsed}ms]`)
-      currentSnapshotBufferHex = this.convertBufferToPNG((await this.snapshot()).data)
+      currentSnapshotBufferHex = (await this.snapshot()).data
     }
 
     this.log(`Screen changed`)
@@ -371,8 +366,8 @@ export default class Zemu {
     takeSnapshots = true,
     startImgIndex = 0,
   ) {
-    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
-    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
     if (takeSnapshots) {
       fs.ensureDirSync(snapshotPrefixGolden)
@@ -411,21 +406,17 @@ export default class Zemu {
     return imageIndex
   }
 
-  async takeSnapshotAndOverwrite(
-    path: string,
-    testcaseName: string,
-    imageIndex: number,
-  ) {
-    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+  async takeSnapshotAndOverwrite(path: string, testcaseName: string, imageIndex: number) {
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
     fs.ensureDirSync(snapshotPrefixTmp)
     const filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, true)
 
     try {
       if (typeof filename === 'undefined') throw Error
       fs.unlinkSync(filename)
-    } catch(err) {
+    } catch (err) {
       console.log(err)
-      throw new Error('Snapshot does not exist');
+      throw new Error('Snapshot does not exist')
     }
     await this.snapshot(filename)
   }
@@ -442,9 +433,9 @@ export default class Zemu {
     return this.compareSnapshots(path, testcaseName, lastImgIndex)
   }
 
-  async compareSnapshots(path: string, testcaseName: string, snapshotCount: number): Promise<boolean> {
-    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
-    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+  compareSnapshots(path: string, testcaseName: string, snapshotCount: number): boolean {
+    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
     this.log(`golden      ${snapshotPrefixGolden}`)
     this.log(`tmp         ${snapshotPrefixTmp}`)
@@ -460,7 +451,6 @@ export default class Zemu {
         throw new Error(`Image [${this.formatIndexString(j)}] do not match!`)
       }
     }
-
     return true
   }
 
@@ -483,7 +473,7 @@ export default class Zemu {
     testcaseName: string,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = 5000,
+    timeout = 30000,
   ): Promise<boolean> {
     return this.navigateAndCompareUntilText(path, testcaseName, 'APPROVE', waitForScreenUpdate, startImgIndex, timeout)
   }
@@ -495,10 +485,10 @@ export default class Zemu {
     waitForScreenUpdate = true,
     takeSnapshots = true,
     startImgIndex = 0,
-    timeout = 5000,
+    timeout = 30000,
   ): Promise<number> {
-    const snapshotPrefixGolden = Resolve(`${path}/snapshots/${testcaseName}`)
-    const snapshotPrefixTmp = Resolve(`${path}/snapshots-tmp/${testcaseName}`)
+    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
     if (takeSnapshots) {
       fs.ensureDirSync(snapshotPrefixGolden)
@@ -510,14 +500,12 @@ export default class Zemu {
     await this.snapshot(filename)
 
     let start = new Date()
-    const prev_events_qty = (await this.getEvents()).length
-    let current_events_qty = prev_events_qty
 
     let found = false
 
     while (!found) {
       const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      const elapsed = currentTime.getTime() - start.getTime()
 
       if (elapsed > timeout) {
         throw `Timeout waiting for screen containing ${text}`
@@ -527,22 +515,14 @@ export default class Zemu {
       imageIndex += 1
       filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
 
-      if (current_events_qty != events.length) {
-        current_events_qty = events.length
-        for (const eventEntry of events) {
-          if (eventEntry['text'].includes(text)) {
-            found = true
-            break
-          }
-        }
-      }
+      found = events.some((event: any) => event.text.includes(text))
 
       if (found) {
         await this.clickBoth(filename, waitForScreenUpdate)
       } else {
         // navigate to next screen
         await this.clickRight(filename, waitForScreenUpdate)
-        start = currentTime
+        start = new Date()
       }
     }
     return imageIndex
@@ -554,7 +534,7 @@ export default class Zemu {
     text: string,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = 5000,
+    timeout = 30000,
   ): Promise<boolean> {
     const takeSnapshots = true
     const lastImgIndex = await this.navigateUntilText(path, testcaseName, text, waitForScreenUpdate, takeSnapshots, startImgIndex, timeout)
@@ -586,7 +566,7 @@ export default class Zemu {
     }
   }
 
-  async waitScreenChange(timeout = 5000) {
+  async waitScreenChange(timeout = 30000) {
     const start = new Date()
     const prev_events_qty = (await this.getEvents()).length
     let current_events_qty = prev_events_qty
@@ -594,18 +574,18 @@ export default class Zemu {
 
     while (prev_events_qty === current_events_qty) {
       const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
         throw `Timeout waiting for screen to change (${timeout} ms)`
       }
-      Zemu.delay(500)
+      Zemu.delay()
       this.log(`Check [${elapsed}ms]`)
       current_events_qty = (await this.getEvents()).length
     }
     this.log(`Screen changed`)
   }
 
-  async waitForText(text: any, timeout = 5000, caseSensitive = false) {
+  async waitForText(text: string | RegExp, timeout = 60000, caseSensitive = false) {
     const start = new Date()
     let found = false
     const flags = !caseSensitive ? 'i' : ''
@@ -613,45 +593,30 @@ export default class Zemu {
 
     while (!found) {
       const currentTime = new Date()
-      const elapsed: any = currentTime.getTime() - start.getTime()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
         throw `Timeout (${timeout}) waiting for text (${text})`
       }
 
       const events = await this.getEvents()
-      events.forEach((element: any) => {
-        const v = element['text']
-        found = startRegex.test(v)
-      })
-      Zemu.delay(100)
+      found = events.some((event: any) => startRegex.test(event.text))
+      Zemu.delay()
     }
   }
 
   async click(endpoint: string, filename?: string, waitForScreenUpdate?: boolean) {
     let previousScreen
-    if (waitForScreenUpdate) {
-      previousScreen = await this.snapshot()
-    }
+    if (waitForScreenUpdate) previousScreen = await this.snapshot()
+
     const bothClickUrl = 'http://localhost:' + this.speculosApiPort?.toString() + endpoint
     const payload = { action: 'press-and-release' }
     await axios.post(bothClickUrl, payload)
     this.log(`Click ${endpoint} -> ${filename}`)
 
     // Wait and poll Speculos until the application screen gets updated
-    if (waitForScreenUpdate) {
-      let watchdog = 5000
-      let currentScreen = await this.snapshot()
-      while (currentScreen.data.equals(previousScreen.data)) {
-        this.log('sleep')
-        Zemu.delay(100)
-        watchdog -= 100
-        if (watchdog <= 0) throw 'Timeout waiting for screen update'
-        currentScreen = await this.snapshot()
-      }
-    } else {
-      // A minimum delay is required
-      Zemu.delay(100)
-    }
+    if (waitForScreenUpdate) await this.waitUntilScreenIsNot(previousScreen)
+    else Zemu.delay() // A minimum delay is required
+
     return this.snapshot(filename)
   }
 

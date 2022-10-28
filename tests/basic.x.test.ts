@@ -30,19 +30,18 @@ beforeAll(async () => {
 
 const ZEMU_OPTIONS_X: StartOptions = {
   ...DEFAULT_START_OPTIONS,
-  X11: false,
   logging: true,
   custom: `-s "${APP_SEED}" `,
   model: 'nanox',
 }
 
-test('File-Missing', () => {
+test.concurrent('File-Missing', () => {
   expect(() => {
     new Zemu('it_does_not_exist')
   }).toThrow(/Did you compile/)
 })
 
-test('Start&Close-NanoX', async () => {
+test.concurrent('Start&Close-NanoX', async () => {
   const sim = new Zemu(DEMO_APP_PATH_X)
   expect(sim).not.toBeNull()
   try {
@@ -52,7 +51,7 @@ test('Start&Close-NanoX', async () => {
   }
 })
 
-test('Basic Control - X', async () => {
+test.concurrent('Basic Control - X', async () => {
   const sim = new Zemu(DEMO_APP_PATH_X)
   try {
     await sim.start(ZEMU_OPTIONS_X)
@@ -63,8 +62,8 @@ test('Basic Control - X', async () => {
 
     // Move up and down and check screens
     const view0 = await sim.snapshot('tests/tmpX/00000.png')
-    const view1 = await sim.clickRight('tests/tmpX/00001.png', false)
-    const view2 = await sim.clickLeft('tests/tmpX/00002.png', false)
+    const view1 = await sim.clickRight('tests/tmpX/00001.png')
+    const view2 = await sim.clickLeft('tests/tmpX/00002.png')
 
     // compare to check that it went back to the same view
     expect(view2).toEqual(view0)
@@ -74,7 +73,7 @@ test('Basic Control - X', async () => {
   }
 })
 
-test('Load/Compare Snapshots', async () => {
+test.concurrent('Load/Compare Snapshots', async () => {
   const image1A = Zemu.LoadPng2RGB('tests/snapshots/image1A.png')
   const image1B = Zemu.LoadPng2RGB('tests/snapshots/image1B.png')
   const image2A = Zemu.LoadPng2RGB('tests/snapshots/image2A.png')
@@ -83,7 +82,7 @@ test('Load/Compare Snapshots', async () => {
   expect(image1A).not.toEqual(image2A)
 })
 
-test('Wait for change / timeout', async () => {
+test.concurrent('Wait for change / timeout', async () => {
   const sim = new Zemu(DEMO_APP_PATH_X)
   try {
     await sim.start(ZEMU_OPTIONS_X)
