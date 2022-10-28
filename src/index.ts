@@ -331,12 +331,12 @@ export default class Zemu {
   async waitUntilScreenIsNot(screen: any, timeout = 60000) {
     const start = new Date()
 
-    const inputSnapshotBufferHex = this.convertBufferToPNG((await screen).data)
-    let currentSnapshotBufferHex = this.convertBufferToPNG((await this.snapshot()).data)
+    const inputSnapshotBufferHex = (await screen).data
+    let currentSnapshotBufferHex = inputSnapshotBufferHex
 
     this.log(`Wait for screen change`)
 
-    while (inputSnapshotBufferHex.data.equals(currentSnapshotBufferHex.data)) {
+    while (inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
@@ -344,7 +344,7 @@ export default class Zemu {
       }
       Zemu.delay()
       this.log(`Check [${elapsed}ms]`)
-      currentSnapshotBufferHex = this.convertBufferToPNG((await this.snapshot()).data)
+      currentSnapshotBufferHex = (await this.snapshot()).data
     }
 
     this.log(`Screen changed`)
