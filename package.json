@@ -54,7 +54,7 @@
     "@types/sleep": "^0.0.8",
     "@typescript-eslint/eslint-plugin": "^5.40.1",
     "@typescript-eslint/parser": "^5.40.1",
-    "@zondax/ledger-substrate": "^0.39.0",
+    "@zondax/ledger-substrate": "^0.40.3",
     "copyfiles": "^2.4.1",
     "eslint": "^8.25.0",
     "eslint-config-prettier": "^8.3.0",
