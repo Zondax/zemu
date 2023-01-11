@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@types/dockerode": "^3.3.11",
-    "@types/fs-extra": "^9.0.12",
+    "@types/fs-extra": "^11.0.1",
     "@types/jest": "^29.2.0",
     "@types/ledgerhq__hw-transport": "^4.21.4",
     "@types/pngjs": "^6.0.1",
