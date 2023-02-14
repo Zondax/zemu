@@ -1,4 +1,4 @@
-import Zemu from '../src/index'
+import Zemu from "../src/index";
 
-Zemu.checkAndPullImage()
-Zemu.stopAllEmuContainers()
+Zemu.checkAndPullImage();
+Zemu.stopAllEmuContainers();
