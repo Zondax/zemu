@@ -1,56 +1,54 @@
-import { Server } from '@grpc/grpc-js'
+import { loadPackageDefinition, Server, ServerCredentials } from "@grpc/grpc-js";
+import { loadSync } from "@grpc/proto-loader";
+import type Transport from "@ledgerhq/hw-transport";
+import { resolve } from "path";
 
-const PROTO_PATH = `${__dirname}/zemu.proto`
-const protoLoader = require('@grpc/proto-loader')
-const grpc = require('@grpc/grpc-js')
+const PROTO_PATH = resolve(__dirname, "zemu.proto");
 
 export default class GRPCRouter {
-  private httpTransport: any
-  private serverAddress: string
-  private server: Server
+  private readonly httpTransport: Transport;
+  private readonly serverAddress: string;
+  private readonly server: Server;
 
-  constructor(ip: string, port: number, options: { debug?: any }, transport: any) {
-    this.httpTransport = transport
-    this.serverAddress = `${ip}:${port}`
-    this.server = new grpc.Server()
+  constructor(ip: string, port: number, transport: any) {
+    this.httpTransport = transport;
+    this.serverAddress = `${ip}:${port}`;
+    this.server = new Server();
   }
 
-  async startServer() {
-    const packageDefinition = await protoLoader.load(PROTO_PATH, {
+  startServer(): void {
+    const packageDefinition = loadSync(PROTO_PATH, {
       keepCase: true,
       longs: String,
       enums: String,
       defaults: true,
       oneofs: true,
-    })
+    });
 
-    const rpcDefinition = grpc.loadPackageDefinition(packageDefinition)
+    const rpcDefinition = loadPackageDefinition(packageDefinition);
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this
+    const self = this;
+    // @ts-expect-error types are missing
     this.server.addService(rpcDefinition.ledger_go.ZemuCommand.service, {
       Exchange(call: any, callback: any, ctx = self) {
-        ctx.httpTransport.exchange(call.request.command).then((response: any) => {
-          callback(null, { reply: response })
-        })
+        void ctx.httpTransport.exchange(call.request.command).then((response: Buffer) => {
+          callback(null, { reply: response });
+        });
       },
-    })
-    this.server.bindAsync(
-      this.serverAddress,
-      grpc.ServerCredentials.createInsecure(),
-      // eslint-disable-next-line no-unused-vars
-      (err, port) => {
-        if (err != null) {
-          return console.error(err)
-        }
-        process.stdout.write(`gRPC listening on ${port}`)
-        this.server.start()
-      },
-    )
-    process.stdout.write(`grpc server started on ${this.serverAddress}`)
+    });
+    this.server.bindAsync(this.serverAddress, ServerCredentials.createInsecure(), (err, port) => {
+      if (err != null) {
+        console.error(err);
+        return;
+      }
+      process.stdout.write(`gRPC listening on ${port}`);
+      this.server.start();
+    });
+    process.stdout.write(`grpc server started on ${this.serverAddress}`);
   }
 
-  stopServer() {
-    this.server.forceShutdown()
+  stopServer(): void {
+    this.server.forceShutdown();
   }
 }

@@ -2,11 +2,12 @@
 
 ## Why Zemu?
 
-Integration and end-to-end testing of Ledger Apps is a manual and time consuming process. We believe that the Ledger apps ecosystem is
-lacking an adequate approach with respect to testing. The Zemu Framework is our solution for this problem. We stand on the shoulders of the
-giant [greenknot’s](https://github.com/greenknot) speculos.
+Integration and end-to-end testing of Ledger Apps is a manual and time consuming process. We believe that the Ledger
+apps ecosystem is lacking an adequate approach with respect to testing. The Zemu Framework is our solution for this
+problem. We stand on the shoulders of the giant [greenknot’s](https://github.com/greenknot) speculos.
 
-It's currently being used in every Ledger App built by Zondax, among many others (such as Ethereum one built by Ledger team).
+It's currently being used in every Ledger App built by Zondax, among many others (such as Ethereum one built by Ledger
+team).
 
 _Zemu is an emulation and testing framework for Ledger Nano S/S+/X devices_
 
