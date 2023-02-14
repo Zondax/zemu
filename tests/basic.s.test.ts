@@ -15,19 +15,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import Zemu, { DEFAULT_START_OPTIONS, StartOptions } from "../src";
-import MinimalApp from "./minapp";
 import { newPolymeshApp } from "@zondax/ledger-substrate";
+import Zemu, { DEFAULT_START_OPTIONS, IStartOptions } from "../src";
+import MinimalApp from "./minapp";
 
-const Resolve = require("path").resolve;
+import { resolve } from "path";
 
 jest.setTimeout(60000);
-const DEMO_APP_PATH_S = Resolve("bin/demoAppS.elf");
-const DEMO_APP2_PATH_S = Resolve("bin/app_s.elf");
+const DEMO_APP_PATH_S = resolve("bin/demoAppS.elf");
+const DEMO_APP2_PATH_S = resolve("bin/app_s.elf");
 
 const APP_SEED = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
-const ZEMU_OPTIONS_S: StartOptions = {
+const ZEMU_OPTIONS_S: IStartOptions = {
   ...DEFAULT_START_OPTIONS,
   logging: true,
   custom: `-s "${APP_SEED}" `,
@@ -85,7 +85,7 @@ test.concurrent("Wait for change / timeout", async () => {
   try {
     await sim.start(ZEMU_OPTIONS_S);
     const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 5000);
-    await expect(result).rejects.toEqual("Timeout waiting for screen to change (5000 ms)");
+    await expect(result).rejects.toThrowError("Timeout waiting for screen to change (5000 ms)");
   } finally {
     await sim.close();
   }
@@ -95,7 +95,7 @@ test.concurrent("Snapshot and compare", async () => {
   const sim = new Zemu(DEMO_APP_PATH_S);
   try {
     await sim.start(ZEMU_OPTIONS_S);
-    expect(await sim.compareSnapshotsAndAccept("tests", "compare_test", 1)).toBeTruthy();
+    expect(await sim.navigateAndCompareUntilText("tests", "compare_test", "Expert")).toBeTruthy();
   } finally {
     await sim.close();
   }
@@ -106,13 +106,12 @@ test.concurrent("Snapshot and compare 2", async () => {
   try {
     await sim.start(ZEMU_OPTIONS_S);
 
-    expect(await sim.compareSnapshotsAndAccept("tests", "compare_test2", 1, 1)).toBeTruthy();
+    expect(await sim.navigateAndCompareSnapshots("tests", "compare_test2", [1, -1, 1, 0])).toBeTruthy();
   } finally {
     await sim.close();
   }
 });
 
-// eslint-disable-next-line jest/expect-expect
 test.concurrent("GRPC Server start-stop", async () => {
   const sim = new Zemu(DEMO_APP_PATH_S);
   await sim.start(ZEMU_OPTIONS_S);
@@ -157,7 +156,7 @@ test.concurrent("sign real app", async function () {
 
     const signatureRequest = app.sign(pathAccount, pathChange, pathIndex, txBlob);
     await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot());
-    await sim.compareSnapshotsAndApprove(".", `s-sign_basic_normal`);
+    await sim.compareSnapshotsAndApprove("tests", `s-sign_basic_normal`);
 
     const signatureResponse = await signatureRequest;
     console.log(signatureResponse);

@@ -93,18 +93,13 @@ export default class MinimalApp {
       return {
         return_code: returnCode,
         error_message: returnCode.toString(),
-        // //
         appName,
         appVersion,
         flagLen,
         flagsValue,
-        // eslint-disable-next-line no-bitwise
         flag_recovery: (flagsValue & 1) !== 0,
-        // eslint-disable-next-line no-bitwise
         flag_signed_mcu_code: (flagsValue & 2) !== 0,
-        // eslint-disable-next-line no-bitwise
         flag_onboarded: (flagsValue & 4) !== 0,
-        // eslint-disable-next-line no-bitwise
         flag_pin_validated: (flagsValue & 128) !== 0,
       };
     }, processErrorResponse);

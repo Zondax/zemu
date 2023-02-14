@@ -15,20 +15,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import Zemu, { DEFAULT_START_OPTIONS, StartOptions } from "../src";
+import Zemu, { DEFAULT_START_OPTIONS, IStartOptions } from "../src";
 
-const Resolve = require("path").resolve;
+import { resolve } from "path";
 
 jest.setTimeout(60000);
-const DEMO_APP_PATH_X = Resolve("bin/demoAppX.elf");
+const DEMO_APP_PATH_X = resolve("bin/demoAppX.elf");
 
 const APP_SEED = "equip will roof matter pink blind book anxiety banner elbow sun young";
 
-beforeAll(async () => {
-  await Zemu.checkAndPullImage();
-});
-
-const ZEMU_OPTIONS_X: StartOptions = {
+const ZEMU_OPTIONS_X: IStartOptions = {
   ...DEFAULT_START_OPTIONS,
   logging: true,
   custom: `-s "${APP_SEED}" `,
@@ -87,7 +83,7 @@ test.concurrent("Wait for change / timeout", async () => {
   try {
     await sim.start(ZEMU_OPTIONS_X);
     const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000);
-    await expect(result).rejects.toEqual("Timeout waiting for screen to change (2000 ms)");
+    await expect(result).rejects.toThrowError("Timeout waiting for screen to change (2000 ms)");
   } finally {
     await sim.close();
   }
