@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2020 Zondax GmbH
+ *  (c) 2018 - 2023 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
+import Docker, { type Container, type ContainerInfo } from "dockerode";
 import path from "path";
-import Docker, { Container, ContainerInfo } from "dockerode";
 
 export const DEV_CERT_PRIVATE_KEY = "ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b";
 export const BOLOS_SDK = "/project/deps/nanos-secure-sdk";
@@ -25,11 +25,10 @@ export default class EmuContainer {
   private readonly elfLocalPath: string;
   private readonly name: string;
   private readonly image: string;
-  private libElfs: { [p: string]: string };
-  private currentContainer: Container | undefined | null;
+  private readonly libElfs: Record<string, string>;
+  private currentContainer?: Container;
 
-  constructor(elfLocalPath: string, libElfs: { [p: string]: string }, image: string, name: string) {
-    // eslint-disable-next-line global-require
+  constructor(elfLocalPath: string, libElfs: Record<string, string>, image: string, name: string) {
     this.image = image;
     this.elfLocalPath = elfLocalPath;
     this.libElfs = libElfs;
@@ -37,48 +36,39 @@ export default class EmuContainer {
     this.logging = false;
   }
 
-  static async killContainerByName(name: string) {
+  static killContainerByName(name: string): void {
     const docker = new Docker();
-    return new Promise<void>((resolve) => {
-      docker.listContainers(
-        { all: true, filters: { name: [name] } },
-        (listError, containers: ContainerInfo[] | undefined) => {
-          if (listError) throw listError;
-          if (!containers?.length) {
-            console.log("No containers found");
-            return;
-          }
-          containers.forEach((containerInfo) => {
-            docker.getContainer(containerInfo.Id).remove({ force: true }, (removeError) => {
-              if (removeError) throw removeError;
-            });
-          });
-        }
-      );
-      resolve();
+    docker.listContainers({ all: true, filters: { name: [name] } }, (listError, containers?: ContainerInfo[]) => {
+      if (listError != null) throw listError;
+      if (containers == null || containers.length === 0) {
+        console.log("No containers found");
+        return;
+      }
+      containers.forEach((containerInfo) => {
+        docker.getContainer(containerInfo.Id).remove({ force: true }, (removeError) => {
+          if (removeError != null) throw removeError;
+        });
+      });
     });
   }
 
-  static async checkAndPullImage(imageName: string) {
+  static checkAndPullImage(imageName: string): void {
     const docker = new Docker();
-    return docker.pull(imageName, (err: any, stream: any) => {
-      function onProgress(event: any) {
-        // eslint-disable-next-line no-prototype-builtins
-        const progress = event.hasOwnProperty("progress") ? event.progress : "";
-        // eslint-disable-next-line no-prototype-builtins
-        const status = event.hasOwnProperty("status") ? event.status : "";
+    docker.pull(imageName, {}, (err: any, stream: any) => {
+      function onProgress(event: any): void {
+        const progress = event?.progress ?? "";
+        const status = event?.status ?? "";
         process.stdout.write(`[DOCKER] ${status}: ${progress}\n`);
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      function onFinished(err: any, output: any) {
-        if (err) {
+      function onFinished(err: any, _output: any): void {
+        if (err != null) {
           process.stdout.write(`[DOCKER] ${err}\n`);
           throw err;
         }
       }
 
-      if (err) {
+      if (err != null) {
         process.stdout.write(`[DOCKER] ${err}\n`);
         throw new Error(err);
       }
@@ -87,10 +77,8 @@ export default class EmuContainer {
     });
   }
 
-  log(message: string) {
-    if (this.logging ?? false) {
-      process.stdout.write(`${message}\n`);
-    }
+  log(message: string): void {
+    if (this.logging ?? false) process.stdout.write(`${message}\n`);
   }
 
   async runContainer(options: {
@@ -100,7 +88,7 @@ export default class EmuContainer {
     sdk: string;
     transportPort: string;
     speculosApiPort: string;
-  }) {
+  }): Promise<void> {
     const docker = new Docker();
 
     this.logging = options.logging;
@@ -116,28 +104,25 @@ export default class EmuContainer {
       libArgs += ` -l ${libName}:${DEFAULT_APP_PATH}/${libFilename}`;
     });
 
-    const modelOptions = options?.model ? options.model : "nanos";
-    if (modelOptions === "nanosp") options.sdk = "1.0.3";
+    const modelOptions = options.model !== "" ? options.model : "nanos";
+    if (modelOptions === "nanosp" && options.sdk === "") options.sdk = "1.0.3";
 
-    const sdkOption = options?.sdk ? ` -k ${options.sdk} ` : "";
-    if (sdkOption) this.log(`[ZEMU] Using SDK ${modelOptions} with version ${options.sdk}`);
+    const sdkOption = options.sdk !== "" ? `-k ${options.sdk}` : "";
+    if (sdkOption !== "") this.log(`[ZEMU] Using SDK ${modelOptions} with version ${options.sdk}`);
 
-    let customOptions = "";
-    if (options.custom) {
-      customOptions = options.custom;
-    }
+    const customOptions = options.custom;
 
     const displaySetting = "--display headless";
     const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${sdkOption} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`;
 
     this.log(`[ZEMU] Command: ${command}`);
 
-    const portBindings: { [index: string]: { HostPort: string }[] } = {
+    const portBindings: Record<string, Array<{ HostPort: string }>> = {
       [`9998/tcp`]: [{ HostPort: options.transportPort }],
       [`5000/tcp`]: [{ HostPort: options.speculosApiPort }],
     };
 
-    if (customOptions.indexOf("--debug") > -1) {
+    if (customOptions.includes("--debug")) {
       portBindings[`1234/tcp`] = [{ HostPort: "1234" }];
     }
 
@@ -170,6 +155,7 @@ export default class EmuContainer {
 
     if (this.logging) {
       this.currentContainer.attach({ stream: true, stdout: true, stderr: true }, (err: any, stream: any) => {
+        if (err != null) throw err;
         stream.pipe(process.stdout);
       });
       this.log(`[ZEMU] Attached ${this.currentContainer.id}`);
@@ -180,10 +166,10 @@ export default class EmuContainer {
     this.log(`[ZEMU] Started ${this.currentContainer.id}`);
   }
 
-  async stop() {
-    if (this.currentContainer) {
+  async stop(): Promise<void> {
+    if (this.currentContainer != null) {
       const container = this.currentContainer;
-      this.currentContainer = null;
+      delete this.currentContainer;
       this.log(`[ZEMU] Stopping container`);
       try {
         await container.stop({ t: 0 });
