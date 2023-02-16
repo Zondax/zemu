@@ -26,7 +26,7 @@ export const DEFAULT_HOST = "127.0.0.1";
 export const BASE_NAME = "zemu-test-";
 export const DEFAULT_START_TIMEOUT = 20000;
 export const KILL_TIMEOUT = 5000;
-export const DEFAULT_METHOD_TIMEOUT = 10000;
+export const DEFAULT_METHOD_TIMEOUT = 20000;
 
 export const DEFAULT_NANO_APPROVE_KEYWORD = "APPROVE";
 export const DEFAULT_NANO_REJECT_KEYWORD = "REJECT";
