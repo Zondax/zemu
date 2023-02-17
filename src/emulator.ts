@@ -85,7 +85,6 @@ export default class EmuContainer {
     logging: boolean;
     custom: string;
     model: string;
-    sdk: string;
     transportPort: string;
     speculosApiPort: string;
   }): Promise<void> {
@@ -105,15 +104,11 @@ export default class EmuContainer {
     });
 
     const modelOptions = options.model !== "" ? options.model : "nanos";
-    if (modelOptions === "nanosp" && options.sdk === "") options.sdk = "1.0.3";
-
-    const sdkOption = options.sdk !== "" ? `-k ${options.sdk}` : "";
-    if (sdkOption !== "") this.log(`[ZEMU] Using SDK ${modelOptions} with version ${options.sdk}`);
 
     const customOptions = options.custom;
 
     const displaySetting = "--display headless";
-    const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${sdkOption} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`;
+    const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`;
 
     this.log(`[ZEMU] Command: ${command}`);
 
