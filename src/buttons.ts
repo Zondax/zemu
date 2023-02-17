@@ -82,9 +82,9 @@ const approveTapButton: IButton = {
 };
 
 const approveHoldButton: IButton = {
-  x: 400,
-  y: 500,
-  delay: 2.5,
+  x: 335,
+  y: 525,
+  delay: 3,
 };
 
 const rejectButton: IButton = {
