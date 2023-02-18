@@ -360,7 +360,7 @@ export default class Zemu {
     this.log(`Screen changed`);
   }
 
-  async waitForScreenChanges(prevEvents: IEvent[], timeout: number = 10000): Promise<void> {
+  async waitForScreenChanges(prevEvents: IEvent[], timeout = DEFAULT_METHOD_TIMEOUT): Promise<void> {
     let currEvents = await this.getEvents();
     const startTime = new Date();
     while (currEvents.length === prevEvents.length) {
