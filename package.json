@@ -41,7 +41,7 @@
     "elfy": "^1.0.0",
     "fs-extra": "^11.0.0",
     "get-port": "^5.1.1",
-    "pngjs": "^6.0.0",
+    "pngjs": "^7.0.0",
     "randomstring": "^1.2.3"
   },
   "devDependencies": {
