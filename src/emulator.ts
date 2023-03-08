@@ -52,28 +52,32 @@ export default class EmuContainer {
     });
   }
 
-  static checkAndPullImage(imageName: string): void {
+  static async checkAndPullImage(imageName: string): Promise<void> {
     const docker = new Docker();
-    docker.pull(imageName, {}, (err: any, stream: any) => {
-      function onProgress(event: any): void {
-        const progress = event?.progress ?? "";
-        const status = event?.status ?? "";
-        process.stdout.write(`[DOCKER] ${status}: ${progress}\n`);
-      }
+    await new Promise<void>(resolve => {
+      docker.pull(imageName, {}, (err: any, stream: any) => {
+        function onProgress(event: any): void {
+          const progress = event?.progress ?? "";
+          const status = event?.status ?? "";
+          process.stdout.write(`[DOCKER] ${status}: ${progress}\n`);
+        }
 
-      function onFinished(err: any, _output: any): void {
+        function onFinished(err: any, _output: any): void {
+          if (err != null) {
+            process.stdout.write(`[DOCKER] ${err}\n`);
+            throw err;
+          } else {
+            resolve()
+          }
+        }
+
         if (err != null) {
           process.stdout.write(`[DOCKER] ${err}\n`);
           throw err;
         }
-      }
 
-      if (err != null) {
-        process.stdout.write(`[DOCKER] ${err}\n`);
-        throw new Error(err);
-      }
-
-      docker.modem.followProgress(stream, onFinished, onProgress);
+        docker.modem.followProgress(stream, onFinished, onProgress);
+      });
     });
   }
 
