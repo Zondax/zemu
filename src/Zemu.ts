@@ -131,8 +131,8 @@ export default class Zemu {
     clearTimeout(timer);
   }
 
-  static checkAndPullImage(): void {
-    EmuContainer.checkAndPullImage(DEFAULT_EMU_IMG);
+  static async checkAndPullImage(): Promise<void> {
+    return EmuContainer.checkAndPullImage(DEFAULT_EMU_IMG);
   }
 
   static checkElf(model: TModel, elfPath: string): void {

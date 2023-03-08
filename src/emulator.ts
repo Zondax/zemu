@@ -52,7 +52,7 @@ export default class EmuContainer {
     });
   }
 
-  static checkAndPullImage(imageName: string): Promise<void> {
+  static async checkAndPullImage(imageName: string): Promise<void> {
     const docker = new Docker();
     return new Promise(resolve => {
       docker.pull(imageName, {}, (err: any, stream: any) => {
