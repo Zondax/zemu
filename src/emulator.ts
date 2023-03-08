@@ -54,7 +54,7 @@ export default class EmuContainer {
 
   static async checkAndPullImage(imageName: string): Promise<void> {
     const docker = new Docker();
-    const promise = new Promise(resolve => {
+    const promise = new Promise<void>(resolve => {
       docker.pull(imageName, {}, (err: any, stream: any) => {
         function onProgress(event: any): void {
           const progress = event?.progress ?? "";
