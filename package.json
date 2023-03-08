@@ -19,8 +19,9 @@
     "Zemu"
   ],
   "scripts": {
-    "build": "yarn rimraf dist && tsc && yarn copy-files",
     "copy-files": "copyfiles -u 0 src/**/*.proto dist/",
+    "prepack": "yarn rimraf dist && tsc && yarn copy-files",
+    "build": "yarn prepack",
     "test:clean": "yarn ts-node tests/pullImageKillOld.ts",
     "test": "yarn test:clean && yarn build && jest",
     "linter": "eslint --max-warnings 0 .",
