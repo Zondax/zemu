@@ -41,6 +41,7 @@ import {
   DEFAULT_STAX_REJECT_KEYWORD,
   DEFAULT_NANO_APPROVE_KEYWORD,
   DEFAULT_NANO_REJECT_KEYWORD,
+  DEFAULT_WAIT_TIMEOUT,
 } from "./constants";
 
 import EmuContainer from "./emulator";
@@ -318,7 +319,7 @@ export default class Zemu {
     return this.mainMenuSnapshot;
   }
 
-  async waitUntilScreenIs(screen: ISnapshot, timeout = DEFAULT_METHOD_TIMEOUT): Promise<void> {
+  async waitUntilScreenIs(screen: ISnapshot, timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
     const start = new Date();
 
     const inputSnapshotBufferHex = screen.data;
@@ -339,7 +340,7 @@ export default class Zemu {
     this.log(`Screen matches`);
   }
 
-  async waitUntilScreenIsNot(screen: ISnapshot, timeout = DEFAULT_METHOD_TIMEOUT): Promise<void> {
+  async waitUntilScreenIsNot(screen: ISnapshot, timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
     const start = new Date();
 
     const inputSnapshotBufferHex = screen.data;
@@ -360,7 +361,7 @@ export default class Zemu {
     this.log(`Screen changed`);
   }
 
-  async waitForScreenChanges(prevEvents: IEvent[], timeout = DEFAULT_METHOD_TIMEOUT): Promise<void> {
+  async waitForScreenChanges(prevEvents: IEvent[], timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
     let currEvents = await this.getEvents();
     const startTime = new Date();
     while (currEvents.length === prevEvents.length) {
