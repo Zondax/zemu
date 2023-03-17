@@ -22,8 +22,8 @@ export const dummyButton: IButton = {
 };
 
 const infoButton: IButton = {
-  x: 375,
-  y: 30,
+  x: 335,
+  y: 65,
   delay: 0.1,
 };
 
@@ -40,8 +40,8 @@ export const tapContinueButton: IButton = {
 };
 
 const prevPageButton: IButton = {
-  x: 35,
-  y: 35,
+  x: 45,
+  y: 45,
   delay: 0.1,
 };
 
@@ -84,7 +84,7 @@ const approveTapButton: IButton = {
 const approveHoldButton: IButton = {
   x: 335,
   y: 525,
-  delay: 3,
+  delay: 4,
 };
 
 const rejectButton: IButton = {
