@@ -586,7 +586,7 @@ export default class Zemu {
   async navigateUntilText(
     path: string,
     testcaseName: string,
-    text: string,
+    text: string | RegExp,
     waitForScreenUpdate = true,
     takeSnapshots = true,
     startImgIndex = 0,
@@ -611,6 +611,8 @@ export default class Zemu {
     let found = false;
     const isStaxDevice = this.startOptions.model === "stax";
 
+    const textRegex = new RegExp(text, "i");
+
     while (!found) {
       const currentTime = new Date();
       const elapsed = currentTime.getTime() - start.getTime();
@@ -623,7 +625,7 @@ export default class Zemu {
       imageIndex += 1;
       filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots);
 
-      found = events.some((event: IEvent) => event.text.includes(text));
+      found = events.some((event: IEvent) => textRegex.test(event.text));
       if (found) break;
 
       const nav: INavElement = {
@@ -650,7 +652,7 @@ export default class Zemu {
   async navigateAndCompareUntilText(
     path: string,
     testcaseName: string,
-    text: string,
+    text: string | RegExp,
     waitForScreenUpdate = true,
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
