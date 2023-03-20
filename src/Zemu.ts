@@ -365,13 +365,13 @@ export default class Zemu {
     let currEvents = await this.getEvents();
     const startTime = new Date();
     while (currEvents.length === prevEvents.length) {
-      await Zemu.sleep();
-      currEvents = await this.getEvents();
       const elapsed = new Date().getTime() - startTime.getTime();
       if (elapsed > timeout) {
         throw new Error(`Timeout waiting for screen to change (${timeout} ms)`);
       }
+      await Zemu.sleep();
       this.log(`Check [${elapsed}ms]`);
+      currEvents = await this.getEvents();
     }
   }
 
