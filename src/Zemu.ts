@@ -110,7 +110,7 @@ export default class Zemu {
       }
     });
 
-    this.containerName = BASE_NAME + rndstr.generate(12); // generate 12 chars long string
+    this.containerName = BASE_NAME + rndstr.generate(8);
     this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, emuImage, this.containerName);
   }
 
