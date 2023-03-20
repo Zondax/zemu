@@ -81,6 +81,7 @@ export default class Zemu {
   private grpcManager?: GRPCRouter;
 
   private mainMenuSnapshot!: ISnapshot;
+  private initialEvents!: IEvent[];
 
   constructor(
     elfPath: string,
@@ -110,7 +111,7 @@ export default class Zemu {
       }
     });
 
-    this.containerName = BASE_NAME + rndstr.generate(12); // generate 12 chars long string
+    this.containerName = BASE_NAME + rndstr.generate(8);
     this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, emuImage, this.containerName);
   }
 
@@ -197,8 +198,9 @@ export default class Zemu {
         this.startOptions.caseSensitive
       );
 
-      this.log(`Get initial snapshot`);
+      this.log(`Get initial snapshot and events`);
       this.mainMenuSnapshot = await this.snapshot();
+      this.initialEvents = await this.getEvents();
     } catch (e) {
       this.log(`[ZEMU] ${e}`);
       throw e;
@@ -240,7 +242,7 @@ export default class Zemu {
   log(message: string): void {
     if (this.startOptions.logging) {
       const currentTimestamp = new Date().toISOString().slice(11, 23);
-      process.stdout.write(`[ZEMU] ${currentTimestamp}: ${message}\n`);
+      process.stdout.write(`[${this.containerName}] ${currentTimestamp}: ${message}\n`);
     }
   }
 
@@ -325,13 +327,14 @@ export default class Zemu {
     const inputSnapshotBufferHex = screen.data;
     let currentSnapshotBufferHex = (await this.snapshot("")).data;
 
-    this.log(`Wait for screen change`);
+    this.log(`Wait until screen is`);
 
     while (!inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
       const currentTime = new Date();
       const elapsed = currentTime.getTime() - start.getTime();
       if (elapsed > timeout) {
-        throw new Error(`Timeout waiting for screen to change (${timeout} ms)`);
+        this.log("Timeout waiting for screen to be");
+        throw new Error(`Timeout waiting for screen to be (${timeout} ms)`);
       }
       await Zemu.sleep();
       this.log(`Check [${elapsed}ms]`);
@@ -346,13 +349,14 @@ export default class Zemu {
     const inputSnapshotBufferHex = screen.data;
     let currentSnapshotBufferHex = (await this.snapshot("")).data;
 
-    this.log(`Wait for screen change`);
+    this.log(`Wait until screen is not`);
 
     while (inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
       const currentTime = new Date();
       const elapsed = currentTime.getTime() - start.getTime();
       if (elapsed > timeout) {
-        throw new Error(`Timeout waiting for screen to change (${timeout} ms)`);
+        this.log("Timeout waiting for screen to be not");
+        throw new Error(`Timeout waiting for screen to be not (${timeout} ms)`);
       }
       await Zemu.sleep();
       this.log(`Check [${elapsed}ms]`);
@@ -364,15 +368,22 @@ export default class Zemu {
   async waitForScreenChanges(prevEvents: IEvent[], timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
     let currEvents = await this.getEvents();
     const startTime = new Date();
+
+    this.log(`Wait for screen changes`);
+
     while (currEvents.length === prevEvents.length) {
-      await Zemu.sleep();
-      currEvents = await this.getEvents();
       const elapsed = new Date().getTime() - startTime.getTime();
       if (elapsed > timeout) {
+        this.log("Timeout waiting for screen to change");
         throw new Error(`Timeout waiting for screen to change (${timeout} ms)`);
       }
+      await Zemu.sleep();
       this.log(`Check [${elapsed}ms]`);
+      currEvents = await this.getEvents();
     }
+    this.log(JSON.stringify(prevEvents));
+    this.log(JSON.stringify(currEvents));
+    this.log("Events changed");
   }
 
   formatIndexString(i: number): string {
@@ -443,7 +454,6 @@ export default class Zemu {
       await this.runAction(nav, filename, waitForScreenUpdate);
     }
 
-    await this.dumpEvents();
     return imageIndex;
   }
 
@@ -456,7 +466,7 @@ export default class Zemu {
       if (filename === "") throw new Error("Snapshot filename not defined");
       fs.unlinkSync(filename);
     } catch (err) {
-      console.log(err);
+      this.log(`${err}`);
       throw new Error("Snapshot does not exist");
     }
     await this.snapshot(filename);
@@ -576,12 +586,13 @@ export default class Zemu {
   async navigateUntilText(
     path: string,
     testcaseName: string,
-    text: string,
+    text: string | RegExp,
     waitForScreenUpdate = true,
     takeSnapshots = true,
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
-    runLastAction = true
+    runLastAction = true,
+    waitForInitialEventsChange = true
   ): Promise<number> {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`);
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
@@ -593,11 +604,14 @@ export default class Zemu {
 
     let imageIndex = startImgIndex;
     let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots);
+    if (waitForInitialEventsChange) await this.waitForScreenChanges(this.initialEvents);
     await this.snapshot(filename);
 
     let start = new Date();
     let found = false;
     const isStaxDevice = this.startOptions.model === "stax";
+
+    const textRegex = new RegExp(text, "i");
 
     while (!found) {
       const currentTime = new Date();
@@ -611,7 +625,7 @@ export default class Zemu {
       imageIndex += 1;
       filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots);
 
-      found = events.some((event: IEvent) => event.text.includes(text));
+      found = events.some((event: IEvent) => textRegex.test(event.text));
       if (found) break;
 
       const nav: INavElement = {
@@ -638,10 +652,11 @@ export default class Zemu {
   async navigateAndCompareUntilText(
     path: string,
     testcaseName: string,
-    text: string,
+    text: string | RegExp,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = DEFAULT_METHOD_TIMEOUT
+    timeout = DEFAULT_METHOD_TIMEOUT,
+    waitForInitialEventsChange = true
   ): Promise<boolean> {
     const takeSnapshots = true;
     const lastImgIndex = await this.navigateUntilText(
@@ -651,7 +666,9 @@ export default class Zemu {
       waitForScreenUpdate,
       takeSnapshots,
       startImgIndex,
-      timeout
+      timeout,
+      true, // runLastAction
+      waitForInitialEventsChange
     );
     return this.compareSnapshots(path, testcaseName, lastImgIndex);
   }
@@ -697,16 +714,14 @@ export default class Zemu {
       }
 
       const events = await this.getEvents();
-      found = events.some((event: IEvent) => {
-        this.log(JSON.stringify(event));
-        return startRegex.test(event.text);
-      });
+      found = events.some((event: IEvent) => startRegex.test(event.text));
       await Zemu.sleep();
     }
   }
 
   async click(endpoint: string, filename: string = "", waitForScreenUpdate: boolean = true): Promise<ISnapshot> {
     const prevEvents = await this.getEvents();
+    const prevScreen = await this.snapshot();
 
     const clickUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}${endpoint}`;
     const payload = { action: "press-and-release" };
@@ -714,8 +729,13 @@ export default class Zemu {
     this.log(`Click ${endpoint} -> ${filename}`);
 
     // Wait and poll Speculos until the application screen gets updated
-    if (waitForScreenUpdate) await this.waitForScreenChanges(prevEvents);
-    else await Zemu.sleep(); // A minimum delay is required
+    if (waitForScreenUpdate) {
+      await this.waitUntilScreenIsNot(prevScreen);
+      await this.waitForScreenChanges(prevEvents);
+    } else {
+      // A minimum delay is required
+      await Zemu.sleep();
+    }
 
     return await this.snapshot(filename);
   }
@@ -743,8 +763,8 @@ export default class Zemu {
 
     // Wait and poll Speculos until the application screen gets updated
     if (waitForScreenUpdate) {
-      await this.waitForScreenChanges(prevEvents);
       await this.waitUntilScreenIsNot(prevScreen);
+      await this.waitForScreenChanges(prevEvents);
     } else {
       // A minimum delay is required
       await Zemu.sleep();
