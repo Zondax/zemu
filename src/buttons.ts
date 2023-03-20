@@ -24,61 +24,61 @@ export const dummyButton: IButton = {
 const infoButton: IButton = {
   x: 335,
   y: 65,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const quitAppButton: IButton = {
   x: 0,
   y: 0,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 export const tapContinueButton: IButton = {
   x: 200,
   y: 250,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const prevPageButton: IButton = {
   x: 45,
   y: 45,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const toggleOption1: IButton = {
   x: 350,
   y: 125,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const toggleOption2: IButton = {
   x: 350,
   y: 200,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const toggleOption3: IButton = {
   x: 350,
   y: 250,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const navRightButton: IButton = {
   x: 300,
   y: 625,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const navLeftButton: IButton = {
   x: 100,
   y: 625,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const approveTapButton: IButton = {
   x: 200,
   y: 550,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const approveHoldButton: IButton = {
@@ -90,31 +90,31 @@ const approveHoldButton: IButton = {
 const rejectButton: IButton = {
   x: 200,
   y: 650,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const confirmYesButton: IButton = {
   x: 200,
   y: 550,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const confirmNoButton: IButton = {
   x: 200,
   y: 650,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const showQRButton: IButton = {
   x: 200,
   y: 300,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 const closeQRButton: IButton = {
   x: 200,
   y: 650,
-  delay: 0.1,
+  delay: 0.25,
 };
 
 export const TouchElements = new Map<ButtonKind, IButton>([
