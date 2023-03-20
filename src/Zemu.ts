@@ -81,6 +81,7 @@ export default class Zemu {
   private grpcManager?: GRPCRouter;
 
   private mainMenuSnapshot!: ISnapshot;
+  private initialEvents!: IEvent[];
 
   constructor(
     elfPath: string,
@@ -197,8 +198,9 @@ export default class Zemu {
         this.startOptions.caseSensitive
       );
 
-      this.log(`Get initial snapshot`);
+      this.log(`Get initial snapshot and events`);
       this.mainMenuSnapshot = await this.snapshot();
+      this.initialEvents = await this.getEvents();
     } catch (e) {
       this.log(`[ZEMU] ${e}`);
       throw e;
@@ -589,7 +591,8 @@ export default class Zemu {
     takeSnapshots = true,
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
-    runLastAction = true
+    runLastAction = true,
+    waitForInitialEventsChange = true
   ): Promise<number> {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`);
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
@@ -601,6 +604,7 @@ export default class Zemu {
 
     let imageIndex = startImgIndex;
     let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots);
+    if (waitForInitialEventsChange) await this.waitForScreenChanges(this.initialEvents);
     await this.snapshot(filename);
 
     let start = new Date();
@@ -649,7 +653,8 @@ export default class Zemu {
     text: string,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = DEFAULT_METHOD_TIMEOUT
+    timeout = DEFAULT_METHOD_TIMEOUT,
+    waitForInitialEventsChange = true
   ): Promise<boolean> {
     const takeSnapshots = true;
     const lastImgIndex = await this.navigateUntilText(
@@ -659,7 +664,9 @@ export default class Zemu {
       waitForScreenUpdate,
       takeSnapshots,
       startImgIndex,
-      timeout
+      timeout,
+      true, // runLastAction
+      waitForInitialEventsChange
     );
     return this.compareSnapshots(path, testcaseName, lastImgIndex);
   }

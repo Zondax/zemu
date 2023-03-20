@@ -83,7 +83,7 @@ test.concurrent("Wait for change / timeout", async () => {
   try {
     await sim.start(ZEMU_OPTIONS_X);
     const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 2000);
-    await expect(result).rejects.toThrowError("Timeout waiting for screen to change (2000 ms)");
+    await expect(result).rejects.toThrowError("Timeout waiting for screen to be not (2000 ms)");
   } finally {
     await sim.close();
   }

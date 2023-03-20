@@ -85,7 +85,7 @@ test.concurrent("Wait for change / timeout", async () => {
   try {
     await sim.start(ZEMU_OPTIONS_S);
     const result = sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 5000);
-    await expect(result).rejects.toThrowError("Timeout waiting for screen to change (5000 ms)");
+    await expect(result).rejects.toThrowError("Timeout waiting for screen to be not (5000 ms)");
   } finally {
     await sim.close();
   }
@@ -95,7 +95,7 @@ test.concurrent("Snapshot and compare", async () => {
   const sim = new Zemu(DEMO_APP_PATH_S);
   try {
     await sim.start(ZEMU_OPTIONS_S);
-    expect(await sim.navigateAndCompareUntilText("tests", "compare_test", "Expert")).toBeTruthy();
+    expect(await sim.navigateAndCompareUntilText("tests", "compare_test", "Expert", true, 0, 2000, false)).toBeTruthy();
   } finally {
     await sim.close();
   }
