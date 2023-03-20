@@ -707,6 +707,7 @@ export default class Zemu {
 
   async click(endpoint: string, filename: string = "", waitForScreenUpdate: boolean = true): Promise<ISnapshot> {
     const prevEvents = await this.getEvents();
+    const prevScreen = await this.snapshot();
 
     const clickUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}${endpoint}`;
     const payload = { action: "press-and-release" };
@@ -714,8 +715,13 @@ export default class Zemu {
     this.log(`Click ${endpoint} -> ${filename}`);
 
     // Wait and poll Speculos until the application screen gets updated
-    if (waitForScreenUpdate) await this.waitForScreenChanges(prevEvents);
-    else await Zemu.sleep(); // A minimum delay is required
+    if (waitForScreenUpdate) {
+      await this.waitUntilScreenIsNot(prevScreen);
+      await this.waitForScreenChanges(prevEvents);
+    } else {
+      // A minimum delay is required
+      await Zemu.sleep();
+    }
 
     return await this.snapshot(filename);
   }
@@ -743,8 +749,8 @@ export default class Zemu {
 
     // Wait and poll Speculos until the application screen gets updated
     if (waitForScreenUpdate) {
-      await this.waitForScreenChanges(prevEvents);
       await this.waitUntilScreenIsNot(prevScreen);
+      await this.waitForScreenChanges(prevEvents);
     } else {
       // A minimum delay is required
       await Zemu.sleep();
