@@ -720,6 +720,7 @@ export default class Zemu {
   }
 
   async click(endpoint: string, filename: string = "", waitForScreenUpdate: boolean = true): Promise<ISnapshot> {
+    if (!this.startOptions.model.startsWith("nano")) throw new Error("click method can only be used with nano devices");
     const prevEvents = await this.getEvents();
     const prevScreen = await this.snapshot();
 
@@ -753,6 +754,7 @@ export default class Zemu {
   }
 
   async fingerTouch(button: IButton, filename: string = "", waitForScreenUpdate: boolean = true): Promise<ISnapshot> {
+    if (this.startOptions.model !== "stax") throw new Error("fingerTouch method can only be used with stax device");
     const prevEvents = await this.getEvents();
     const prevScreen = await this.snapshot();
 
