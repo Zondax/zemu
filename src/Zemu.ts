@@ -60,7 +60,7 @@ import {
   type IStartOptions,
   type TModel,
 } from "./types";
-import { zondaxToggleExpertMode, zondaxStaxActivateShortcutMode } from "./zondax";
+import { zondaxToggleExpertMode, zondaxStaxEnableSpecialMode } from "./zondax";
 
 export default class Zemu {
   private startOptions!: IStartOptions;
@@ -398,14 +398,22 @@ export default class Zemu {
     return await this.navigate(".", testcaseName, nav.schedule, true, takeSnapshots, startImgIndex);
   }
 
-  async activateShortcutMode(testcaseName = "", takeSnapshots = false, startImgIndex = 0): Promise<number> {
+  async enableSpecialMode(
+    nanoModeText: string,
+    staxToggleSettingButton?: ButtonKind,
+    path = ".",
+    testcaseName = "",
+    waitForScreenUpdate = true,
+    takeSnapshots = false,
+    startImgIndex = 0
+  ): Promise<number> {
     if (this.startOptions.model !== "stax") {
       const expertImgIndex = await this.toggleExpertMode(testcaseName, takeSnapshots, startImgIndex);
       const tmpImgIndex = await this.navigateUntilText(
-        ".",
+        path,
         testcaseName,
-        "Shortcut",
-        true,
+        nanoModeText,
+        waitForScreenUpdate,
         takeSnapshots,
         expertImgIndex
       );
@@ -418,8 +426,8 @@ export default class Zemu {
         tmpImgIndex
       );
     } else {
-      const nav = zondaxStaxActivateShortcutMode();
-      return await this.navigate(".", testcaseName, nav.schedule, true, takeSnapshots, startImgIndex);
+      const nav = zondaxStaxEnableSpecialMode(staxToggleSettingButton);
+      return await this.navigate(path, testcaseName, nav.schedule, waitForScreenUpdate, takeSnapshots, startImgIndex);
     }
   }
 
