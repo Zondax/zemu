@@ -381,7 +381,6 @@ export default class Zemu {
       this.log(`Check [${elapsed}ms]`);
       currEvents = await this.getEvents();
     }
-    this.log(JSON.stringify(prevEvents));
     this.log(JSON.stringify(currEvents));
     this.log("Events changed");
   }
