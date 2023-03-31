@@ -16,9 +16,6 @@
 import { ClickNavigation, TouchNavigation } from "./actions";
 import { ButtonKind, type TModel } from "./types";
 
-const DEFAULT_MAINMENU_CLICKS = [1, 0, 0, 4, -5];
-const DEFAULT_EXPERT_MODE_CLICKS = [1, 0, -1];
-
 export function zondaxMainmenuNavigation(model: TModel, clickArray?: number[]): ClickNavigation | TouchNavigation {
   if (model === "stax") {
     return new TouchNavigation([
@@ -29,6 +26,7 @@ export function zondaxMainmenuNavigation(model: TModel, clickArray?: number[]): 
       ButtonKind.PrevPageButton,
     ]);
   }
+  const DEFAULT_MAINMENU_CLICKS = [1, 0, 0, 4, -5];
   return new ClickNavigation(clickArray ?? DEFAULT_MAINMENU_CLICKS);
 }
 
@@ -41,17 +39,18 @@ export function zondaxToggleExpertMode(model: TModel, clickArray?: number[]): Cl
       ButtonKind.PrevPageButton,
     ]);
   }
+  const DEFAULT_EXPERT_MODE_CLICKS = [1, 0, -1];
   return new ClickNavigation(clickArray ?? DEFAULT_EXPERT_MODE_CLICKS);
 }
 
-export function zondaxStaxActivateShortcutMode(): TouchNavigation {
+export function zondaxStaxEnableSpecialMode(toggleSettingButton?: ButtonKind): TouchNavigation {
   return new TouchNavigation([
     ButtonKind.InfoButton,
     ButtonKind.NavRightButton,
     ButtonKind.ToggleSettingButton1,
     ButtonKind.NavLeftButton,
     ButtonKind.NavRightButton,
-    ButtonKind.ToggleSettingButton2,
+    toggleSettingButton ?? ButtonKind.ToggleSettingButton2,
     ButtonKind.TapContinueButton,
     ButtonKind.ConfirmYesButton,
   ]);
