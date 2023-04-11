@@ -42,6 +42,8 @@ import {
   DEFAULT_NANO_APPROVE_KEYWORD,
   DEFAULT_NANO_REJECT_KEYWORD,
   DEFAULT_WAIT_TIMEOUT,
+  DEFAULT_STAX_START_TEXT,
+  DEFAULT_NANO_START_TEXT,
 } from "./constants";
 
 import EmuContainer from "./emulator";
@@ -192,6 +194,11 @@ export default class Zemu {
 
       // Captures main screen
       this.log(`Wait for start text`);
+
+      if (this.startOptions.startText.length === 0) {
+        this.startOptions.startText =
+          this.startOptions.model === "stax" ? DEFAULT_STAX_START_TEXT : DEFAULT_NANO_START_TEXT;
+      }
       await this.waitForText(
         this.startOptions.startText,
         this.startOptions.startTimeout,

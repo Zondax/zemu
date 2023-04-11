@@ -18,7 +18,8 @@ import { ButtonKind, type IDeviceWindow, type IStartOptions } from "./types";
 export const DEFAULT_EMU_IMG = "zondax/builder-zemu:speculos-54eeade4fc593c1a2478ed8730575b0cc3dc3b44";
 
 export const DEFAULT_MODEL = "nanos";
-export const DEFAULT_START_TEXT = "Ready";
+export const DEFAULT_NANO_START_TEXT = "Ready";
+export const DEFAULT_STAX_START_TEXT = "This application enables";
 export const DEFAULT_START_DELAY = 20000;
 export const DEFAULT_KEY_DELAY = 250;
 export const DEFAULT_HOST = "127.0.0.1";
@@ -40,7 +41,7 @@ export const DEFAULT_START_OPTIONS: IStartOptions = {
   custom: "",
   model: DEFAULT_MODEL,
   sdk: "",
-  startText: DEFAULT_START_TEXT,
+  startText: "",
   caseSensitive: false,
   startTimeout: DEFAULT_START_TIMEOUT,
   approveAction: ButtonKind.ApproveHoldButton,
