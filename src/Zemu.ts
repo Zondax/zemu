@@ -157,7 +157,7 @@ export default class Zemu {
   async start(options: IStartOptions): Promise<void> {
     this.startOptions = options;
     const approveWord = options.approveKeyword;
-    const rejectWord = options.approveKeyword;
+    const rejectWord = options.rejectKeyword;
     if (options.model === "stax") {
       this.startOptions.approveKeyword = approveWord.length === 0 ? DEFAULT_STAX_APPROVE_KEYWORD : approveWord;
       this.startOptions.rejectKeyword = rejectWord.length === 0 ? DEFAULT_STAX_REJECT_KEYWORD : rejectWord;
