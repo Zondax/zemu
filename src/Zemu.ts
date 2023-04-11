@@ -593,6 +593,9 @@ export default class Zemu {
         takeSnapshots,
         navLastIndex - 1
       );
+      // Avoid taking a snapshot of the final animation
+      await this.waitUntilScreenIs(this.mainMenuSnapshot);
+      await this.takeSnapshotAndOverwrite(path, testcaseName, lastIndex);
       return this.compareSnapshots(path, testcaseName, lastIndex);
     }
   }
