@@ -44,7 +44,9 @@ jobs:
       - run: mv README-npm README.md
       - name: Get latest release version number
         id: get_version
-        uses: battila7/get-version-action@v2
+        run: |
+          GITHUB_REF=${{ github.ref }}
+          echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
       - name: Show version
         run: echo ${{ steps.get_version.outputs.version }}
       - name: Update tag
