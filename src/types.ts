@@ -86,6 +86,7 @@ export const enum ButtonKind {
 
   NavRightButton,
   NavLeftButton,
+  QuitSettingsButton,
 
   ApproveHoldButton,
   ApproveTapButton,
