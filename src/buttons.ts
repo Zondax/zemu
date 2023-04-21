@@ -70,7 +70,13 @@ const navRightButton: IButton = {
 };
 
 const navLeftButton: IButton = {
-  x: 100,
+  x: 140,
+  y: 625,
+  delay: 0.25,
+};
+
+const quitSettingsButton: IButton = {
+  x: 50,
   y: 625,
   delay: 0.25,
 };
@@ -131,6 +137,7 @@ export const TouchElements = new Map<ButtonKind, IButton>([
 
   [ButtonKind.NavRightButton, navRightButton],
   [ButtonKind.NavLeftButton, navLeftButton],
+  [ButtonKind.QuitSettingsButton, quitSettingsButton],
 
   [ButtonKind.ApproveHoldButton, approveHoldButton],
   [ButtonKind.ApproveTapButton, approveTapButton],

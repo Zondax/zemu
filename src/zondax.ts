@@ -23,7 +23,7 @@ export function zondaxMainmenuNavigation(model: TModel, clickArray?: number[]): 
       ButtonKind.NavRightButton,
       ButtonKind.ToggleSettingButton1,
       ButtonKind.ToggleSettingButton1,
-      ButtonKind.PrevPageButton,
+      ButtonKind.QuitSettingsButton,
     ]);
   }
   const DEFAULT_MAINMENU_CLICKS = [1, 0, 0, 4, -5];
