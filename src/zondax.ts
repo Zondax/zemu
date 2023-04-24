@@ -36,7 +36,7 @@ export function zondaxToggleExpertMode(model: TModel, clickArray?: number[]): Cl
       ButtonKind.InfoButton,
       ButtonKind.NavRightButton,
       ButtonKind.ToggleSettingButton1,
-      ButtonKind.PrevPageButton,
+      ButtonKind.QuitSettingsButton,
     ]);
   }
   const DEFAULT_EXPERT_MODE_CLICKS = [1, 0, -1];
