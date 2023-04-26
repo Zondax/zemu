@@ -407,30 +407,40 @@ export default class Zemu {
 
   async enableSpecialMode(
     nanoModeText: string,
+    nanoIsSecretMode: boolean = false,
     staxToggleSettingButton?: ButtonKind,
     path = ".",
     testcaseName = "",
     waitForScreenUpdate = true,
     takeSnapshots = false,
-    startImgIndex = 0
+    startImgIndex = 0,
+    timeout = DEFAULT_METHOD_TIMEOUT
   ): Promise<number> {
     if (this.startOptions.model !== "stax") {
       const expertImgIndex = await this.toggleExpertMode(testcaseName, takeSnapshots, startImgIndex);
-      const tmpImgIndex = await this.navigateUntilText(
+      let tmpImgIndex = await this.navigateUntilText(
         path,
         testcaseName,
         nanoModeText,
         waitForScreenUpdate,
         takeSnapshots,
-        expertImgIndex
+        expertImgIndex,
+        timeout,
+        !nanoIsSecretMode
       );
+      if (nanoIsSecretMode) {
+        const secretClicks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // 10 double clicks
+        // do not wait for screen update
+        tmpImgIndex = await this.navigate(path, testcaseName, secretClicks, false, takeSnapshots, tmpImgIndex);
+      }
       return await this.navigateUntilText(
         ".",
         testcaseName,
         this.startOptions.approveKeyword,
         true,
         takeSnapshots,
-        tmpImgIndex
+        tmpImgIndex,
+        timeout
       );
     } else {
       const nav = zondaxStaxEnableSpecialMode(staxToggleSettingButton);
