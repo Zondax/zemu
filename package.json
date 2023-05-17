@@ -48,7 +48,7 @@
     "@types/dockerode": "^3.3.11",
     "@types/fs-extra": "^11.0.1",
     "@types/jest": "^29.4.0",
-    "@types/node": "^18.14.6",
+    "@types/node": "^20.1.7",
     "@types/pngjs": "^6.0.1",
     "@types/randomstring": "^1.1.8",
     "@typescript-eslint/eslint-plugin": "^5.54.1",
