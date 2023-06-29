@@ -65,25 +65,25 @@ import {
 import { zondaxToggleExpertMode, zondaxStaxEnableSpecialMode } from "./zondax";
 
 export default class Zemu {
-  private startOptions!: IStartOptions;
+  public startOptions!: IStartOptions;
 
   private readonly host: string;
-  private transport!: Transport;
+  public transport!: Transport;
   private readonly transportProtocol: string = "http";
-  private transportPort!: number;
-  protected speculosApiPort!: number;
+  public transportPort!: number;
+  public speculosApiPort!: number;
   private readonly desiredTransportPort?: number;
   private readonly desiredSpeculosApiPort?: number;
 
   private readonly emuContainer: EmuContainer;
-  private readonly containerName: string;
+  public readonly containerName: string;
 
-  private readonly elfPath: string;
-  private readonly libElfs: Record<string, string>;
+  public readonly elfPath: string;
+  public readonly libElfs: Record<string, string>;
   private grpcManager?: GRPCRouter;
 
-  private mainMenuSnapshot!: ISnapshot;
-  private initialEvents!: IEvent[];
+  public mainMenuSnapshot!: ISnapshot;
+  public initialEvents!: IEvent[];
 
   constructor(
     elfPath: string,
