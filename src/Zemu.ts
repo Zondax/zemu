@@ -91,7 +91,7 @@ export default class Zemu {
     host: string = DEFAULT_HOST,
     desiredTransportPort?: number,
     desiredSpeculosApiPort?: number,
-    emuImage: string = DEFAULT_EMU_IMG
+    emuImage: string = DEFAULT_EMU_IMG,
   ) {
     this.host = host;
     this.desiredTransportPort = desiredTransportPort;
@@ -202,7 +202,7 @@ export default class Zemu {
       await this.waitForText(
         this.startOptions.startText,
         this.startOptions.startTimeout,
-        this.startOptions.caseSensitive
+        this.startOptions.caseSensitive,
       );
 
       this.log(`Get initial snapshot and events`);
@@ -372,13 +372,23 @@ export default class Zemu {
     this.log(`Screen changed`);
   }
 
+  eventsAreEqual(events1: IEvent[], events2: IEvent[]): boolean {
+    if (events1.length !== events2.length) return false;
+    for (let i = 0; i < events1.length; i++) {
+      if (events1[i].x !== events2[i].x) return false;
+      if (events1[i].y !== events2[i].y) return false;
+      if (events1[i].text !== events2[i].text) return false;
+    }
+    return true;
+  }
+
   async waitForScreenChanges(prevEvents: IEvent[], timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
     let currEvents = await this.getEvents();
     const startTime = new Date();
 
     this.log(`Wait for screen changes`);
 
-    while (currEvents.length === prevEvents.length) {
+    while (this.eventsAreEqual(prevEvents, currEvents)) {
       const elapsed = new Date().getTime() - startTime.getTime();
       if (elapsed > timeout) {
         this.log("Timeout waiting for screen to change");
@@ -414,7 +424,7 @@ export default class Zemu {
     waitForScreenUpdate = true,
     takeSnapshots = false,
     startImgIndex = 0,
-    timeout = DEFAULT_METHOD_TIMEOUT
+    timeout = DEFAULT_METHOD_TIMEOUT,
   ): Promise<number> {
     if (this.startOptions.model !== "stax") {
       const expertImgIndex = await this.toggleExpertMode(testcaseName, takeSnapshots, startImgIndex);
@@ -426,7 +436,7 @@ export default class Zemu {
         takeSnapshots,
         expertImgIndex,
         timeout,
-        !nanoIsSecretMode
+        !nanoIsSecretMode,
       );
       if (nanoIsSecretMode) {
         const secretClicks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // 10 double clicks
@@ -440,7 +450,7 @@ export default class Zemu {
         true,
         takeSnapshots,
         tmpImgIndex,
-        timeout
+        timeout,
       );
     } else {
       const nav = zondaxStaxEnableSpecialMode(staxToggleSettingButton);
@@ -454,7 +464,8 @@ export default class Zemu {
     navigateSchedule: Array<INavElement | number>,
     waitForScreenUpdate = true,
     takeSnapshots = true,
-    startImgIndex = 0
+    startImgIndex = 0,
+    waitForEventsChange = false,
   ): Promise<number> {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`);
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
@@ -475,7 +486,7 @@ export default class Zemu {
     for (const nav of navSchedule) {
       imageIndex += 1;
       filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots);
-      await this.runAction(nav, filename, waitForScreenUpdate);
+      await this.runAction(nav, filename, waitForScreenUpdate, waitForEventsChange);
     }
 
     return imageIndex;
@@ -501,7 +512,7 @@ export default class Zemu {
     testcaseName: string,
     navigateSchedule: Array<INavElement | number>,
     waitForScreenUpdate = true,
-    startImgIndex = 0
+    startImgIndex = 0,
   ): Promise<boolean> {
     const takeSnapshots = true;
     const lastImgIndex = await this.navigate(
@@ -510,7 +521,7 @@ export default class Zemu {
       navigateSchedule,
       waitForScreenUpdate,
       takeSnapshots,
-      startImgIndex
+      startImgIndex,
     );
     return this.compareSnapshots(path, testcaseName, lastImgIndex);
   }
@@ -540,7 +551,7 @@ export default class Zemu {
     testcaseName: string,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = DEFAULT_METHOD_TIMEOUT
+    timeout = DEFAULT_METHOD_TIMEOUT,
   ): Promise<boolean> {
     const approveKeyword = this.startOptions.approveKeyword;
     const takeSnapshots = true;
@@ -551,7 +562,7 @@ export default class Zemu {
       waitForScreenUpdate,
       takeSnapshots,
       startImgIndex,
-      timeout
+      timeout,
     );
     if (this.startOptions.model === "stax") {
       // Avoid taking a snapshot of the final animation
@@ -566,7 +577,7 @@ export default class Zemu {
     testcaseName: string,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = DEFAULT_METHOD_TIMEOUT
+    timeout = DEFAULT_METHOD_TIMEOUT,
   ): Promise<boolean> {
     const rejectKeyword = this.startOptions.rejectKeyword;
     if (this.startOptions.model !== "stax") {
@@ -576,7 +587,7 @@ export default class Zemu {
         rejectKeyword,
         waitForScreenUpdate,
         startImgIndex,
-        timeout
+        timeout,
       );
     } else {
       const takeSnapshots = true;
@@ -591,7 +602,7 @@ export default class Zemu {
         takeSnapshots,
         startImgIndex,
         timeout,
-        runLastAction
+        runLastAction,
       );
       const rejectConfirmationNav = new TouchNavigation([ButtonKind.RejectButton, ButtonKind.ConfirmYesButton]);
       // Overwrite last snapshot since navigate starts taking a snapshot of the current screen
@@ -601,7 +612,7 @@ export default class Zemu {
         rejectConfirmationNav.schedule,
         waitForScreenUpdate,
         takeSnapshots,
-        navLastIndex - 1
+        navLastIndex - 1,
       );
       // Avoid taking a snapshot of the final animation
       await this.waitUntilScreenIs(this.mainMenuSnapshot);
@@ -619,7 +630,7 @@ export default class Zemu {
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
     runLastAction = true,
-    waitForInitialEventsChange = true
+    waitForInitialEventsChange = true,
   ): Promise<number> {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`);
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
@@ -659,7 +670,7 @@ export default class Zemu {
         type: isStaxDevice ? ActionKind.Touch : ActionKind.RightClick,
         button: tapContinueButton, // For clicks, this will be ignored
       };
-      await this.runAction(nav, filename, waitForScreenUpdate);
+      await this.runAction(nav, filename, waitForScreenUpdate, true);
       start = new Date();
     }
 
@@ -672,7 +683,7 @@ export default class Zemu {
       type: isStaxDevice ? ActionKind.Touch : ActionKind.BothClick,
       button: staxApproveButton ?? dummyButton,
     };
-    await this.runAction(nav, filename, waitForScreenUpdate);
+    await this.runAction(nav, filename, waitForScreenUpdate, true);
     return imageIndex;
   }
 
@@ -683,7 +694,7 @@ export default class Zemu {
     waitForScreenUpdate = true,
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
-    waitForInitialEventsChange = true
+    waitForInitialEventsChange = true,
   ): Promise<boolean> {
     const takeSnapshots = true;
     const lastImgIndex = await this.navigateUntilText(
@@ -695,7 +706,7 @@ export default class Zemu {
       startImgIndex,
       timeout,
       true, // runLastAction
-      waitForInitialEventsChange
+      waitForInitialEventsChange,
     );
     return this.compareSnapshots(path, testcaseName, lastImgIndex);
   }
@@ -746,7 +757,12 @@ export default class Zemu {
     }
   }
 
-  async click(endpoint: string, filename: string = "", waitForScreenUpdate: boolean = true): Promise<ISnapshot> {
+  async click(
+    endpoint: string,
+    filename: string = "",
+    waitForScreenUpdate: boolean = true,
+    waitForEventsChange: boolean = false,
+  ): Promise<ISnapshot> {
     if (!this.startOptions.model.startsWith("nano")) throw new Error("click method can only be used with nano devices");
     const prevEvents = await this.getEvents();
     const prevScreen = await this.snapshot();
@@ -759,7 +775,7 @@ export default class Zemu {
     // Wait and poll Speculos until the application screen gets updated
     if (waitForScreenUpdate) {
       await this.waitUntilScreenIsNot(prevScreen);
-      await this.waitForScreenChanges(prevEvents);
+      if (waitForEventsChange) await this.waitForScreenChanges(prevEvents);
     } else {
       // A minimum delay is required
       await Zemu.sleep();
@@ -768,19 +784,36 @@ export default class Zemu {
     return await this.snapshot(filename);
   }
 
-  async clickLeft(filename: string = "", waitForScreenUpdate: boolean = true): Promise<ISnapshot> {
-    return await this.click("/button/left", filename, waitForScreenUpdate);
+  async clickLeft(
+    filename: string = "",
+    waitForScreenUpdate: boolean = true,
+    waitForEventsChange: boolean = false,
+  ): Promise<ISnapshot> {
+    return await this.click("/button/left", filename, waitForScreenUpdate, waitForEventsChange);
   }
 
-  async clickRight(filename: string = "", waitForScreenUpdate: boolean = true): Promise<ISnapshot> {
-    return await this.click("/button/right", filename, waitForScreenUpdate);
+  async clickRight(
+    filename: string = "",
+    waitForScreenUpdate: boolean = true,
+    waitForEventsChange: boolean = false,
+  ): Promise<ISnapshot> {
+    return await this.click("/button/right", filename, waitForScreenUpdate, waitForEventsChange);
   }
 
-  async clickBoth(filename: string = "", waitForScreenUpdate: boolean = true): Promise<ISnapshot> {
-    return await this.click("/button/both", filename, waitForScreenUpdate);
+  async clickBoth(
+    filename: string = "",
+    waitForScreenUpdate: boolean = true,
+    waitForEventsChange: boolean = false,
+  ): Promise<ISnapshot> {
+    return await this.click("/button/both", filename, waitForScreenUpdate, waitForEventsChange);
   }
 
-  async fingerTouch(button: IButton, filename: string = "", waitForScreenUpdate: boolean = true): Promise<ISnapshot> {
+  async fingerTouch(
+    button: IButton,
+    filename: string = "",
+    waitForScreenUpdate: boolean = true,
+    waitForEventsChange: boolean = false,
+  ): Promise<ISnapshot> {
     if (this.startOptions.model !== "stax") throw new Error("fingerTouch method can only be used with stax device");
     const prevEvents = await this.getEvents();
     const prevScreen = await this.snapshot();
@@ -793,7 +826,7 @@ export default class Zemu {
     // Wait and poll Speculos until the application screen gets updated
     if (waitForScreenUpdate) {
       await this.waitUntilScreenIsNot(prevScreen);
-      await this.waitForScreenChanges(prevEvents);
+      if (waitForEventsChange) await this.waitForScreenChanges(prevEvents);
     } else {
       // A minimum delay is required
       await Zemu.sleep();
@@ -802,22 +835,27 @@ export default class Zemu {
     return await this.snapshot(filename);
   }
 
-  async runAction(navElement: INavElement, filename: string = "", waitForScreenUpdate: boolean = true): Promise<void> {
+  async runAction(
+    navElement: INavElement,
+    filename: string = "",
+    waitForScreenUpdate: boolean = true,
+    waitForEventsChange: boolean = false,
+  ): Promise<void> {
     switch (navElement.type) {
       case ActionKind.RightClick:
-        await this.clickRight(filename, waitForScreenUpdate);
+        await this.clickRight(filename, waitForScreenUpdate, waitForEventsChange);
         break;
 
       case ActionKind.LeftClick:
-        await this.clickLeft(filename, waitForScreenUpdate);
+        await this.clickLeft(filename, waitForScreenUpdate, waitForEventsChange);
         break;
 
       case ActionKind.BothClick:
-        await this.clickBoth(filename, waitForScreenUpdate);
+        await this.clickBoth(filename, waitForScreenUpdate, waitForEventsChange);
         break;
 
       case ActionKind.Touch:
-        await this.fingerTouch(navElement.button, filename, waitForScreenUpdate);
+        await this.fingerTouch(navElement.button, filename, waitForScreenUpdate, waitForEventsChange);
         break;
       default:
         throw new Error("Action type not implemented");
@@ -827,10 +865,11 @@ export default class Zemu {
   async runActionBatch(
     navElements: INavElement[],
     filename: string = "",
-    waitForScreenUpdate: boolean = true
+    waitForScreenUpdate: boolean = true,
+    waitForEventsChange: boolean = false,
   ): Promise<void> {
     for (const nav of navElements) {
-      await this.runAction(nav, filename, waitForScreenUpdate);
+      await this.runAction(nav, filename, waitForScreenUpdate, waitForEventsChange);
     }
   }
 }
