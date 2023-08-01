@@ -372,13 +372,23 @@ export default class Zemu {
     this.log(`Screen changed`);
   }
 
+  eventsAreEqual(events1: IEvent[], events2: IEvent[]): boolean {
+    if (events1.length !== events2.length) return false;
+    for (let i = 0; i < events1.length; i++) {
+      if (events1[i].x !== events2[i].x) return false;
+      if (events1[i].y !== events2[i].y) return false;
+      if (events1[i].text !== events2[i].text) return false;
+    }
+    return true;
+  }
+
   async waitForScreenChanges(prevEvents: IEvent[], timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
     let currEvents = await this.getEvents();
     const startTime = new Date();
 
     this.log(`Wait for screen changes`);
 
-    while (currEvents.length === prevEvents.length) {
+    while (this.eventsAreEqual(prevEvents, currEvents)) {
       const elapsed = new Date().getTime() - startTime.getTime();
       if (elapsed > timeout) {
         this.log("Timeout waiting for screen to change");
