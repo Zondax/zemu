@@ -91,7 +91,7 @@ export default class Zemu {
     host: string = DEFAULT_HOST,
     desiredTransportPort?: number,
     desiredSpeculosApiPort?: number,
-    emuImage: string = DEFAULT_EMU_IMG
+    emuImage: string = DEFAULT_EMU_IMG,
   ) {
     this.host = host;
     this.desiredTransportPort = desiredTransportPort;
@@ -202,7 +202,7 @@ export default class Zemu {
       await this.waitForText(
         this.startOptions.startText,
         this.startOptions.startTimeout,
-        this.startOptions.caseSensitive
+        this.startOptions.caseSensitive,
       );
 
       this.log(`Get initial snapshot and events`);
@@ -414,7 +414,7 @@ export default class Zemu {
     waitForScreenUpdate = true,
     takeSnapshots = false,
     startImgIndex = 0,
-    timeout = DEFAULT_METHOD_TIMEOUT
+    timeout = DEFAULT_METHOD_TIMEOUT,
   ): Promise<number> {
     if (this.startOptions.model !== "stax") {
       const expertImgIndex = await this.toggleExpertMode(testcaseName, takeSnapshots, startImgIndex);
@@ -426,7 +426,7 @@ export default class Zemu {
         takeSnapshots,
         expertImgIndex,
         timeout,
-        !nanoIsSecretMode
+        !nanoIsSecretMode,
       );
       if (nanoIsSecretMode) {
         const secretClicks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // 10 double clicks
@@ -440,7 +440,7 @@ export default class Zemu {
         true,
         takeSnapshots,
         tmpImgIndex,
-        timeout
+        timeout,
       );
     } else {
       const nav = zondaxStaxEnableSpecialMode(staxToggleSettingButton);
@@ -454,7 +454,7 @@ export default class Zemu {
     navigateSchedule: Array<INavElement | number>,
     waitForScreenUpdate = true,
     takeSnapshots = true,
-    startImgIndex = 0
+    startImgIndex = 0,
   ): Promise<number> {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`);
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
@@ -501,7 +501,7 @@ export default class Zemu {
     testcaseName: string,
     navigateSchedule: Array<INavElement | number>,
     waitForScreenUpdate = true,
-    startImgIndex = 0
+    startImgIndex = 0,
   ): Promise<boolean> {
     const takeSnapshots = true;
     const lastImgIndex = await this.navigate(
@@ -510,7 +510,7 @@ export default class Zemu {
       navigateSchedule,
       waitForScreenUpdate,
       takeSnapshots,
-      startImgIndex
+      startImgIndex,
     );
     return this.compareSnapshots(path, testcaseName, lastImgIndex);
   }
@@ -540,7 +540,7 @@ export default class Zemu {
     testcaseName: string,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = DEFAULT_METHOD_TIMEOUT
+    timeout = DEFAULT_METHOD_TIMEOUT,
   ): Promise<boolean> {
     const approveKeyword = this.startOptions.approveKeyword;
     const takeSnapshots = true;
@@ -551,7 +551,7 @@ export default class Zemu {
       waitForScreenUpdate,
       takeSnapshots,
       startImgIndex,
-      timeout
+      timeout,
     );
     if (this.startOptions.model === "stax") {
       // Avoid taking a snapshot of the final animation
@@ -566,7 +566,7 @@ export default class Zemu {
     testcaseName: string,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = DEFAULT_METHOD_TIMEOUT
+    timeout = DEFAULT_METHOD_TIMEOUT,
   ): Promise<boolean> {
     const rejectKeyword = this.startOptions.rejectKeyword;
     if (this.startOptions.model !== "stax") {
@@ -576,7 +576,7 @@ export default class Zemu {
         rejectKeyword,
         waitForScreenUpdate,
         startImgIndex,
-        timeout
+        timeout,
       );
     } else {
       const takeSnapshots = true;
@@ -591,7 +591,7 @@ export default class Zemu {
         takeSnapshots,
         startImgIndex,
         timeout,
-        runLastAction
+        runLastAction,
       );
       const rejectConfirmationNav = new TouchNavigation([ButtonKind.RejectButton, ButtonKind.ConfirmYesButton]);
       // Overwrite last snapshot since navigate starts taking a snapshot of the current screen
@@ -601,7 +601,7 @@ export default class Zemu {
         rejectConfirmationNav.schedule,
         waitForScreenUpdate,
         takeSnapshots,
-        navLastIndex - 1
+        navLastIndex - 1,
       );
       // Avoid taking a snapshot of the final animation
       await this.waitUntilScreenIs(this.mainMenuSnapshot);
@@ -619,7 +619,7 @@ export default class Zemu {
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
     runLastAction = true,
-    waitForInitialEventsChange = true
+    waitForInitialEventsChange = true,
   ): Promise<number> {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`);
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
@@ -683,7 +683,7 @@ export default class Zemu {
     waitForScreenUpdate = true,
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
-    waitForInitialEventsChange = true
+    waitForInitialEventsChange = true,
   ): Promise<boolean> {
     const takeSnapshots = true;
     const lastImgIndex = await this.navigateUntilText(
@@ -695,7 +695,7 @@ export default class Zemu {
       startImgIndex,
       timeout,
       true, // runLastAction
-      waitForInitialEventsChange
+      waitForInitialEventsChange,
     );
     return this.compareSnapshots(path, testcaseName, lastImgIndex);
   }
@@ -827,7 +827,7 @@ export default class Zemu {
   async runActionBatch(
     navElements: INavElement[],
     filename: string = "",
-    waitForScreenUpdate: boolean = true
+    waitForScreenUpdate: boolean = true,
   ): Promise<void> {
     for (const nav of navElements) {
       await this.runAction(nav, filename, waitForScreenUpdate);
