@@ -33,6 +33,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.9.3",
     "@grpc/proto-loader": "^0.7.9",
+    "@ledgerhq/hw-transport-http": "^6.28.3",
     "axios": "^1.5.0",
     "axios-retry": "^3.7.0",
     "dockerode": "^3.3.1",
@@ -44,7 +45,6 @@
   },
   "devDependencies": {
     "@ledgerhq/hw-transport": "^6.28.8",
-    "@ledgerhq/hw-transport-http": "^6.28.3",
     "@types/dockerode": "^3.3.19",
     "@types/fs-extra": "^11.0.2",
     "@types/jest": "^29.5.4",
