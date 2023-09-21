@@ -1063,13 +1063,13 @@
     eslint-visitor-keys "^3.4.1"
 
 "@zondax/ledger-substrate@^0.41.2":
-  version "0.41.2"
-  resolved "https://registry.yarnpkg.com/@zondax/ledger-substrate/-/ledger-substrate-0.41.2.tgz#727d1d1b84f4491b842d7a2428f0eb1543fcd4b9"
-  integrity sha512-snd5b1MK1GGNgLgYASHL1TJ/9Wzt+S2f6P7Hsfe+QtfS4SnCLH9bDa9HMypcYJwTFPYbqxcE6Hbp2mxi8VMN1Q==
+  version "0.41.3"
+  resolved "https://registry.yarnpkg.com/@zondax/ledger-substrate/-/ledger-substrate-0.41.3.tgz#04e33a8aa8c589551caf63139653aba4ed7b9219"
+  integrity sha512-pjsTGODRHP+SG+h4hBkA9NmvHQeplkj48cB5/TUlzRVBZSz7k172Cu70lpGDkVsKDKG6AuCP2pyWKKzPQIzNTA==
   dependencies:
     "@ledgerhq/hw-transport" "^6.27.1"
     bip32 "^4.0.0"
-    bip32-ed25519 "https://github.com/Zondax/bip32-ed25519"
+    bip32-ed25519 "git+https://github.com/Zondax/bip32-ed25519.git"
     bip39 "^3.0.4"
     blakejs "^1.2.1"
     bs58 "^5.0.0"
