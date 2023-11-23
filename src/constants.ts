@@ -15,7 +15,7 @@
  ******************************************************************************* */
 import { ButtonKind, type IDeviceWindow, type IStartOptions } from "./types";
 
-export const DEFAULT_EMU_IMG = "zondax/builder-zemu:speculos-6a346803f53bc31fa8e4ef210c061fe08a9fbe16";
+export const DEFAULT_EMU_IMG = "zondax/builder-zemu:speculos-76bff6673c6c71c15d33a4ac6dc1372b71181283";
 
 export const DEFAULT_MODEL = "nanos";
 export const DEFAULT_NANO_START_TEXT = "Ready";
@@ -32,7 +32,7 @@ export const DEFAULT_WAIT_TIMEOUT = 45000;
 export const DEFAULT_NANO_APPROVE_KEYWORD = "APPROVE";
 export const DEFAULT_NANO_REJECT_KEYWORD = "REJECT";
 
-export const DEFAULT_STAX_APPROVE_KEYWORD = "Hold";
+export const DEFAULT_STAX_APPROVE_KEYWORD = "Hold to sign";
 export const DEFAULT_STAX_REJECT_KEYWORD = "Cancel";
 
 export const DEFAULT_START_OPTIONS: IStartOptions = {
