@@ -32,7 +32,7 @@ export const DEFAULT_WAIT_TIMEOUT = 45000;
 export const DEFAULT_NANO_APPROVE_KEYWORD = "APPROVE";
 export const DEFAULT_NANO_REJECT_KEYWORD = "REJECT";
 
-export const DEFAULT_STAX_APPROVE_KEYWORD = "Hold";
+export const DEFAULT_STAX_APPROVE_KEYWORD = "Hold to sign";
 export const DEFAULT_STAX_REJECT_KEYWORD = "Cancel";
 
 export const DEFAULT_START_OPTIONS: IStartOptions = {
