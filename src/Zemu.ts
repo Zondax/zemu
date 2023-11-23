@@ -291,6 +291,7 @@ export default class Zemu {
 
   async fetchSnapshot(url: string): Promise<AxiosResponse<Buffer, any>> {
     // Exponential back-off retry delay between requests
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay });
 
     return await axios({
@@ -712,6 +713,7 @@ export default class Zemu {
   }
 
   async getEvents(): Promise<IEvent[]> {
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay });
     const eventsUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/events`;
     try {
