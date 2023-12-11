@@ -1596,7 +1596,7 @@ __metadata:
     elfy: "npm:^1.0.0"
     eslint: "npm:^8.55.0"
     eslint-config-prettier: "npm:^9.1.0"
-    eslint-config-standard-with-typescript: "npm:^40.0.0"
+    eslint-config-standard-with-typescript: "npm:^42.0.0"
     eslint-plugin-import: "npm:^2.29.0"
     eslint-plugin-n: "npm:^16.3.1"
     eslint-plugin-promise: "npm:^6.1.1"
@@ -2899,9 +2899,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-standard-with-typescript@npm:^40.0.0":
-  version: 40.0.0
-  resolution: "eslint-config-standard-with-typescript@npm:40.0.0"
+"eslint-config-standard-with-typescript@npm:^42.0.0":
+  version: 42.0.0
+  resolution: "eslint-config-standard-with-typescript@npm:42.0.0"
   dependencies:
     "@typescript-eslint/parser": "npm:^6.4.0"
     eslint-config-standard: "npm:17.1.0"
@@ -2912,7 +2912,7 @@ __metadata:
     eslint-plugin-n: "^15.0.0 || ^16.0.0 "
     eslint-plugin-promise: ^6.0.0
     typescript: "*"
-  checksum: 1448e9135f2307971e0b21dc74fe7827e2701d2a9362a2eeab2085a95d20152a98cae9b812a5f7809bc8f9987bc27cdbc57cbbae4720b170ccacdb02af927828
+  checksum: acc4f449cbc82382809e36290c621ae729c9cd92c3a8999b4e5520e55e10ba0227b18202b753a290ba01b95582a712d8904f7f171b456e98d4e0004302db7e87
   languageName: node
   linkType: hard
 
