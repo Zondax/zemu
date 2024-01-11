@@ -76,6 +76,7 @@ export default class EmuContainer {
           throw err;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         docker.modem.followProgress(stream, onFinished, onProgress);
       });
     });

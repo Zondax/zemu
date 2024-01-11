@@ -15,7 +15,7 @@
  ******************************************************************************* */
 import { ButtonKind, type IDeviceWindow, type IStartOptions } from "./types";
 
-export const DEFAULT_EMU_IMG = "zondax/builder-zemu:speculos-f9dfe878f4934d5dac9fb49a298a136d494c465c";
+export const DEFAULT_EMU_IMG = "zondax/builder-zemu:speculos-e262a0ca9d2b37810d0339b37c50ce0d7171c9a2";
 
 export const DEFAULT_MODEL = "nanos";
 export const DEFAULT_NANO_START_TEXT = "Ready";

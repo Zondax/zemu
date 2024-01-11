@@ -30,8 +30,10 @@ export default class GRPCRouter {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     // @ts-expect-error types are missing
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     this.server.addService(rpcDefinition.ledger_go.ZemuCommand.service, {
       Exchange(call: any, callback: any, ctx = self) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         void ctx.httpTransport.exchange(call.request.command).then((response: Buffer) => {
           callback(null, { reply: response });
         });
