@@ -20,6 +20,7 @@ export const DEFAULT_EMU_IMG = "zondax/builder-zemu:speculos-e262a0ca9d2b37810d0
 export const DEFAULT_MODEL = "nanos";
 export const DEFAULT_NANO_START_TEXT = "Ready";
 export const DEFAULT_STAX_START_TEXT = "This application enables";
+export const DEFAULT_PENDING_REVIEW_TEXT = "Ledger review"
 export const DEFAULT_START_DELAY = 20000;
 export const DEFAULT_KEY_DELAY = 250;
 export const DEFAULT_HOST = "127.0.0.1";

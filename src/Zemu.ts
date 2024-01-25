@@ -44,12 +44,13 @@ import {
   DEFAULT_WAIT_TIMEOUT,
   DEFAULT_STAX_START_TEXT,
   DEFAULT_NANO_START_TEXT,
+  DEFAULT_PENDING_REVIEW_TEXT,
 } from "./constants";
 
 import EmuContainer from "./emulator";
 import GRPCRouter from "./grpc";
 
-import { scheduleToNavElement, TouchNavigation } from "./actions";
+import { ClickNavigation, scheduleToNavElement, TouchNavigation } from "./actions";
 import { dummyButton, tapContinueButton, TouchElements } from "./buttons";
 import {
   ActionKind,
@@ -199,11 +200,33 @@ export default class Zemu {
         this.startOptions.startText =
           this.startOptions.model === "stax" ? DEFAULT_STAX_START_TEXT : DEFAULT_NANO_START_TEXT;
       }
-      await this.waitForText(
-        this.startOptions.startText,
-        this.startOptions.startTimeout,
-        this.startOptions.caseSensitive,
-      );
+      const start = new Date();
+      let found = false;
+      let reviewPendingFound = false;
+      const flags = !this.startOptions.caseSensitive ? "i" : "";
+      const startRegex = new RegExp(this.startOptions.startText, flags);
+      const reviewPendingRegex = new RegExp(DEFAULT_PENDING_REVIEW_TEXT, flags);
+
+      while (!found) {
+        const currentTime = new Date();
+        const elapsed = currentTime.getTime() - start.getTime();
+        if (elapsed > this.startOptions.startTimeout) {
+          throw new Error(
+            `Timeout (${this.startOptions.startTimeout}) waiting for text (${this.startOptions.startText})`,
+          );
+        }
+        const events = await this.getEvents();
+        if (!reviewPendingFound && events.some((event: IEvent) => reviewPendingRegex.test(event.text))) {
+          const nav =
+            this.startOptions.model === "stax"
+              ? new TouchNavigation([ButtonKind.ConfirmYesButton])
+              : new ClickNavigation([0]);
+          await this.navigate("", "", nav.schedule, true, false);
+          reviewPendingFound = true;
+        }
+        found = events.some((event: IEvent) => startRegex.test(event.text));
+        await Zemu.sleep();
+      }
 
       this.log(`Get initial snapshot and events`);
       this.mainMenuSnapshot = await this.snapshot();
