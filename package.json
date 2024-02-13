@@ -51,7 +51,7 @@
     "@types/node": "^20.11.6",
     "@types/pngjs": "^6.0.4",
     "@types/randomstring": "^1.1.11",
-    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^6.19.1",
     "@zondax/ledger-substrate": "^0.41.3",
     "copyfiles": "^2.4.1",
