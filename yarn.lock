@@ -863,34 +863,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/devices@npm:^8.0.7":
-  version: 8.0.7
-  resolution: "@ledgerhq/devices@npm:8.0.7"
+"@ledgerhq/devices@npm:^8.2.1":
+  version: 8.2.1
+  resolution: "@ledgerhq/devices@npm:8.2.1"
   dependencies:
-    "@ledgerhq/errors": "npm:^6.14.0"
-    "@ledgerhq/logs": "npm:^6.10.1"
-    rxjs: "npm:6"
-    semver: "npm:^7.3.5"
-  checksum: 5a8bdde14f89ddc0152a5d3e786703cb705802fc8f9d8b94b658807eb30a9a524f3b255a6966bc82219fe26b765ca817a0c07e40e24a0c3a210f53185bae0437
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/devices@npm:^8.2.0":
-  version: 8.2.0
-  resolution: "@ledgerhq/devices@npm:8.2.0"
-  dependencies:
-    "@ledgerhq/errors": "npm:^6.16.1"
+    "@ledgerhq/errors": "npm:^6.16.2"
     "@ledgerhq/logs": "npm:^6.12.0"
     rxjs: "npm:^7.8.1"
     semver: "npm:^7.3.5"
-  checksum: 3c6706cd99295d6d14265376fe607ab72cf234b8a866aca910fb2340e2047989d74e771184423a59fed1a784437fb8feb8bea677852a62b0747d0eda0d65ca0e
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/errors@npm:^6.14.0":
-  version: 6.14.0
-  resolution: "@ledgerhq/errors@npm:6.14.0"
-  checksum: e1505f1908234476a57c103c601435d75b17dde7a2f0ee74b28fcad55a56df1eeefa9bdedc4c290cf1eb0098e7aaf1ca659ec6db079d5671132c0aa6d3167660
+  checksum: a627a4fa349f2db4e0d989a015532eacb95cbb94e162a81bfe1412171be583ec2be04b83b99f3bdcec35dd7ec9ae4e03ada1b7e7a144d74433cc65e20ebb4275
   languageName: node
   linkType: hard
 
@@ -898,6 +879,13 @@ __metadata:
   version: 6.16.1
   resolution: "@ledgerhq/errors@npm:6.16.1"
   checksum: cabd4c2768be3f2eec9e15d83519b8eae113efb2d9f3dcd241e2ad01101f3a073dbf2eceae72073151db3bd36ab231d69b66b9aa4106c23ff5444185c66de849
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/errors@npm:^6.16.2":
+  version: 6.16.2
+  resolution: "@ledgerhq/errors@npm:6.16.2"
+  checksum: 8f4e819146a71ca09e91b187b540b03e41f7ebf4e23d708278a26edb9f821c1b643d7db7b9f253d3f886cfd489adfae1a7ac73714866bdd8ce0116b792e6f4fb
   languageName: node
   linkType: hard
 
@@ -914,33 +902,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport@npm:^6.27.1":
-  version: 6.28.8
-  resolution: "@ledgerhq/hw-transport@npm:6.28.8"
+"@ledgerhq/hw-transport@npm:^6.27.1, @ledgerhq/hw-transport@npm:^6.30.2":
+  version: 6.30.4
+  resolution: "@ledgerhq/hw-transport@npm:6.30.4"
   dependencies:
-    "@ledgerhq/devices": "npm:^8.0.7"
-    "@ledgerhq/errors": "npm:^6.14.0"
-    events: "npm:^3.3.0"
-  checksum: adf3b154cfc08b25b9eba7bad67877b2cbf3cd44514b82fccb5b75e2a67ec01802d7d4528c7f71c46d574860255e61545c216c1293f9eed59e8513f6858f42d5
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/hw-transport@npm:^6.30.2":
-  version: 6.30.2
-  resolution: "@ledgerhq/hw-transport@npm:6.30.2"
-  dependencies:
-    "@ledgerhq/devices": "npm:^8.2.0"
-    "@ledgerhq/errors": "npm:^6.16.1"
+    "@ledgerhq/devices": "npm:^8.2.1"
+    "@ledgerhq/errors": "npm:^6.16.2"
     "@ledgerhq/logs": "npm:^6.12.0"
     events: "npm:^3.3.0"
-  checksum: 2c3811e8c2a0d1844cb1ed608f0ded074ee15cd8e69dbdaa380d503c70abd4179b67137ea6dd48c78707818f0bc031f63d27d0d074eb0b885431dab884ecfb64
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/logs@npm:^6.10.1":
-  version: 6.10.1
-  resolution: "@ledgerhq/logs@npm:6.10.1"
-  checksum: 49cfb88b30a52f14445666df6ab7afd24d6df95fbfd52a05debaa3cd5d9156e366672311e4905873c6f2aa096fbfe2874560ad028796c2f4d64de49d9f037fb4
+  checksum: 2e948435f880e36c3f703ffe1aee75c278980527ebb1dcc5e8541db21bfa15aa4dded9962ac7ced21f9339a4cf711268a6cc480301d22cee6467b008114dafcb
   languageName: node
   linkType: hard
 
@@ -5775,15 +5745,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:6":
-  version: 6.6.7
-  resolution: "rxjs@npm:6.6.7"
-  dependencies:
-    tslib: "npm:^1.9.0"
-  checksum: e556a13a9aa89395e5c9d825eabcfa325568d9c9990af720f3f29f04a888a3b854f25845c2b55875d875381abcae2d8100af9cacdc57576e7ed6be030a01d2fe
-  languageName: node
-  linkType: hard
-
 "rxjs@npm:^7.8.1":
   version: 7.8.1
   resolution: "rxjs@npm:7.8.1"
@@ -6378,13 +6339,6 @@ __metadata:
     minimist: "npm:^1.2.6"
     strip-bom: "npm:^3.0.0"
   checksum: 5b4f301a2b7a3766a986baf8fc0e177eb80bdba6e396792ff92dc23b5bca8bb279fc96517dcaaef63a3b49bebc6c4c833653ec58155780bc906bdbcf7dda0ef5
-  languageName: node
-  linkType: hard
-
-"tslib@npm:^1.9.0":
-  version: 1.14.1
-  resolution: "tslib@npm:1.14.1"
-  checksum: 69ae09c49eea644bc5ebe1bca4fa4cc2c82b7b3e02f43b84bd891504edf66dbc6b2ec0eef31a957042de2269139e4acff911e6d186a258fb14069cd7f6febce2
   languageName: node
   linkType: hard
 
