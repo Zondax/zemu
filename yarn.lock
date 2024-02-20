@@ -887,6 +887,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/devices@npm:^8.2.1":
+  version: 8.2.1
+  resolution: "@ledgerhq/devices@npm:8.2.1"
+  dependencies:
+    "@ledgerhq/errors": "npm:^6.16.2"
+    "@ledgerhq/logs": "npm:^6.12.0"
+    rxjs: "npm:^7.8.1"
+    semver: "npm:^7.3.5"
+  checksum: a627a4fa349f2db4e0d989a015532eacb95cbb94e162a81bfe1412171be583ec2be04b83b99f3bdcec35dd7ec9ae4e03ada1b7e7a144d74433cc65e20ebb4275
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/errors@npm:^6.14.0":
   version: 6.14.0
   resolution: "@ledgerhq/errors@npm:6.14.0"
@@ -901,16 +913,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/errors@npm:^6.16.2":
+  version: 6.16.2
+  resolution: "@ledgerhq/errors@npm:6.16.2"
+  checksum: 8f4e819146a71ca09e91b187b540b03e41f7ebf4e23d708278a26edb9f821c1b643d7db7b9f253d3f886cfd489adfae1a7ac73714866bdd8ce0116b792e6f4fb
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/hw-transport-http@npm:^6.29.2":
-  version: 6.29.2
-  resolution: "@ledgerhq/hw-transport-http@npm:6.29.2"
+  version: 6.29.4
+  resolution: "@ledgerhq/hw-transport-http@npm:6.29.4"
   dependencies:
-    "@ledgerhq/errors": "npm:^6.16.1"
-    "@ledgerhq/hw-transport": "npm:^6.30.2"
+    "@ledgerhq/errors": "npm:^6.16.2"
+    "@ledgerhq/hw-transport": "npm:^6.30.4"
     "@ledgerhq/logs": "npm:^6.12.0"
     axios: "npm:^0.26.1"
     ws: "npm:^7.5.2"
-  checksum: 5ea30263f538c19f918e64d7542511a34fcde4ac0c62e8e85bb2ffd159602acc02fb8d7d3c7f699b6d19f94a7b96a5337ef717779c7fb3bbb7698f5362500c00
+  checksum: d3186282c5b2918353bef114f7e289c92fbd577dbc741ef2d62b7338751e81092eb4449b224da215013df44407ccdfd35f975b46cef3e75d6580d60b3d63d983
   languageName: node
   linkType: hard
 
@@ -934,6 +953,18 @@ __metadata:
     "@ledgerhq/logs": "npm:^6.12.0"
     events: "npm:^3.3.0"
   checksum: 2c3811e8c2a0d1844cb1ed608f0ded074ee15cd8e69dbdaa380d503c70abd4179b67137ea6dd48c78707818f0bc031f63d27d0d074eb0b885431dab884ecfb64
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/hw-transport@npm:^6.30.4":
+  version: 6.30.4
+  resolution: "@ledgerhq/hw-transport@npm:6.30.4"
+  dependencies:
+    "@ledgerhq/devices": "npm:^8.2.1"
+    "@ledgerhq/errors": "npm:^6.16.2"
+    "@ledgerhq/logs": "npm:^6.12.0"
+    events: "npm:^3.3.0"
+  checksum: 2e948435f880e36c3f703ffe1aee75c278980527ebb1dcc5e8541db21bfa15aa4dded9962ac7ced21f9339a4cf711268a6cc480301d22cee6467b008114dafcb
   languageName: node
   linkType: hard
 
