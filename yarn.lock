@@ -1251,9 +1251,9 @@ __metadata:
   linkType: hard
 
 "@types/randomstring@npm:^1.1.11":
-  version: 1.1.11
-  resolution: "@types/randomstring@npm:1.1.11"
-  checksum: 19ab3803b41b164920ed39599fd909da5aeed87006f87c882c32943c5e4ecd5edd85c413531bb76b09a989bc327d94a39522d7e584b29bb7ca56dc60a4c420ac
+  version: 1.3.0
+  resolution: "@types/randomstring@npm:1.3.0"
+  checksum: f7f8ba9c6b793c467e98193fccc2b17778c9cbb5e9da81b6f466c2f2b5089d37f4923b4b02d0e10d5cf2b6bb7a5d0db6ca9aecb93d20835e478a6c1050dbb1f3
   languageName: node
   linkType: hard
 
