@@ -15,12 +15,12 @@
  ******************************************************************************* */
 import { ButtonKind, type IDeviceWindow, type IStartOptions } from "./types";
 
-export const DEFAULT_EMU_IMG = "zondax/builder-zemu:speculos-3a3439f6b45eca7f56395673caaf434c202e7005";
+export const DEFAULT_EMU_IMG = "zondax/builder-zemu:speculos-a5db17018a180cbd4277dfc7a1a247f427a3d81b";
 
 export const DEFAULT_MODEL = "nanos";
 export const DEFAULT_NANO_START_TEXT = "Ready";
 export const DEFAULT_STAX_START_TEXT = "This application enables";
-export const DEFAULT_PENDING_REVIEW_TEXT = "Ledger review"
+export const DEFAULT_PENDING_REVIEW_TEXT = "Ledger review";
 export const DEFAULT_START_DELAY = 20000;
 export const DEFAULT_KEY_DELAY = 250;
 export const DEFAULT_HOST = "127.0.0.1";
