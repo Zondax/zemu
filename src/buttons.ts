@@ -76,8 +76,8 @@ const navLeftButton: IButton = {
 };
 
 const quitSettingsButton: IButton = {
-  x: 50,
-  y: 625,
+  x: 40,
+  y: 40,
   delay: 0.25,
 };
 
