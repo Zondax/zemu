@@ -31,11 +31,11 @@
     "url": "https://github.com/zondax/zemu/issues"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^1.10.1",
-    "@grpc/proto-loader": "^0.7.10",
-    "@ledgerhq/hw-transport-http": "^6.29.4",
-    "axios": "^1.6.7",
-    "axios-retry": "^4.0.0",
+    "@grpc/grpc-js": "^1.10.6",
+    "@grpc/proto-loader": "^0.7.12",
+    "@ledgerhq/hw-transport-http": "^6.29.5",
+    "axios": "^1.6.8",
+    "axios-retry": "^4.1.0",
     "dockerode": "^4.0.2",
     "elfy": "^1.0.0",
     "fs-extra": "^11.2.0",
@@ -44,16 +44,16 @@
     "randomstring": "^1.3.0"
   },
   "devDependencies": {
-    "@ledgerhq/hw-transport": "^6.30.4",
-    "@types/dockerode": "^3.3.23",
+    "@ledgerhq/hw-transport": "^6.30.5",
+    "@types/dockerode": "^3.3.28",
     "@types/fs-extra": "^11.0.4",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.11.19",
+    "@types/node": "^20.12.7",
     "@types/pngjs": "^6.0.4",
-    "@types/randomstring": "^1.1.11",
+    "@types/randomstring": "^1.3.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "@zondax/ledger-substrate": "^0.41.3",
+    "@zondax/ledger-substrate": "^0.41.4",
     "copyfiles": "^2.4.1",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
@@ -71,5 +71,5 @@
   "files": [
     "dist/**/*"
   ],
-  "packageManager": "yarn@4.0.2"
+  "packageManager": "yarn@4.1.1"
 }
