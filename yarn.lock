@@ -871,13 +871,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/errors@npm:^6.16.3":
-  version: 6.16.3
-  resolution: "@ledgerhq/errors@npm:6.16.3"
-  checksum: 10c0/12e8e39317aac45694ae0f01f20b870a933611cd31187fc6ff63f268154b58f99d34b02f5dc033cbe3aebbe6fbfcd6f19aea842b7de22b5d8e051aef2fb94f94
-  languageName: node
-  linkType: hard
-
 "@ledgerhq/errors@npm:^6.16.4":
   version: 6.16.4
   resolution: "@ledgerhq/errors@npm:6.16.4"
@@ -886,19 +879,19 @@ __metadata:
   linkType: hard
 
 "@ledgerhq/hw-transport-http@npm:^6.29.5":
-  version: 6.29.5
-  resolution: "@ledgerhq/hw-transport-http@npm:6.29.5"
+  version: 6.29.6
+  resolution: "@ledgerhq/hw-transport-http@npm:6.29.6"
   dependencies:
-    "@ledgerhq/errors": "npm:^6.16.3"
-    "@ledgerhq/hw-transport": "npm:^6.30.5"
+    "@ledgerhq/errors": "npm:^6.16.4"
+    "@ledgerhq/hw-transport": "npm:^6.30.6"
     "@ledgerhq/logs": "npm:^6.12.0"
     axios: "npm:^0.26.1"
     ws: "npm:^7.5.2"
-  checksum: 10c0/81583c11d4b47c24d57254f375d42517042dbe645103048adf4d8069fbaf1b58872d86c19d9da234c62448f1e660d57de72073d6777c855b891514d8f8e5e7ba
+  checksum: 10c0/9f5ce5404bac679fcd03cfde91881ec5b35a4796c39186c8580a3fce3b5189976076647ac94ad60d75d47afdf9713f2038a424e1e268854aed091549f0561184
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport@npm:^6.30.5":
+"@ledgerhq/hw-transport@npm:^6.30.5, @ledgerhq/hw-transport@npm:^6.30.6":
   version: 6.30.6
   resolution: "@ledgerhq/hw-transport@npm:6.30.6"
   dependencies:
