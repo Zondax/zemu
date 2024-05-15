@@ -1259,11 +1259,11 @@ __metadata:
   linkType: hard
 
 "@types/pngjs@npm:^6.0.4":
-  version: 6.0.4
-  resolution: "@types/pngjs@npm:6.0.4"
+  version: 6.0.5
+  resolution: "@types/pngjs@npm:6.0.5"
   dependencies:
     "@types/node": "npm:*"
-  checksum: 10c0/7217bc69907cc588b29fd875a3f351296744361c12f3a2f4a66c259bcaae7ba75dd3c58586ff53eea6db4512d203ef433435672a47ca8803af84c89c34b2b5b9
+  checksum: 10c0/11979d0690e774046d3a1e8cfc613a6b53a613909d81c93831cf253800e93ba1a2d47950979b523aebd4fc023351b644d7f4aa2dfcc027c70816a2968420e7da
   languageName: node
   linkType: hard
 
