@@ -10,3 +10,5 @@ updates:
     # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
+    # Target branch for pull requests
+    target-branch: "dev"
