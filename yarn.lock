@@ -1803,6 +1803,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"async@npm:^3.2.3":
+  version: 3.2.5
+  resolution: "async@npm:3.2.5"
+  checksum: 10c0/1408287b26c6db67d45cb346e34892cee555b8b59e6c68e6f8c3e495cad5ca13b4f218180e871f3c2ca30df4ab52693b66f2f6ff43644760cab0b2198bda79c1
+  languageName: node
+  linkType: hard
+
 "asynckit@npm:^0.4.0":
   version: 0.4.0
   resolution: "asynckit@npm:0.4.0"
@@ -2116,7 +2123,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^4.0.0":
+"chalk@npm:^4.0.0, chalk@npm:^4.0.2":
   version: 4.1.2
   resolution: "chalk@npm:4.1.2"
   dependencies:
@@ -2481,6 +2488,17 @@ __metadata:
   version: 0.2.0
   resolution: "eastasianwidth@npm:0.2.0"
   checksum: 10c0/26f364ebcdb6395f95124fda411f63137a4bfb5d3a06453f7f23dfe52502905bd84e0488172e0f9ec295fdc45f05c23d5d91baf16bd26f0fe9acd777a188dc39
+  languageName: node
+  linkType: hard
+
+"ejs@npm:^3.0.0":
+  version: 3.1.10
+  resolution: "ejs@npm:3.1.10"
+  dependencies:
+    jake: "npm:^10.8.5"
+  bin:
+    ejs: bin/cli.js
+  checksum: 10c0/52eade9e68416ed04f7f92c492183340582a36482836b11eab97b159fcdcfdedc62233a1bf0bf5e5e1851c501f2dca0e2e9afd111db2599e4e7f53ee29429ae1
   languageName: node
   linkType: hard
 
@@ -3076,6 +3094,15 @@ __metadata:
   dependencies:
     flat-cache: "npm:^3.0.4"
   checksum: 10c0/58473e8a82794d01b38e5e435f6feaf648e3f36fdb3a56e98f417f4efae71ad1c0d4ebd8a9a7c50c3ad085820a93fc7494ad721e0e4ebc1da3573f4e1c3c7cdd
+  languageName: node
+  linkType: hard
+
+"filelist@npm:^1.0.4":
+  version: 1.0.4
+  resolution: "filelist@npm:1.0.4"
+  dependencies:
+    minimatch: "npm:^5.0.1"
+  checksum: 10c0/426b1de3944a3d153b053f1c0ebfd02dccd0308a4f9e832ad220707a6d1f1b3c9784d6cadf6b2f68f09a57565f63ebc7bcdc913ccf8012d834f472c46e596f41
   languageName: node
   linkType: hard
 
@@ -3958,6 +3985,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jake@npm:^10.8.5":
+  version: 10.9.1
+  resolution: "jake@npm:10.9.1"
+  dependencies:
+    async: "npm:^3.2.3"
+    chalk: "npm:^4.0.2"
+    filelist: "npm:^1.0.4"
+    minimatch: "npm:^3.1.2"
+  bin:
+    jake: bin/cli.js
+  checksum: 10c0/dda972431a926462f08fcf583ea8997884216a43daa5cce81cb42e7e661dc244f836c0a802fde23439c6e1fc59743d1c0be340aa726d3b17d77557611a5cd541
+  languageName: node
+  linkType: hard
+
 "jest-changed-files@npm:^29.7.0":
   version: 29.7.0
   resolution: "jest-changed-files@npm:29.7.0"
@@ -4721,6 +4762,15 @@ __metadata:
   dependencies:
     brace-expansion: "npm:^1.1.7"
   checksum: 10c0/0262810a8fc2e72cca45d6fd86bd349eee435eb95ac6aa45c9ea2180e7ee875ef44c32b55b5973ceabe95ea12682f6e3725cbb63d7a2d1da3ae1163c8b210311
+  languageName: node
+  linkType: hard
+
+"minimatch@npm:^5.0.1":
+  version: 5.1.6
+  resolution: "minimatch@npm:5.1.6"
+  dependencies:
+    brace-expansion: "npm:^2.0.1"
+  checksum: 10c0/3defdfd230914f22a8da203747c42ee3c405c39d4d37ffda284dac5e45b7e1f6c49aa8be606509002898e73091ff2a3bbfc59c2c6c71d4660609f63aa92f98e3
   languageName: node
   linkType: hard
 
@@ -6063,10 +6113,11 @@ __metadata:
   linkType: hard
 
 "ts-jest@npm:^29.1.2":
-  version: 29.1.2
-  resolution: "ts-jest@npm:29.1.2"
+  version: 29.2.2
+  resolution: "ts-jest@npm:29.2.2"
   dependencies:
     bs-logger: "npm:0.x"
+    ejs: "npm:^3.0.0"
     fast-json-stable-stringify: "npm:2.x"
     jest-util: "npm:^29.0.0"
     json5: "npm:^2.2.3"
@@ -6076,12 +6127,15 @@ __metadata:
     yargs-parser: "npm:^21.0.1"
   peerDependencies:
     "@babel/core": ">=7.0.0-beta.0 <8"
+    "@jest/transform": ^29.0.0
     "@jest/types": ^29.0.0
     babel-jest: ^29.0.0
     jest: ^29.0.0
     typescript: ">=4.3 <6"
   peerDependenciesMeta:
     "@babel/core":
+      optional: true
+    "@jest/transform":
       optional: true
     "@jest/types":
       optional: true
@@ -6091,7 +6145,7 @@ __metadata:
       optional: true
   bin:
     ts-jest: cli.js
-  checksum: 10c0/c2f51f0241f89d127d41392decbcb83b5dfd5e57ab9d50220aa7b7e2f9b3f3b07ccdbba33311284df1c41941879e4ddfad44b15a9d0da4b74bd1b98702b729df
+  checksum: 10c0/833afe98f6aef7c46abbfb6bc84ce2431bcd82d614380e54ccd73cfc4c7c015ecdf058ad53edc48d575816b35c3db044de5fe1a579336a75f9a8c6651b6f7b50
   languageName: node
   linkType: hard
 
