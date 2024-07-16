@@ -32,6 +32,11 @@ export interface IEvent {
   text: string;
 }
 
+export interface ISwipeCoordinates {
+  x: number;
+  y: number;
+}
+
 export type TModel = "nanos" | "nanosp" | "nanox" | "stax";
 
 export interface IStartOptions {
@@ -58,11 +63,20 @@ export interface IButton {
   x: number;
   y: number;
   delay: number;
+  direction: SwipeDirection;
 }
 
 export interface INavElement {
   type: ActionKind;
   button: IButton;
+}
+
+export const enum SwipeDirection {
+  NoSwipe = 0,
+  SwipeUp,
+  SwipeDown,
+  SwipeRight,
+  SwipeLeft,
 }
 
 export const enum ActionKind {

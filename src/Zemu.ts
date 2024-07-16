@@ -51,16 +51,18 @@ import EmuContainer from "./emulator";
 import GRPCRouter from "./grpc";
 
 import { ClickNavigation, scheduleToNavElement, TouchNavigation } from "./actions";
-import { dummyButton, tapContinueButton, TouchElements } from "./buttons";
+import { dummyButton, swipeContinueButton, TouchElements } from "./buttons";
 import {
   ActionKind,
   ButtonKind,
+  SwipeDirection,
   type IButton,
   type IDeviceWindow,
   type IEvent,
   type INavElement,
   type ISnapshot,
   type IStartOptions,
+  type ISwipeCoordinates,
   type TModel,
 } from "./types";
 import { zondaxToggleExpertMode, zondaxStaxEnableSpecialMode } from "./zondax";
@@ -671,7 +673,7 @@ export default class Zemu {
 
     let start = new Date();
     let found = false;
-    const isStaxDevice = this.startOptions.model === "stax";
+    const isTouchDevice = this.startOptions.model === "stax";
 
     const textRegex = new RegExp(text, "i");
 
@@ -691,8 +693,8 @@ export default class Zemu {
       if (found) break;
 
       const nav: INavElement = {
-        type: isStaxDevice ? ActionKind.Touch : ActionKind.RightClick,
-        button: tapContinueButton, // For clicks, this will be ignored
+        type: isTouchDevice ? ActionKind.Touch : ActionKind.RightClick,
+        button: swipeContinueButton, // For clicks, this will be ignored
       };
       await this.runAction(nav, filename, waitForScreenUpdate, true);
       start = new Date();
@@ -704,7 +706,7 @@ export default class Zemu {
     const staxApproveButton = TouchElements.get(this.startOptions.approveAction);
 
     const nav: INavElement = {
-      type: isStaxDevice ? ActionKind.Touch : ActionKind.BothClick,
+      type: isTouchDevice ? ActionKind.Touch : ActionKind.BothClick,
       button: staxApproveButton ?? dummyButton,
     };
     await this.runAction(nav, filename, waitForScreenUpdate, true);
@@ -833,6 +835,37 @@ export default class Zemu {
     return await this.click("/button/both", filename, waitForScreenUpdate, waitForEventsChange);
   }
 
+  private getSwipeCoordinates(button: IButton): ISwipeCoordinates {
+    let newX = button.x;
+    let newY = button.y;
+    const SWIPE_PX_MOVEMENT = 10;
+
+    switch (button.direction) {
+      case SwipeDirection.SwipeUp:
+        newY += SWIPE_PX_MOVEMENT;
+        break;
+
+      case SwipeDirection.SwipeDown:
+        newY -= SWIPE_PX_MOVEMENT;
+        break;
+
+      case SwipeDirection.SwipeRight:
+        newX += SWIPE_PX_MOVEMENT;
+        break;
+
+      case SwipeDirection.SwipeLeft:
+        newX -= SWIPE_PX_MOVEMENT;
+        break;
+
+      case SwipeDirection.NoSwipe:
+        break;
+    }
+    return {
+      x: newX,
+      y: newY,
+    };
+  }
+
   async fingerTouch(
     button: IButton,
     filename: string = "",
@@ -844,7 +877,16 @@ export default class Zemu {
     const prevScreen = await this.snapshot();
 
     const fingerTouchUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/finger`;
-    const payload = { action: "press-and-release", x: button.x, y: button.y, delay: button.delay };
+
+    // Add x2, y2 params only for Swipe
+    const swipe = this.getSwipeCoordinates(button);
+    const payload = {
+      action: "press-and-release",
+      x: button.x,
+      y: button.y,
+      delay: button.delay,
+      ...(button.direction !== SwipeDirection.NoSwipe ? { x2: swipe.x, y2: swipe.y } : {}),
+    };
     await axios.post(fingerTouchUrl, payload);
     this.log(`Touch /finger -> ${filename}`);
 

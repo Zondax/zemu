@@ -13,114 +13,139 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { ButtonKind, type IButton } from "./types";
+import { ButtonKind, type IButton, SwipeDirection } from "./types";
 
 export const dummyButton: IButton = {
   x: 0,
   y: 0,
   delay: 0,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const infoButton: IButton = {
   x: 335,
   y: 65,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const quitAppButton: IButton = {
   x: 0,
   y: 0,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 export const tapContinueButton: IButton = {
   x: 200,
   y: 250,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
+};
+
+export const swipeContinueButton: IButton = {
+  x: 200,
+  y: 250,
+  delay: 0.1,
+  direction: SwipeDirection.SwipeLeft,
 };
 
 const prevPageButton: IButton = {
   x: 45,
   y: 45,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const toggleOption1: IButton = {
   x: 350,
   y: 125,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const toggleOption2: IButton = {
   x: 350,
   y: 200,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const toggleOption3: IButton = {
   x: 350,
   y: 250,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const navRightButton: IButton = {
   x: 300,
   y: 625,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const navLeftButton: IButton = {
   x: 140,
   y: 625,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const quitSettingsButton: IButton = {
   x: 40,
   y: 40,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const approveTapButton: IButton = {
   x: 200,
   y: 550,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const approveHoldButton: IButton = {
   x: 335,
   y: 525,
   delay: 5,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const rejectButton: IButton = {
   x: 200,
   y: 650,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const confirmYesButton: IButton = {
   x: 200,
   y: 550,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const confirmNoButton: IButton = {
   x: 200,
   y: 650,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const showQRButton: IButton = {
   x: 200,
   y: 300,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 const closeQRButton: IButton = {
   x: 200,
   y: 650,
   delay: 0.25,
+  direction: SwipeDirection.NoSwipe,
 };
 
 export const TouchElements = new Map<ButtonKind, IButton>([
