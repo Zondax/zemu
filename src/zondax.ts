@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2018 - 2023 Zondax AG
+ *  (c) 2018 - 2024 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,14 +16,19 @@
 import { ClickNavigation, TouchNavigation } from "./actions";
 import { ButtonKind, type TModel } from "./types";
 
+export function isTouchDevice(model: TModel): boolean {
+  return model === "stax" || model === "flex";
+}
+
 export function zondaxMainmenuNavigation(model: TModel, clickArray?: number[]): ClickNavigation | TouchNavigation {
-  if (model === "stax") {
-    return new TouchNavigation([
+  if (isTouchDevice(model)) {
+    return new TouchNavigation(model, [
       ButtonKind.InfoButton,
-      ButtonKind.NavRightButton,
+      ButtonKind.SettingsNavRightButton,
+      ButtonKind.SettingsNavRightButton,
       ButtonKind.ToggleSettingButton1,
       ButtonKind.ToggleSettingButton1,
-      ButtonKind.QuitSettingsButton,
+      ButtonKind.SettingsQuitButton,
     ]);
   }
   const DEFAULT_MAINMENU_CLICKS = [1, 0, 0, 4, -5];
@@ -31,27 +36,28 @@ export function zondaxMainmenuNavigation(model: TModel, clickArray?: number[]): 
 }
 
 export function zondaxToggleExpertMode(model: TModel, clickArray?: number[]): ClickNavigation | TouchNavigation {
-  if (model === "stax") {
-    return new TouchNavigation([
+  if (isTouchDevice(model)) {
+    return new TouchNavigation(model, [
       ButtonKind.InfoButton,
       ButtonKind.NavRightButton,
       ButtonKind.ToggleSettingButton1,
-      ButtonKind.QuitSettingsButton,
+      ButtonKind.SettingsQuitButton,
     ]);
   }
   const DEFAULT_EXPERT_MODE_CLICKS = [1, 0, -1];
   return new ClickNavigation(clickArray ?? DEFAULT_EXPERT_MODE_CLICKS);
 }
 
-export function zondaxStaxEnableSpecialMode(toggleSettingButton?: ButtonKind): TouchNavigation {
-  return new TouchNavigation([
+export function zondaxTouchEnableSpecialMode(model: TModel, toggleSettingButton?: ButtonKind): TouchNavigation {
+  return new TouchNavigation(model, [
     ButtonKind.InfoButton,
-    ButtonKind.NavRightButton,
+    ButtonKind.SettingsNavRightButton,
+    ButtonKind.SettingsNavRightButton,
     ButtonKind.ToggleSettingButton1,
-    ButtonKind.NavLeftButton,
-    ButtonKind.NavRightButton,
+    ButtonKind.SettingsNavLeftButton,
+    ButtonKind.SettingsNavRightButton,
     toggleSettingButton ?? ButtonKind.ToggleSettingButton2,
-    ButtonKind.TapContinueButton,
+    ButtonKind.SwipeContinueButton,
     ButtonKind.ConfirmYesButton,
   ]);
 }

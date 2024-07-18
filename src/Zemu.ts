@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2018 - 2023 Zondax AG
+ *  (c) 2018 - 2024 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import {
   WINDOW_STAX,
   WINDOW_S,
   WINDOW_X,
+  WINDOW_FLEX,
   DEFAULT_STAX_APPROVE_KEYWORD,
   DEFAULT_STAX_REJECT_KEYWORD,
   DEFAULT_NANO_APPROVE_KEYWORD,
@@ -51,7 +52,7 @@ import EmuContainer from "./emulator";
 import GRPCRouter from "./grpc";
 
 import { ClickNavigation, scheduleToNavElement, TouchNavigation } from "./actions";
-import { dummyButton, swipeContinueButton, TouchElements } from "./buttons";
+import { getTouchElement } from "./buttons";
 import {
   ActionKind,
   ButtonKind,
@@ -65,7 +66,7 @@ import {
   type ISwipeCoordinates,
   type TModel,
 } from "./types";
-import { zondaxToggleExpertMode, zondaxStaxEnableSpecialMode } from "./zondax";
+import { isTouchDevice, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from "./zondax";
 
 export default class Zemu {
   public startOptions!: IStartOptions;
@@ -148,6 +149,7 @@ export default class Zemu {
       nanox: 0xc0de0001,
       nanosp: 0xc0de0001,
       stax: 0xc0de0001,
+      flex: 0xc0de0001,
     };
     const elfApp = fs.readFileSync(elfPath);
     const elfInfo = elfy.parse(elfApp);
@@ -161,7 +163,7 @@ export default class Zemu {
     this.startOptions = options;
     const approveWord = options.approveKeyword;
     const rejectWord = options.rejectKeyword;
-    if (options.model === "stax") {
+    if (isTouchDevice(options.model)) {
       this.startOptions.approveKeyword = approveWord.length === 0 ? DEFAULT_STAX_APPROVE_KEYWORD : approveWord;
       this.startOptions.rejectKeyword = rejectWord.length === 0 ? DEFAULT_STAX_REJECT_KEYWORD : rejectWord;
     } else {
@@ -199,8 +201,9 @@ export default class Zemu {
       this.log(`Wait for start text`);
 
       if (this.startOptions.startText.length === 0) {
-        this.startOptions.startText =
-          this.startOptions.model === "stax" ? DEFAULT_STAX_START_TEXT : DEFAULT_NANO_START_TEXT;
+        this.startOptions.startText = isTouchDevice(this.startOptions.model)
+          ? DEFAULT_STAX_START_TEXT
+          : DEFAULT_NANO_START_TEXT;
       }
       const start = new Date();
       let found = false;
@@ -219,10 +222,9 @@ export default class Zemu {
         }
         const events = await this.getEvents();
         if (!reviewPendingFound && events.some((event: IEvent) => reviewPendingRegex.test(event.text))) {
-          const nav =
-            this.startOptions.model === "stax"
-              ? new TouchNavigation([ButtonKind.ConfirmYesButton])
-              : new ClickNavigation([0]);
+          const nav = isTouchDevice(this.startOptions.model)
+            ? new TouchNavigation(this.startOptions.model, [ButtonKind.ConfirmYesButton])
+            : new ClickNavigation([0]);
           await this.navigate("", "", nav.schedule, true, false);
           reviewPendingFound = true;
         }
@@ -309,6 +311,8 @@ export default class Zemu {
         return WINDOW_X;
       case "stax":
         return WINDOW_STAX;
+      case "flex":
+        return WINDOW_FLEX;
       default:
         throw new Error(`model ${this.startOptions.model} not recognized`);
     }
@@ -444,7 +448,7 @@ export default class Zemu {
   async enableSpecialMode(
     nanoModeText: string,
     nanoIsSecretMode: boolean = false,
-    staxToggleSettingButton?: ButtonKind,
+    touchToggleSettingButton?: ButtonKind,
     path = ".",
     testcaseName = "",
     waitForScreenUpdate = true,
@@ -452,7 +456,7 @@ export default class Zemu {
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
   ): Promise<number> {
-    if (this.startOptions.model !== "stax") {
+    if (!isTouchDevice(this.startOptions.model)) {
       const expertImgIndex = await this.toggleExpertMode(testcaseName, takeSnapshots, startImgIndex);
       let tmpImgIndex = await this.navigateUntilText(
         path,
@@ -479,7 +483,7 @@ export default class Zemu {
         timeout,
       );
     } else {
-      const nav = zondaxStaxEnableSpecialMode(staxToggleSettingButton);
+      const nav = zondaxTouchEnableSpecialMode(this.startOptions.model, touchToggleSettingButton);
       return await this.navigate(path, testcaseName, nav.schedule, waitForScreenUpdate, takeSnapshots, startImgIndex);
     }
   }
@@ -590,7 +594,7 @@ export default class Zemu {
       startImgIndex,
       timeout,
     );
-    if (this.startOptions.model === "stax") {
+    if (isTouchDevice(this.startOptions.model)) {
       // Avoid taking a snapshot of the final animation
       await this.waitUntilScreenIs(this.mainMenuSnapshot);
       await this.takeSnapshotAndOverwrite(path, testcaseName, lastSnapshotIdx);
@@ -606,7 +610,7 @@ export default class Zemu {
     timeout = DEFAULT_METHOD_TIMEOUT,
   ): Promise<boolean> {
     const rejectKeyword = this.startOptions.rejectKeyword;
-    if (this.startOptions.model !== "stax") {
+    if (!isTouchDevice(this.startOptions.model)) {
       return await this.navigateAndCompareUntilText(
         path,
         testcaseName,
@@ -618,7 +622,7 @@ export default class Zemu {
     } else {
       const takeSnapshots = true;
       const runLastAction = false;
-      // For Stax devices navigate until reject keyword --> Reject --> Confirm rejection
+      // For Stax/Flex devices navigate until reject keyword --> Reject --> Confirm rejection
       // reject keyword should be actually approve keyword (issue with OCR)
       const navLastIndex = await this.navigateUntilText(
         path,
@@ -630,7 +634,10 @@ export default class Zemu {
         timeout,
         runLastAction,
       );
-      const rejectConfirmationNav = new TouchNavigation([ButtonKind.RejectButton, ButtonKind.ConfirmYesButton]);
+      const rejectConfirmationNav = new TouchNavigation(this.startOptions.model, [
+        ButtonKind.RejectButton,
+        ButtonKind.ConfirmYesButton,
+      ]);
       // Overwrite last snapshot since navigate starts taking a snapshot of the current screen
       const lastIndex = await this.navigate(
         path,
@@ -673,7 +680,7 @@ export default class Zemu {
 
     let start = new Date();
     let found = false;
-    const isTouchDevice = this.startOptions.model === "stax";
+    const touchDevice = isTouchDevice(this.startOptions.model);
 
     const textRegex = new RegExp(text, "i");
 
@@ -693,8 +700,8 @@ export default class Zemu {
       if (found) break;
 
       const nav: INavElement = {
-        type: isTouchDevice ? ActionKind.Touch : ActionKind.RightClick,
-        button: swipeContinueButton, // For clicks, this will be ignored
+        type: touchDevice ? ActionKind.Touch : ActionKind.RightClick,
+        button: getTouchElement(this.startOptions.model, ButtonKind.SwipeContinueButton), // For clicks, this will be ignored
       };
       await this.runAction(nav, filename, waitForScreenUpdate, true);
       start = new Date();
@@ -703,11 +710,11 @@ export default class Zemu {
     if (!runLastAction) return imageIndex; // do not run last action if requested
 
     // Approve can be performed with Tap or PressAndHold
-    const staxApproveButton = TouchElements.get(this.startOptions.approveAction);
+    const approveButton = getTouchElement(this.startOptions.model, this.startOptions.approveAction);
 
     const nav: INavElement = {
-      type: isTouchDevice ? ActionKind.Touch : ActionKind.BothClick,
-      button: staxApproveButton ?? dummyButton,
+      type: touchDevice ? ActionKind.Touch : ActionKind.BothClick,
+      button: approveButton,
     };
     await this.runAction(nav, filename, waitForScreenUpdate, true);
     return imageIndex;
@@ -872,7 +879,8 @@ export default class Zemu {
     waitForScreenUpdate: boolean = true,
     waitForEventsChange: boolean = false,
   ): Promise<ISnapshot> {
-    if (this.startOptions.model !== "stax") throw new Error("fingerTouch method can only be used with stax device");
+    if (!isTouchDevice(this.startOptions.model))
+      throw new Error("fingerTouch method can only be used with touchable devices");
     const prevEvents = await this.getEvents();
     const prevScreen = await this.snapshot();
 

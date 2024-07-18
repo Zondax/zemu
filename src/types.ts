@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2018 - 2023 Zondax AG
+ *  (c) 2018 - 2024 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ export interface ISwipeCoordinates {
   y: number;
 }
 
-export type TModel = "nanos" | "nanosp" | "nanox" | "stax";
+export type TModel = "nanos" | "nanosp" | "nanox" | "stax" | "flex";
 
 export interface IStartOptions {
   logging: boolean;
@@ -90,9 +90,13 @@ export const enum ButtonKind {
   InfoButton = 0,
   QuitAppButton,
 
-  TapContinueButton,
+  SwipeContinueButton,
 
   PrevPageButton,
+
+  SettingsNavRightButton,
+  SettingsNavLeftButton,
+  SettingsQuitButton,
 
   ToggleSettingButton1,
   ToggleSettingButton2,
@@ -100,7 +104,6 @@ export const enum ButtonKind {
 
   NavRightButton,
   NavLeftButton,
-  QuitSettingsButton,
 
   ApproveHoldButton,
   ApproveTapButton,

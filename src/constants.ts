@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2018 - 2023 Zondax AG
+ *  (c) 2018 - 2024 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -76,4 +76,11 @@ export const WINDOW_STAX: IDeviceWindow = {
   y: 0,
   width: 400,
   height: 672,
+};
+
+export const WINDOW_FLEX: IDeviceWindow = {
+  x: 0,
+  y: 0,
+  width: 480,
+  height: 600,
 };
