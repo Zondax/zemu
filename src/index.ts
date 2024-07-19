@@ -19,4 +19,4 @@ export default Zemu;
 export { ClickNavigation, TouchNavigation } from "./actions";
 export { DEFAULT_START_OPTIONS } from "./constants";
 export { ButtonKind, type IDeviceModel, type INavElement, type IStartOptions } from "./types";
-export { zondaxMainmenuNavigation } from "./zondax";
+export { isTouchDevice, zondaxMainmenuNavigation } from "./zondax";
