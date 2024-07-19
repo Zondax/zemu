@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2018 - 2023 Zondax AG
+ *  (c) 2018 - 2024 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -32,7 +32,12 @@ export interface IEvent {
   text: string;
 }
 
-export type TModel = "nanos" | "nanosp" | "nanox" | "stax";
+export interface ISwipeCoordinates {
+  x: number;
+  y: number;
+}
+
+export type TModel = "nanos" | "nanosp" | "nanox" | "stax" | "flex";
 
 export interface IStartOptions {
   logging: boolean;
@@ -58,11 +63,20 @@ export interface IButton {
   x: number;
   y: number;
   delay: number;
+  direction: SwipeDirection;
 }
 
 export interface INavElement {
   type: ActionKind;
   button: IButton;
+}
+
+export const enum SwipeDirection {
+  NoSwipe = 0,
+  SwipeUp,
+  SwipeDown,
+  SwipeRight,
+  SwipeLeft,
 }
 
 export const enum ActionKind {
@@ -76,9 +90,13 @@ export const enum ButtonKind {
   InfoButton = 0,
   QuitAppButton,
 
-  TapContinueButton,
+  SwipeContinueButton,
 
   PrevPageButton,
+
+  SettingsNavRightButton,
+  SettingsNavLeftButton,
+  SettingsQuitButton,
 
   ToggleSettingButton1,
   ToggleSettingButton2,
@@ -86,7 +104,6 @@ export const enum ButtonKind {
 
   NavRightButton,
   NavLeftButton,
-  QuitSettingsButton,
 
   ApproveHoldButton,
   ApproveTapButton,

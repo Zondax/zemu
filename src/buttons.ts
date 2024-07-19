@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2018 - 2023 Zondax AG
+ *  (c) 2018 - 2024 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,139 +13,41 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { ButtonKind, type IButton } from "./types";
+import { type ButtonKind, type IButton, SwipeDirection, type TModel } from "./types";
+import { stax } from "./buttons_stax";
+import { flex } from "./buttons_flex";
 
-export const dummyButton: IButton = {
+const dummyButton: IButton = {
   x: 0,
   y: 0,
   delay: 0,
+  direction: SwipeDirection.NoSwipe,
 };
 
-const infoButton: IButton = {
-  x: 335,
-  y: 65,
-  delay: 0.25,
-};
+export function getTouchElement(model: TModel, buttonKind: ButtonKind): IButton {
+  switch (model) {
+    case "stax": {
+      const button = stax.TouchElements.get(buttonKind);
+      if (button != null) {
+        return button;
+      }
+      break;
+    }
 
-const quitAppButton: IButton = {
-  x: 0,
-  y: 0,
-  delay: 0.25,
-};
+    case "flex": {
+      const button = flex.TouchElements.get(buttonKind);
+      if (button != null) {
+        return button;
+      }
+      break;
+    }
 
-export const tapContinueButton: IButton = {
-  x: 200,
-  y: 250,
-  delay: 0.25,
-};
+    // Add cases for other models here when they become available
 
-const prevPageButton: IButton = {
-  x: 45,
-  y: 45,
-  delay: 0.25,
-};
+    default:
+      return dummyButton;
+  }
 
-const toggleOption1: IButton = {
-  x: 350,
-  y: 125,
-  delay: 0.25,
-};
-
-const toggleOption2: IButton = {
-  x: 350,
-  y: 200,
-  delay: 0.25,
-};
-
-const toggleOption3: IButton = {
-  x: 350,
-  y: 250,
-  delay: 0.25,
-};
-
-const navRightButton: IButton = {
-  x: 300,
-  y: 625,
-  delay: 0.25,
-};
-
-const navLeftButton: IButton = {
-  x: 140,
-  y: 625,
-  delay: 0.25,
-};
-
-const quitSettingsButton: IButton = {
-  x: 40,
-  y: 40,
-  delay: 0.25,
-};
-
-const approveTapButton: IButton = {
-  x: 200,
-  y: 550,
-  delay: 0.25,
-};
-
-const approveHoldButton: IButton = {
-  x: 335,
-  y: 525,
-  delay: 5,
-};
-
-const rejectButton: IButton = {
-  x: 200,
-  y: 650,
-  delay: 0.25,
-};
-
-const confirmYesButton: IButton = {
-  x: 200,
-  y: 550,
-  delay: 0.25,
-};
-
-const confirmNoButton: IButton = {
-  x: 200,
-  y: 650,
-  delay: 0.25,
-};
-
-const showQRButton: IButton = {
-  x: 200,
-  y: 300,
-  delay: 0.25,
-};
-
-const closeQRButton: IButton = {
-  x: 200,
-  y: 650,
-  delay: 0.25,
-};
-
-export const TouchElements = new Map<ButtonKind, IButton>([
-  [ButtonKind.InfoButton, infoButton],
-  [ButtonKind.QuitAppButton, quitAppButton],
-
-  [ButtonKind.TapContinueButton, tapContinueButton],
-
-  [ButtonKind.PrevPageButton, prevPageButton],
-
-  [ButtonKind.ToggleSettingButton1, toggleOption1],
-  [ButtonKind.ToggleSettingButton2, toggleOption2],
-  [ButtonKind.ToggleSettingButton3, toggleOption3],
-
-  [ButtonKind.NavRightButton, navRightButton],
-  [ButtonKind.NavLeftButton, navLeftButton],
-  [ButtonKind.QuitSettingsButton, quitSettingsButton],
-
-  [ButtonKind.ApproveHoldButton, approveHoldButton],
-  [ButtonKind.ApproveTapButton, approveTapButton],
-  [ButtonKind.RejectButton, rejectButton],
-
-  [ButtonKind.ConfirmYesButton, confirmYesButton],
-  [ButtonKind.ConfirmNoButton, confirmNoButton],
-
-  [ButtonKind.ShowQRButton, showQRButton],
-  [ButtonKind.CloseQRButton, closeQRButton],
-]);
+  console.log(`Unsupported ButtonKind: ${model}, ${buttonKind}`);
+  return dummyButton;
+}

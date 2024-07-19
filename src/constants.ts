@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2018 - 2023 Zondax AG
+ *  (c) 2018 - 2024 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  ******************************************************************************* */
 import { ButtonKind, type IDeviceWindow, type IStartOptions } from "./types";
 
-export const DEFAULT_EMU_IMG = "zondax/builder-zemu:speculos-56ed99657f351ba63dd9448281e77ed9f0eea835";
+export const DEFAULT_EMU_IMG = "zondax/builder-zemu:speculos-ef9610662dc90a1eeddba7c991e3ef7c53c4e258";
 
 export const DEFAULT_MODEL = "nanos";
 export const DEFAULT_NANO_START_TEXT = "Ready";
@@ -76,4 +76,11 @@ export const WINDOW_STAX: IDeviceWindow = {
   y: 0,
   width: 400,
   height: 672,
+};
+
+export const WINDOW_FLEX: IDeviceWindow = {
+  x: 0,
+  y: 0,
+  width: 480,
+  height: 600,
 };

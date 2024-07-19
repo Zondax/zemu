@@ -1,5 +1,5 @@
 /** ******************************************************************************
- *  (c) 2018 - 2023 Zondax AG
+ *  (c) 2018 - 2024 Zondax AG
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,10 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { dummyButton, TouchElements } from "./buttons";
-import { ActionKind, type ButtonKind, type INavElement } from "./types";
+import { getTouchElement } from "./buttons";
+import { ActionKind, ButtonKind, type TModel, type INavElement } from "./types";
 
 export function scheduleToNavElement(clickSchedule: Array<INavElement | number>): INavElement[] {
+  const dummyButton = getTouchElement("nanos", ButtonKind.QuitAppButton);
   const nav: INavElement[] = [];
   for (const click of clickSchedule) {
     if (typeof click !== "number") {
@@ -51,10 +52,10 @@ export class ClickNavigation {
 export class TouchNavigation {
   schedule: INavElement[];
 
-  constructor(buttonKindArray: ButtonKind[]) {
+  constructor(model: TModel, buttonKindArray: ButtonKind[]) {
     this.schedule = [];
     for (const buttonKind of buttonKindArray) {
-      const touchButton = TouchElements.get(buttonKind);
+      const touchButton = getTouchElement(model, buttonKind);
       if (touchButton == null) throw new Error("Undefined touch action");
       this.schedule.push({
         type: ActionKind.Touch,
