@@ -712,6 +712,16 @@ export default class Zemu {
     // Approve can be performed with Tap or PressAndHold
     const approveButton = getTouchElement(this.startOptions.model, this.startOptions.approveAction);
 
+    if (this.startOptions.approveAction === ButtonKind.DynamicTapButton) {
+      const events = await this.getEvents();
+      const matchingEvent = events.find((event: IEvent) => textRegex.test(event.text));
+
+      if (matchingEvent != null) {
+        approveButton.x = Math.round(matchingEvent.x + matchingEvent.w / 2);
+        approveButton.y = Math.round(matchingEvent.y + matchingEvent.h / 2);
+      }
+    }
+
     const nav: INavElement = {
       type: touchDevice ? ActionKind.Touch : ActionKind.BothClick,
       button: approveButton,

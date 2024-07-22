@@ -24,10 +24,10 @@ export function zondaxMainmenuNavigation(model: TModel, clickArray?: number[]): 
   if (isTouchDevice(model)) {
     return new TouchNavigation(model, [
       ButtonKind.InfoButton,
-      ButtonKind.SettingsNavRightButton,
-      ButtonKind.SettingsNavRightButton,
       ButtonKind.ToggleSettingButton1,
       ButtonKind.ToggleSettingButton1,
+      ButtonKind.SettingsNavRightButton,
+      ButtonKind.SettingsNavRightButton,
       ButtonKind.SettingsQuitButton,
     ]);
   }
@@ -39,7 +39,6 @@ export function zondaxToggleExpertMode(model: TModel, clickArray?: number[]): Cl
   if (isTouchDevice(model)) {
     return new TouchNavigation(model, [
       ButtonKind.InfoButton,
-      ButtonKind.NavRightButton,
       ButtonKind.ToggleSettingButton1,
       ButtonKind.SettingsQuitButton,
     ]);

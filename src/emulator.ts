@@ -127,7 +127,7 @@ export default class EmuContainer {
     }
 
     const displayEnvironment: string =
-      process.platform === "darwin" ? "host.docker.internal:0" : process.env.DISPLAY ?? "";
+      process.platform === "darwin" ? "host.docker.internal:0" : (process.env.DISPLAY ?? "");
     const environment = [
       `SCP_PRIVKEY='${DEV_CERT_PRIVATE_KEY}'`,
       `BOLOS_SDK='${BOLOS_SDK}'`,
