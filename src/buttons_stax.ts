@@ -170,5 +170,7 @@ export namespace stax {
     [ButtonKind.ConfirmNoButton, stax.confirmNoButton],
     [ButtonKind.ShowQRButton, stax.showQRButton],
     [ButtonKind.CloseQRButton, stax.closeQRButton],
+
+    [ButtonKind.DynamicTapButton, stax.approveTapButton],
   ]);
 }

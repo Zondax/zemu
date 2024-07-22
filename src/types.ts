@@ -27,11 +27,13 @@ export interface ISnapshot {
 }
 
 export interface IEvent {
+  text: string;
   x: number;
   y: number;
-  text: string;
+  w: number;
+  h: number;
+  clear: boolean;
 }
-
 export interface ISwipeCoordinates {
   x: number;
   y: number;
@@ -114,4 +116,8 @@ export const enum ButtonKind {
 
   ShowQRButton,
   CloseQRButton,
+
+  // Text to compare must match this button
+  // Zemu will find the center where the text is displayed and tap there
+  DynamicTapButton,
 }

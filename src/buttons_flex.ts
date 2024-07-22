@@ -171,5 +171,7 @@ export namespace flex {
     [ButtonKind.ConfirmNoButton, flex.confirmNoButton],
     [ButtonKind.ShowQRButton, flex.showQRButton],
     [ButtonKind.CloseQRButton, flex.closeQRButton],
+
+    [ButtonKind.DynamicTapButton, flex.approveTapButton],
   ]);
 }
