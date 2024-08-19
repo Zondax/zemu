@@ -854,6 +854,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/devices@npm:^8.4.2":
+  version: 8.4.2
+  resolution: "@ledgerhq/devices@npm:8.4.2"
+  dependencies:
+    "@ledgerhq/errors": "npm:^6.18.0"
+    "@ledgerhq/logs": "npm:^6.12.0"
+    rxjs: "npm:^7.8.1"
+    semver: "npm:^7.3.5"
+  checksum: 10c0/b7149c6302d23928fd2d3622d9018af10a56f6960732de0d72e881d19b75b0036f6248ca0845cfe9dfeda32ecb52c352423e79e109c7decf8437948fed7843cd
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/errors@npm:^6.16.4, @ledgerhq/errors@npm:^6.17.0, @ledgerhq/errors@npm:^6.18.0":
   version: 6.18.0
   resolution: "@ledgerhq/errors@npm:6.18.0"
@@ -862,15 +874,15 @@ __metadata:
   linkType: hard
 
 "@ledgerhq/hw-transport-http@npm:^6.30.1":
-  version: 6.30.1
-  resolution: "@ledgerhq/hw-transport-http@npm:6.30.1"
+  version: 6.30.2
+  resolution: "@ledgerhq/hw-transport-http@npm:6.30.2"
   dependencies:
     "@ledgerhq/errors": "npm:^6.18.0"
-    "@ledgerhq/hw-transport": "npm:^6.31.1"
+    "@ledgerhq/hw-transport": "npm:^6.31.2"
     "@ledgerhq/logs": "npm:^6.12.0"
     axios: "npm:^0.26.1"
     ws: "npm:^7.5.2"
-  checksum: 10c0/e0ee6ae8c6619c623744e8ab256ce0e01852c2f0bc9bcfc5716053a9590fb3df3d7a7a2f08546bdb9885b4ed1b60852cf49923691c77f960d9a626196fd064f3
+  checksum: 10c0/20be214b1ded88a98e4b9c8938dee9998bb0464e458926259e3dbd3e18ceb14fa90a5ebaed062dd578a9d6d5146944b9e1d277282256c29a68ff09038c76e192
   languageName: node
   linkType: hard
 
@@ -907,6 +919,18 @@ __metadata:
     "@ledgerhq/logs": "npm:^6.12.0"
     events: "npm:^3.3.0"
   checksum: 10c0/9ec381a26a03f959b07b8a69320ae03c6ffde3964e969be9d257116df1b32214fff8d5792a2e605ee2afd0fc12f00c89f8005cfd7a866ae2eb065334a81fd81c
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/hw-transport@npm:^6.31.2":
+  version: 6.31.2
+  resolution: "@ledgerhq/hw-transport@npm:6.31.2"
+  dependencies:
+    "@ledgerhq/devices": "npm:^8.4.2"
+    "@ledgerhq/errors": "npm:^6.18.0"
+    "@ledgerhq/logs": "npm:^6.12.0"
+    events: "npm:^3.3.0"
+  checksum: 10c0/3fc61c2e844639b7ec73e5eaec2f34235a414ec802df2491ea3d32d854f5f53c592b35b874a9ce899a6087a74a5a750b20c91aae19aaa44eea2faa390edf593f
   languageName: node
   linkType: hard
 
