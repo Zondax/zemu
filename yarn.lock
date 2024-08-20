@@ -1888,13 +1888,13 @@ __metadata:
   linkType: hard
 
 "axios-retry@npm:^4.4.1":
-  version: 4.4.1
-  resolution: "axios-retry@npm:4.4.1"
+  version: 4.5.0
+  resolution: "axios-retry@npm:4.5.0"
   dependencies:
     is-retry-allowed: "npm:^2.2.0"
   peerDependencies:
     axios: 0.x || 1.x
-  checksum: 10c0/2560d33cc732e920e43b3cbdfdbbaaece040a538506c33b5e302deee4d953e8f55af8065a3b766e72f68ba4712cdfe688ef52ba80dc3c6a21e65cf8362e75736
+  checksum: 10c0/574e7b1bf24aad99b560042d232a932d51bfaa29b5a6d4612d748ed799a6f11a5afb2582792492c55d95842200cbdfbe3454027a8c1b9a2d3e895d13c3d03c10
   languageName: node
   linkType: hard
 
