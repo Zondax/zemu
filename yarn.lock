@@ -842,7 +842,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/devices@npm:^8.3.0, @ledgerhq/devices@npm:^8.4.0, @ledgerhq/devices@npm:^8.4.1":
+"@ledgerhq/devices@npm:^8.3.0, @ledgerhq/devices@npm:^8.4.0":
   version: 8.4.1
   resolution: "@ledgerhq/devices@npm:8.4.1"
   dependencies:
@@ -910,19 +910,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport@npm:^6.31.1":
-  version: 6.31.1
-  resolution: "@ledgerhq/hw-transport@npm:6.31.1"
-  dependencies:
-    "@ledgerhq/devices": "npm:^8.4.1"
-    "@ledgerhq/errors": "npm:^6.18.0"
-    "@ledgerhq/logs": "npm:^6.12.0"
-    events: "npm:^3.3.0"
-  checksum: 10c0/9ec381a26a03f959b07b8a69320ae03c6ffde3964e969be9d257116df1b32214fff8d5792a2e605ee2afd0fc12f00c89f8005cfd7a866ae2eb065334a81fd81c
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/hw-transport@npm:^6.31.2":
+"@ledgerhq/hw-transport@npm:^6.31.1, @ledgerhq/hw-transport@npm:^6.31.2":
   version: 6.31.2
   resolution: "@ledgerhq/hw-transport@npm:6.31.2"
   dependencies:
