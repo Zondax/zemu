@@ -50,11 +50,9 @@ export function zondaxToggleExpertMode(model: TModel, clickArray?: number[]): Cl
 export function zondaxTouchEnableSpecialMode(model: TModel, toggleSettingButton?: ButtonKind): TouchNavigation {
   return new TouchNavigation(model, [
     ButtonKind.InfoButton,
-    ButtonKind.SettingsNavRightButton,
-    ButtonKind.SettingsNavRightButton,
     ButtonKind.ToggleSettingButton1,
-    ButtonKind.SettingsNavLeftButton,
     ButtonKind.SettingsNavRightButton,
+    ButtonKind.SettingsNavLeftButton,
     toggleSettingButton ?? ButtonKind.ToggleSettingButton2,
     ButtonKind.SwipeContinueButton,
     ButtonKind.ConfirmYesButton,
