@@ -55,7 +55,7 @@
     "@typescript-eslint/parser": "^8.1.0",
     "@zondax/ledger-substrate": "^0.44.7",
     "copyfiles": "^2.4.1",
-    "eslint": "^8.57.0",
+    "eslint": "^9.11.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-config-standard-with-typescript": "^43.0.1",
     "eslint-plugin-import": "^2.29.1",
