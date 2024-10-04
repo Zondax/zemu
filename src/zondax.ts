@@ -47,6 +47,18 @@ export function zondaxToggleExpertMode(model: TModel, clickArray?: number[]): Cl
   return new ClickNavigation(clickArray ?? DEFAULT_EXPERT_MODE_CLICKS);
 }
 
+export function zondaxToggleBlindSigning(model: TModel, clickArray?: number[]): ClickNavigation | TouchNavigation {
+  if (isTouchDevice(model)) {
+    return new TouchNavigation(model, [
+      ButtonKind.InfoButton,
+      ButtonKind.ToggleSettingButton2,
+      ButtonKind.SettingsQuitButton,
+    ]);
+  }
+  const DEFAULT_BLIND_SIGNING_MODE_CLICKS = [2, 0, -2];
+  return new ClickNavigation(clickArray ?? DEFAULT_BLIND_SIGNING_MODE_CLICKS);
+}
+
 export function zondaxTouchEnableSpecialMode(model: TModel, toggleSettingButton?: ButtonKind): TouchNavigation {
   return new TouchNavigation(model, [
     ButtonKind.InfoButton,

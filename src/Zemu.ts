@@ -66,7 +66,12 @@ import {
   type ISwipeCoordinates,
   type TModel,
 } from "./types";
-import { isTouchDevice, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from "./zondax";
+import {
+  isTouchDevice,
+  zondaxToggleBlindSigning,
+  zondaxToggleExpertMode,
+  zondaxTouchEnableSpecialMode,
+} from "./zondax";
 
 export default class Zemu {
   public startOptions!: IStartOptions;
@@ -445,6 +450,11 @@ export default class Zemu {
     return await this.navigate(".", testcaseName, nav.schedule, true, takeSnapshots, startImgIndex);
   }
 
+  async toggleBlindSigning(testcaseName = "", takeSnapshots = false, startImgIndex = 0): Promise<number> {
+    const nav = zondaxToggleBlindSigning(this.startOptions.model);
+    return await this.navigate(".", testcaseName, nav.schedule, true, takeSnapshots, startImgIndex);
+  }
+
   async enableSpecialMode(
     nanoModeText: string,
     nanoIsSecretMode: boolean = false,
@@ -582,6 +592,7 @@ export default class Zemu {
     waitForScreenUpdate = true,
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
+    isBlindSigning = false,
   ): Promise<boolean> {
     const approveKeyword = this.startOptions.approveKeyword;
     const takeSnapshots = true;
@@ -593,6 +604,9 @@ export default class Zemu {
       takeSnapshots,
       startImgIndex,
       timeout,
+      true,
+      true,
+      isBlindSigning,
     );
     if (isTouchDevice(this.startOptions.model)) {
       // Avoid taking a snapshot of the final animation
@@ -664,6 +678,7 @@ export default class Zemu {
     timeout = DEFAULT_METHOD_TIMEOUT,
     runLastAction = true,
     waitForInitialEventsChange = true,
+    isBlindSigning = false,
   ): Promise<number> {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`);
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
@@ -701,7 +716,10 @@ export default class Zemu {
 
       const nav: INavElement = {
         type: touchDevice ? ActionKind.Touch : ActionKind.RightClick,
-        button: getTouchElement(this.startOptions.model, ButtonKind.SwipeContinueButton), // For clicks, this will be ignored
+        button:
+          imageIndex === 1 && isBlindSigning
+            ? getTouchElement(this.startOptions.model, ButtonKind.RejectButton)
+            : getTouchElement(this.startOptions.model, ButtonKind.SwipeContinueButton), // Change button based on imageIndex
       };
       await this.runAction(nav, filename, waitForScreenUpdate, true);
       start = new Date();
