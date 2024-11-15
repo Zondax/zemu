@@ -15,13 +15,21 @@
  ******************************************************************************* */
 import Docker, { type Container, type ContainerInfo } from "dockerode";
 import path from "path";
+import { Transform } from "stream";
 
 export const DEV_CERT_PRIVATE_KEY = "ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b";
 export const BOLOS_SDK = "/project/deps/nanos-secure-sdk";
 export const DEFAULT_APP_PATH = "/project/app/bin";
 
 export default class EmuContainer {
-  private logging: boolean;
+  private logger: {
+    enabled: boolean;
+    timestamp: {
+      enabled: boolean;
+      format: "unix" | "iso";
+    };
+  };
+
   private readonly elfLocalPath: string;
   private readonly name: string;
   private readonly image: string;
@@ -33,7 +41,13 @@ export default class EmuContainer {
     this.elfLocalPath = elfLocalPath;
     this.libElfs = libElfs;
     this.name = name;
-    this.logging = false;
+    this.logger = {
+      enabled: false,
+      timestamp: {
+        enabled: false,
+        format: "iso",
+      },
+    };
   }
 
   static killContainerByName(name: string): void {
@@ -83,11 +97,23 @@ export default class EmuContainer {
   }
 
   log(message: string): void {
-    if (this.logging ?? false) process.stdout.write(`${message}\n`);
+    if (this.logger.enabled) {
+      let msg = message;
+
+
+      process.stdout.write(`${msg}\n`);
+    }
   }
 
   async runContainer(options: {
     logging: boolean;
+    logger?: {
+      enabled: boolean;
+      timestamp: {
+        enabled: boolean;
+        format: "unix" | "iso";
+      };
+    };
     custom: string;
     model: string;
     transportPort: string;
@@ -95,7 +121,7 @@ export default class EmuContainer {
   }): Promise<void> {
     const docker = new Docker();
 
-    this.logging = options.logging;
+    this.logger = options.logger ?? { enabled: options.logging, timestamp: { enabled: false, format: "iso" } };
 
     const appFilename = path.basename(this.elfLocalPath);
     const appDir = path.dirname(this.elfLocalPath);
