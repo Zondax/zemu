@@ -43,6 +43,13 @@ export type TModel = "nanos" | "nanosp" | "nanox" | "stax" | "flex";
 
 export interface IStartOptions {
   logging: boolean;
+  logger?: {
+    enabled: boolean;
+    timestamp: {
+      enabled: boolean;
+      format: "unix" | "iso";
+    };
+  };
   startDelay: number;
   custom: string;
   model: TModel;
