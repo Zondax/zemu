@@ -191,11 +191,35 @@ export default class EmuContainer {
 
     this.log(`[ZEMU] Connected ${this.currentContainer.id}`);
 
-    if (this.logging) {
-      this.currentContainer.attach({ stream: true, stdout: true, stderr: true }, (err: any, stream: any) => {
-        if (err != null) throw err;
-        stream.pipe(process.stdout);
+    if (this.logger.enabled) {
+      const timestampTransform = new Transform({
+        transform: (chunk, encoding, callback) => {
+          if (this.logger.timestamp.enabled) {
+            switch (this.logger.timestamp.format) {
+              case "iso":
+                callback(null, `[${new Date().toISOString()}] ${chunk}`);
+                break;
+              case "unix":
+                callback(null, `[${new Date().getTime()}] ${chunk}`);
+                break;
+              default:
+                throw new Error("invalid logger timestamp format");
+            }
+          } else {
+            callback(null, `${chunk}`);
+          }
+        },
       });
+
+      this.currentContainer.attach(
+        { stream: true, stdout: true, stderr: true },
+        (err: any, stream: NodeJS.ReadWriteStream | undefined) => {
+          if (err != null) throw err;
+          if (stream == null) return;
+
+          stream.pipe(timestampTransform).pipe(process.stdout);
+        },
+      );
       this.log(`[ZEMU] Attached ${this.currentContainer.id}`);
     }
 
