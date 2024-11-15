@@ -100,6 +100,18 @@ export default class EmuContainer {
     if (this.logger.enabled) {
       let msg = message;
 
+      if (this.logger.timestamp.enabled) {
+        switch (this.logger.timestamp.format) {
+          case "iso":
+            msg = `[${new Date().toISOString()}] ${message}`;
+            break;
+          case "unix":
+            msg = `[${new Date().getTime()}] ${message}`;
+            break;
+          default:
+            throw new Error("invalid logger timestamp format");
+        }
+      }
 
       process.stdout.write(`${msg}\n`);
     }
