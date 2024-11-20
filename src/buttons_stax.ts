@@ -76,9 +76,10 @@ export namespace stax {
     direction: SwipeDirection.NoSwipe,
   };
 
+  // From y:88 to y:227 (both included), the first switch is toggleable.
   export const toggleOption1: IButton = {
     x: 350,
-    y: 135,
+    y: 88,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
   };
@@ -104,16 +105,17 @@ export namespace stax {
     direction: SwipeDirection.NoSwipe,
   };
 
+  // From y:228 to y:367 (both included), the second switch is toggleable.
   export const toggleOption2: IButton = {
     x: 350,
-    y: 200,
+    y: 228,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
   };
 
   export const toggleOption3: IButton = {
     x: 350,
-    y: 250,
+    y: 368,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
   };
