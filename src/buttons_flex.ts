@@ -76,9 +76,10 @@ export namespace flex {
     direction: SwipeDirection.NoSwipe,
   };
 
+  // From y:96 to y:235 (both included), the first switch is toggleable.
   export const toggleOption1: IButton = {
     x: 415,
-    y: 140,
+    y: 96,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
   };
@@ -104,16 +105,10 @@ export namespace flex {
     direction: SwipeDirection.NoSwipe,
   };
 
+  // From y:236 to y:375 (both included), the second switch is toggleable.
   export const toggleOption2: IButton = {
     x: 350,
-    y: 200,
-    delay: 0.25,
-    direction: SwipeDirection.NoSwipe,
-  };
-
-  export const toggleOption3: IButton = {
-    x: 350,
-    y: 250,
+    y: 236,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
   };
@@ -159,7 +154,6 @@ export namespace flex {
 
     [ButtonKind.ToggleSettingButton1, flex.toggleOption1],
     [ButtonKind.ToggleSettingButton2, flex.toggleOption2],
-    [ButtonKind.ToggleSettingButton3, flex.toggleOption3],
 
     [ButtonKind.NavRightButton, flex.navRightButton],
     [ButtonKind.NavLeftButton, flex.navLeftButton],
