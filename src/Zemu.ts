@@ -279,7 +279,7 @@ export default class Zemu {
   }
 
   log(message: string): void {
-    if (this.startOptions.logging) {
+    if (this.startOptions.logger?.enabled ?? this.startOptions.logging) {
       const currentTimestamp = new Date().toISOString().slice(11, 23);
       process.stdout.write(`[${this.containerName}] ${currentTimestamp}: ${message}\n`);
     }
