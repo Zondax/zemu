@@ -55,6 +55,7 @@ import { ClickNavigation, scheduleToNavElement, TouchNavigation } from "./action
 import { getTouchElement } from "./buttons";
 import {
   ActionKind,
+  areEventsEqual,
   ButtonKind,
   SwipeDirection,
   type IButton,
@@ -93,6 +94,7 @@ export default class Zemu {
 
   public mainMenuSnapshot!: ISnapshot;
   public initialEvents!: IEvent[];
+  private searchedEvents: IEvent[] = [];
 
   constructor(
     elfPath: string,
@@ -124,6 +126,7 @@ export default class Zemu {
 
     this.containerName = BASE_NAME + rndstr.generate(8);
     this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, emuImage, this.containerName);
+    this.searchedEvents = [];
   }
 
   static LoadPng2RGB(filename: string): PNGWithMetadata {
@@ -711,11 +714,28 @@ export default class Zemu {
       imageIndex += 1;
       filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots);
 
-      found = events.some((event: IEvent) => textRegex.test(event.text));
-      if (found) break;
+      for (let i = 0; i < this.searchedEvents.length; i++) {
+        if (!areEventsEqual(this.searchedEvents[i], events[i])) {
+          this.searchedEvents = [];
+          break;
+        }
+      }
 
-      const nav: INavElement = {
-        type: touchDevice ? ActionKind.Touch : ActionKind.RightClick,
+      const nonSearchedEvents = events.slice(this.searchedEvents.length);
+
+      for (const event of nonSearchedEvents) {
+        this.searchedEvents.push(event);
+        if (textRegex.test(event.text)) {
+          found = true;
+          break;
+        }
+      }
+
+      if (found)
+        break;
+
+    const nav: INavElement = {
+      type: touchDevice ? ActionKind.Touch : ActionKind.RightClick,
         button:
           imageIndex === 1 && isBlindSigning
             ? getTouchElement(this.startOptions.model, ButtonKind.RejectButton)

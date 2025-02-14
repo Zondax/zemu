@@ -34,6 +34,16 @@ export interface IEvent {
   h: number;
   clear: boolean;
 }
+
+export function areEventsEqual(event1: IEvent, event2: IEvent): boolean {
+  return event1.text === event2.text &&
+         event1.x === event2.x &&
+         event1.y === event2.y &&
+         event1.w === event2.w &&
+         event1.h === event2.h &&
+         event1.clear === event2.clear;
+}
+
 export interface ISwipeCoordinates {
   x: number;
   y: number;
