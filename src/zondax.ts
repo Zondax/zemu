@@ -51,11 +51,11 @@ export function zondaxToggleBlindSigning(model: TModel, clickArray?: number[]): 
   if (isTouchDevice(model)) {
     return new TouchNavigation(model, [
       ButtonKind.InfoButton,
-      ButtonKind.ToggleSettingButton2,
+      ButtonKind.ToggleSettingButton3,
       ButtonKind.SettingsQuitButton,
     ]);
   }
-  const DEFAULT_BLIND_SIGNING_MODE_CLICKS = [2, 0, -2];
+  const DEFAULT_BLIND_SIGNING_MODE_CLICKS = [2, 0, 5, 0];
   return new ClickNavigation(clickArray ?? DEFAULT_BLIND_SIGNING_MODE_CLICKS);
 }
 
