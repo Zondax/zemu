@@ -97,11 +97,11 @@ export default class EmuContainer {
   }
 
   log(message: string): void {
-    if (this.logger.enabled) {
+    if (this.logger?.enabled) {
       let msg = message;
 
-      if (this.logger.timestamp.enabled) {
-        switch (this.logger.timestamp.format) {
+      if (this.logger?.timestamp.enabled) {
+        switch (this.logger?.timestamp.format) {
           case "iso":
             msg = `[${new Date().toISOString()}] ${message}`;
             break;
@@ -191,11 +191,11 @@ export default class EmuContainer {
 
     this.log(`[ZEMU] Connected ${this.currentContainer.id}`);
 
-    if (this.logger.enabled) {
+    if (this.logger?.enabled) {
       const timestampTransform = new Transform({
         transform: (chunk, encoding, callback) => {
-          if (this.logger.timestamp.enabled) {
-            switch (this.logger.timestamp.format) {
+          if (this.logger?.timestamp.enabled) {
+            switch (this.logger?.timestamp.format) {
               case "iso":
                 callback(null, `[${new Date().toISOString()}] ${chunk}`);
                 break;
