@@ -1,0 +1,8 @@
+{
+  "vitest.enable": true,
+  "vitest.include": ["**/*.{test,spec}.{js,ts,jsx,tsx}"],
+  "vitest.exclude": ["**/node_modules/**", "**/dist/**"],
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  }
+}

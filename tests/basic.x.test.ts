@@ -18,8 +18,14 @@
 import Zemu, { DEFAULT_START_OPTIONS, IStartOptions } from "../src";
 
 import { resolve } from "path";
+import { describe, test, expect, beforeAll, vi } from "vitest";
 
-jest.setTimeout(60000);
+// Set global test timeout
+beforeAll(() => {
+  // 60 second timeout (same as the previous jest.setTimeout)
+  vi.setConfig({ testTimeout: 60000 });
+});
+
 const DEMO_APP_PATH_X = resolve("bin/demoAppX.elf");
 
 const APP_SEED = "equip will roof matter pink blind book anxiety banner elbow sun young";

@@ -7,6 +7,7 @@ const catchExit = async () => {
   });
 };
 
-module.exports = async () => {
+// Export as default for Vitest
+export default async () => {
   await catchExit();
 };

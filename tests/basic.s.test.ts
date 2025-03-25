@@ -20,8 +20,14 @@ import Zemu, { DEFAULT_START_OPTIONS, IStartOptions } from "../src";
 import MinimalApp from "./minapp";
 
 import { resolve } from "path";
+import { describe, test, expect, beforeAll, vi } from "vitest";
 
-jest.setTimeout(60000);
+// Set global test timeout
+beforeAll(() => {
+  // 60 second timeout (same as the previous jest.setTimeout)
+  vi.setConfig({ testTimeout: 60000 });
+});
+
 const DEMO_APP_PATH_S = resolve("bin/demoAppS.elf");
 const DEMO_APP2_PATH_S = resolve("bin/app_s.elf");
 

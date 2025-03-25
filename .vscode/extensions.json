@@ -1,0 +1,20 @@
+{
+  "recommendations": [
+    // Code formatting & linting
+    "dbaeumer.vscode-eslint", // ESLint integration
+    "esbenp.prettier-vscode", // Prettier code formatting
+
+    // Bun support
+    "oven.bun-vscode",
+
+    // Testing
+    "vitest.explorer", // Vitest test explorer
+
+    // compare folders
+    "moshfeu.compare-folders",
+
+    // Productivity
+    "streetsidesoftware.code-spell-checker", // Spell checking
+    "yoavbls.pretty-ts-errors" // Better TypeScript errors
+  ]
+}

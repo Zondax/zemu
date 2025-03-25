@@ -1,0 +1,32 @@
+name: Publish package
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - '**'
+  release:
+    types:
+      - created
+    tags:
+      - "v[0-9]+(\\.[0-9]+)*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ts-checks:
+    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@main
+    with:
+      disable_linting: true
+      disable_tests: true
+
+  publish:
+    uses: zondax/_workflows/.github/workflows/_publish-npm.yaml@main
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN_PUBLISH_AUTO }}
+    if: github.event_name == 'release'
+    needs: [ts-checks]
