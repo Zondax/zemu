@@ -297,7 +297,6 @@ export default class Zemu {
   }
 
   async close(): Promise<void> {
-    this.log("Close");
     await this.emuContainer.stop();
     this.stopGRPCServer();
   }
