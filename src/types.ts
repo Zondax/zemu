@@ -80,7 +80,7 @@ export interface INavElement {
   button: IButton;
 }
 
-export const enum SwipeDirection {
+export enum SwipeDirection {
   NoSwipe = 0,
   SwipeUp,
   SwipeDown,
@@ -88,14 +88,14 @@ export const enum SwipeDirection {
   SwipeLeft,
 }
 
-export const enum ActionKind {
+export enum ActionKind {
   LeftClick = 0,
   RightClick,
   BothClick,
   Touch,
 }
 
-export const enum ButtonKind {
+export enum ButtonKind {
   InfoButton = 0,
   QuitAppButton,
 
