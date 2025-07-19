@@ -24,6 +24,7 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
       - run: pnpm install
+      - run: pnpm check
       - run: pnpm build
       - run: pnpm test
 
@@ -45,6 +46,7 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
       - run: pnpm install
+      - run: pnpm check
       - run: pnpm build
       - run: mv README-npm README.md
       - name: Get latest release version number

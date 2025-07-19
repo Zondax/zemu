@@ -14,70 +14,70 @@
  *  limitations under the License.
  ******************************************************************************* */
 export interface IDeviceWindow {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 export interface ISnapshot {
-  width: number;
-  height: number;
-  data: Buffer;
+  width: number
+  height: number
+  data: Buffer
 }
 
 export interface IEvent {
-  text: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  clear: boolean;
+  text: string
+  x: number
+  y: number
+  w: number
+  h: number
+  clear: boolean
 }
 export interface ISwipeCoordinates {
-  x: number;
-  y: number;
+  x: number
+  y: number
 }
 
-export type TModel = "nanos" | "nanosp" | "nanox" | "stax" | "flex";
+export type TModel = "nanos" | "nanosp" | "nanox" | "stax" | "flex"
 
 export interface IStartOptions {
-  logging: boolean;
+  logging: boolean
   logger?: {
-    enabled: boolean;
+    enabled: boolean
     timestamp: {
-      enabled: boolean;
-      format: "unix" | "iso";
-    };
-  };
-  startDelay: number;
-  custom: string;
-  model: TModel;
-  sdk: string;
-  startText: string;
-  caseSensitive: boolean;
-  startTimeout: number;
-  approveAction: ButtonKind;
-  approveKeyword: string;
-  rejectKeyword: string;
+      enabled: boolean
+      format: "unix" | "iso"
+    }
+  }
+  startDelay: number
+  custom: string
+  model: TModel
+  sdk: string
+  startText: string
+  caseSensitive: boolean
+  startTimeout: number
+  approveAction: ButtonKind
+  approveKeyword: string
+  rejectKeyword: string
 }
 
 export interface IDeviceModel {
-  name: TModel;
-  prefix: string;
-  path: string;
+  name: TModel
+  prefix: string
+  path: string
 }
 
 export interface IButton {
-  x: number;
-  y: number;
-  delay: number;
-  direction: SwipeDirection;
+  x: number
+  y: number
+  delay: number
+  direction: SwipeDirection
 }
 
 export interface INavElement {
-  type: ActionKind;
-  button: IButton;
+  type: ActionKind
+  button: IButton
 }
 
 export enum SwipeDirection {

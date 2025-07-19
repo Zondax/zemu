@@ -13,50 +13,45 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import axios, { type AxiosResponse } from "axios";
-import axiosRetry from "axios-retry";
-import fs from "fs-extra";
-import getPort from "get-port";
-import { PNG, type PNGWithMetadata } from "pngjs";
 
-import type Transport from "@ledgerhq/hw-transport";
-import HttpTransport from "@ledgerhq/hw-transport-http";
-
+import { resolve } from "node:path"
+import type Transport from "@ledgerhq/hw-transport"
+import HttpTransport from "@ledgerhq/hw-transport-http"
+import axios, { type AxiosResponse } from "axios"
+import axiosRetry from "axios-retry"
 // @ts-expect-error typings are missing
-import elfy from "elfy";
-import { resolve } from "path";
-import rndstr from "randomstring";
-
+import elfy from "elfy"
+import fs from "fs-extra"
+import getPort from "get-port"
+import { PNG, type PNGWithMetadata } from "pngjs"
+import rndstr from "randomstring"
+import { ClickNavigation, scheduleToNavElement, TouchNavigation } from "./actions"
+import { getTouchElement } from "./buttons"
 import {
   BASE_NAME,
   DEFAULT_EMU_IMG,
   DEFAULT_HOST,
   DEFAULT_KEY_DELAY,
   DEFAULT_METHOD_TIMEOUT,
-  KILL_TIMEOUT,
-  WINDOW_STAX,
-  WINDOW_S,
-  WINDOW_X,
-  WINDOW_FLEX,
-  DEFAULT_STAX_APPROVE_KEYWORD,
-  DEFAULT_STAX_REJECT_KEYWORD,
   DEFAULT_NANO_APPROVE_KEYWORD,
   DEFAULT_NANO_REJECT_KEYWORD,
-  DEFAULT_WAIT_TIMEOUT,
-  DEFAULT_STAX_START_TEXT,
   DEFAULT_NANO_START_TEXT,
   DEFAULT_PENDING_REVIEW_TEXT,
-} from "./constants";
-
-import EmuContainer from "./emulator";
-import GRPCRouter from "./grpc";
-
-import { ClickNavigation, scheduleToNavElement, TouchNavigation } from "./actions";
-import { getTouchElement } from "./buttons";
+  DEFAULT_STAX_APPROVE_KEYWORD,
+  DEFAULT_STAX_REJECT_KEYWORD,
+  DEFAULT_STAX_START_TEXT,
+  DEFAULT_WAIT_TIMEOUT,
+  KILL_TIMEOUT,
+  WINDOW_FLEX,
+  WINDOW_S,
+  WINDOW_STAX,
+  WINDOW_X,
+} from "./constants"
+import EmuContainer from "./emulator"
+import GRPCRouter from "./grpc"
 import {
   ActionKind,
   ButtonKind,
-  SwipeDirection,
   type IButton,
   type IDeviceWindow,
   type IEvent,
@@ -64,35 +59,31 @@ import {
   type ISnapshot,
   type IStartOptions,
   type ISwipeCoordinates,
+  SwipeDirection,
   type TModel,
-} from "./types";
-import {
-  isTouchDevice,
-  zondaxToggleBlindSigning,
-  zondaxToggleExpertMode,
-  zondaxTouchEnableSpecialMode,
-} from "./zondax";
+} from "./types"
+import { isTouchDevice, zondaxToggleBlindSigning, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from "./zondax"
 
 export default class Zemu {
-  public startOptions!: IStartOptions;
+  public startOptions!: IStartOptions
 
-  private readonly host: string;
-  public transport!: Transport;
-  private readonly transportProtocol: string = "http";
-  public transportPort!: number;
-  public speculosApiPort!: number;
-  private readonly desiredTransportPort?: number;
-  private readonly desiredSpeculosApiPort?: number;
+  private readonly host: string
+  public transport!: Transport
+  private readonly transportProtocol: string = "http"
+  public transportPort!: number
+  public speculosApiPort!: number
+  private readonly desiredTransportPort?: number
+  private readonly desiredSpeculosApiPort?: number
 
-  private readonly emuContainer: EmuContainer;
-  public readonly containerName: string;
+  private readonly emuContainer: EmuContainer
+  public readonly containerName: string
 
-  public readonly elfPath: string;
-  public readonly libElfs: Record<string, string>;
-  private grpcManager?: GRPCRouter;
+  public readonly elfPath: string
+  public readonly libElfs: Record<string, string>
+  private grpcManager?: GRPCRouter
 
-  public mainMenuSnapshot!: ISnapshot;
-  public initialEvents!: IEvent[];
+  public mainMenuSnapshot!: ISnapshot
+  public initialEvents!: IEvent[]
 
   constructor(
     elfPath: string,
@@ -102,50 +93,50 @@ export default class Zemu {
     desiredSpeculosApiPort?: number,
     emuImage: string = DEFAULT_EMU_IMG,
   ) {
-    this.host = host;
-    this.desiredTransportPort = desiredTransportPort;
-    this.desiredSpeculosApiPort = desiredSpeculosApiPort;
-    this.elfPath = elfPath;
-    this.libElfs = libElfs;
+    this.host = host
+    this.desiredTransportPort = desiredTransportPort
+    this.desiredSpeculosApiPort = desiredSpeculosApiPort
+    this.elfPath = elfPath
+    this.libElfs = libElfs
 
     if (this.elfPath == null) {
-      throw new Error("elfPath cannot be null!");
+      throw new Error("elfPath cannot be null!")
     }
 
     if (!fs.existsSync(this.elfPath)) {
-      throw new Error("elf file was not found! Did you compile?");
+      throw new Error("elf file was not found! Did you compile?")
     }
 
     Object.keys(libElfs).forEach((libName) => {
       if (!fs.existsSync(libElfs[libName])) {
-        throw new Error("lib elf file was not found! Did you compile?");
+        throw new Error("lib elf file was not found! Did you compile?")
       }
-    });
+    })
 
-    this.containerName = BASE_NAME + rndstr.generate(8);
-    this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, emuImage, this.containerName);
+    this.containerName = BASE_NAME + rndstr.generate(8)
+    this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, emuImage, this.containerName)
   }
 
   static LoadPng2RGB(filename: string): PNGWithMetadata {
-    const tmpBuffer = fs.readFileSync(filename);
-    return PNG.sync.read(tmpBuffer);
+    const tmpBuffer = fs.readFileSync(filename)
+    return PNG.sync.read(tmpBuffer)
   }
 
   static async sleep(timeInMs: number = DEFAULT_KEY_DELAY): Promise<void> {
-    await new Promise<void>((resolve) => setTimeout(resolve, timeInMs));
+    await new Promise<void>((resolve) => setTimeout(resolve, timeInMs))
   }
 
   static stopAllEmuContainers(): void {
-    const timer = setTimeout(function () {
-      console.log("Could not kill all containers before timeout!");
-      process.exit(1);
-    }, KILL_TIMEOUT);
-    EmuContainer.killContainerByName(BASE_NAME);
-    clearTimeout(timer);
+    const timer = setTimeout(() => {
+      console.log("Could not kill all containers before timeout!")
+      process.exit(1)
+    }, KILL_TIMEOUT)
+    EmuContainer.killContainerByName(BASE_NAME)
+    clearTimeout(timer)
   }
 
   static async checkAndPullImage(): Promise<void> {
-    await EmuContainer.checkAndPullImage(DEFAULT_EMU_IMG);
+    await EmuContainer.checkAndPullImage(DEFAULT_EMU_IMG)
   }
 
   static checkElf(model: TModel, elfPath: string): void {
@@ -155,303 +146,303 @@ export default class Zemu {
       nanosp: 0xc0de0001,
       stax: 0xc0de0001,
       flex: 0xc0de0001,
-    };
-    const elfApp = fs.readFileSync(elfPath);
-    const elfInfo = elfy.parse(elfApp);
+    }
+    const elfApp = fs.readFileSync(elfPath)
+    const elfInfo = elfy.parse(elfApp)
 
     if (elfInfo.entry !== elfsModel[model]) {
-      throw new Error(`Are you sure is a ${model} app elf?`);
+      throw new Error(`Are you sure is a ${model} app elf?`)
     }
   }
 
   async start(options: IStartOptions): Promise<void> {
-    this.startOptions = options;
-    const approveWord = options.approveKeyword;
-    const rejectWord = options.rejectKeyword;
+    this.startOptions = options
+    const approveWord = options.approveKeyword
+    const rejectWord = options.rejectKeyword
     if (isTouchDevice(options.model)) {
-      this.startOptions.approveKeyword = approveWord.length === 0 ? DEFAULT_STAX_APPROVE_KEYWORD : approveWord;
-      this.startOptions.rejectKeyword = rejectWord.length === 0 ? DEFAULT_STAX_REJECT_KEYWORD : rejectWord;
+      this.startOptions.approveKeyword = approveWord.length === 0 ? DEFAULT_STAX_APPROVE_KEYWORD : approveWord
+      this.startOptions.rejectKeyword = rejectWord.length === 0 ? DEFAULT_STAX_REJECT_KEYWORD : rejectWord
     } else {
-      this.startOptions.approveKeyword = approveWord.length === 0 ? DEFAULT_NANO_APPROVE_KEYWORD : approveWord;
-      this.startOptions.rejectKeyword = rejectWord.length === 0 ? DEFAULT_NANO_REJECT_KEYWORD : rejectWord;
+      this.startOptions.approveKeyword = approveWord.length === 0 ? DEFAULT_NANO_APPROVE_KEYWORD : approveWord
+      this.startOptions.rejectKeyword = rejectWord.length === 0 ? DEFAULT_NANO_REJECT_KEYWORD : rejectWord
     }
 
-    this.log(`Checking ELF`);
-    Zemu.checkElf(this.startOptions.model, this.elfPath);
+    this.log(`Checking ELF`)
+    Zemu.checkElf(this.startOptions.model, this.elfPath)
 
     try {
-      await this.assignPortsToListen();
+      await this.assignPortsToListen()
 
       if (this.transportPort === undefined || this.speculosApiPort === undefined) {
-        const e = new Error("The Speculos API port or/and transport port couldn't be reserved");
-        this.log(`[ZEMU] ${e}`);
-        throw e;
+        const e = new Error("The Speculos API port or/and transport port couldn't be reserved")
+        this.log(`[ZEMU] ${e}`)
+        throw e
       }
 
-      this.log(`Starting Container`);
+      this.log(`Starting Container`)
       await this.emuContainer.runContainer({
         ...this.startOptions,
         transportPort: this.transportPort.toString(),
         speculosApiPort: this.speculosApiPort.toString(),
-      });
+      })
 
-      this.log(`Connecting to container`);
+      this.log(`Connecting to container`)
       await this.connect().catch(async (error) => {
-        this.log(`${error}`);
-        await this.close();
-        throw error;
-      });
+        this.log(`${error}`)
+        await this.close()
+        throw error
+      })
 
       // Captures main screen
-      this.log(`Wait for start text`);
+      this.log(`Wait for start text`)
 
       if (this.startOptions.startText.length === 0) {
         this.startOptions.startText = isTouchDevice(this.startOptions.model)
           ? DEFAULT_STAX_START_TEXT
-          : DEFAULT_NANO_START_TEXT;
+          : DEFAULT_NANO_START_TEXT
       }
-      const start = new Date();
-      let found = false;
-      let reviewPendingFound = false;
-      const flags = !this.startOptions.caseSensitive ? "i" : "";
-      const startRegex = new RegExp(this.startOptions.startText, flags);
-      const reviewPendingRegex = new RegExp(DEFAULT_PENDING_REVIEW_TEXT, flags);
+      const start = new Date()
+      let found = false
+      let reviewPendingFound = false
+      const flags = !this.startOptions.caseSensitive ? "i" : ""
+      const startRegex = new RegExp(this.startOptions.startText, flags)
+      const reviewPendingRegex = new RegExp(DEFAULT_PENDING_REVIEW_TEXT, flags)
 
       while (!found) {
-        const currentTime = new Date();
-        const elapsed = currentTime.getTime() - start.getTime();
+        const currentTime = new Date()
+        const elapsed = currentTime.getTime() - start.getTime()
         if (elapsed > this.startOptions.startTimeout) {
           throw new Error(
             `Timeout (${this.startOptions.startTimeout}) waiting for text (${this.startOptions.startText})`,
-          );
+          )
         }
-        const events = await this.getEvents();
+        const events = await this.getEvents()
         if (!reviewPendingFound && events.some((event: IEvent) => reviewPendingRegex.test(event.text))) {
           const nav = isTouchDevice(this.startOptions.model)
             ? new TouchNavigation(this.startOptions.model, [ButtonKind.ConfirmYesButton])
-            : new ClickNavigation([0]);
-          await this.navigate("", "", nav.schedule, true, false);
-          reviewPendingFound = true;
+            : new ClickNavigation([0])
+          await this.navigate("", "", nav.schedule, true, false)
+          reviewPendingFound = true
         }
-        found = events.some((event: IEvent) => startRegex.test(event.text));
-        await Zemu.sleep();
+        found = events.some((event: IEvent) => startRegex.test(event.text))
+        await Zemu.sleep()
       }
 
-      this.log(`Get initial snapshot and events`);
-      this.mainMenuSnapshot = await this.snapshot();
-      this.initialEvents = await this.getEvents();
+      this.log(`Get initial snapshot and events`)
+      this.mainMenuSnapshot = await this.snapshot()
+      this.initialEvents = await this.getEvents()
     } catch (e) {
-      this.log(`[ZEMU] ${e}`);
-      throw e;
+      this.log(`[ZEMU] ${e}`)
+      throw e
     }
   }
 
   async connect(): Promise<void> {
-    const transportUrl = `${this.transportProtocol}://${this.host}:${this.transportPort}`;
-    const start = new Date();
-    let connected = false;
-    const maxWait = this.startOptions.startDelay;
+    const transportUrl = `${this.transportProtocol}://${this.host}:${this.transportPort}`
+    const start = new Date()
+    let connected = false
+    const maxWait = this.startOptions.startDelay
 
     while (!connected) {
-      const currentTime = new Date();
-      const elapsed = currentTime.getTime() - start.getTime();
+      const currentTime = new Date()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > maxWait) {
-        throw new Error("Timeout waiting to connect");
+        throw new Error("Timeout waiting to connect")
       }
 
       try {
-        this.transport = await HttpTransport(transportUrl).open(transportUrl);
-        connected = true;
+        this.transport = await HttpTransport(transportUrl).open(transportUrl)
+        connected = true
       } catch (e) {
-        this.log(`WAIT ${this.containerName} ${elapsed} - ${e} ${transportUrl}`);
-        connected = false;
+        this.log(`WAIT ${this.containerName} ${elapsed} - ${e} ${transportUrl}`)
+        connected = false
       }
 
-      await Zemu.sleep();
+      await Zemu.sleep()
     }
   }
 
   private async assignPortsToListen(): Promise<void> {
     if (this.transportPort === undefined || this.speculosApiPort === undefined) {
-      this.transportPort = await getPort({ port: this.desiredTransportPort });
-      this.speculosApiPort = await getPort({ port: this.desiredSpeculosApiPort });
+      this.transportPort = await getPort({ port: this.desiredTransportPort })
+      this.speculosApiPort = await getPort({ port: this.desiredSpeculosApiPort })
     }
   }
 
   log(message: string): void {
     if (this.startOptions.logger?.enabled ?? this.startOptions.logging) {
-      const currentTimestamp = new Date().toISOString().slice(11, 23);
-      process.stdout.write(`[${this.containerName}] ${currentTimestamp}: ${message}\n`);
+      const currentTimestamp = new Date().toISOString().slice(11, 23)
+      process.stdout.write(`[${this.containerName}] ${currentTimestamp}: ${message}\n`)
     }
   }
 
   startGRPCServer(ip: string, port: number): void {
-    this.grpcManager = new GRPCRouter(ip, port, this.transport);
-    this.grpcManager.startServer();
+    this.grpcManager = new GRPCRouter(ip, port, this.transport)
+    this.grpcManager.startServer()
   }
 
   stopGRPCServer(): void {
     if (this.grpcManager != null) {
-      this.grpcManager.stopServer();
+      this.grpcManager.stopServer()
     }
   }
 
   async close(): Promise<void> {
-    await this.emuContainer.stop();
-    this.stopGRPCServer();
+    await this.emuContainer.stop()
+    this.stopGRPCServer()
   }
 
   getTransport(): Transport {
-    if (this.transport == null) throw new Error("Transport is not loaded.");
-    return this.transport;
+    if (this.transport == null) throw new Error("Transport is not loaded.")
+    return this.transport
   }
 
   getWindowRect(): IDeviceWindow {
     switch (this.startOptions.model) {
       case "nanos":
-        return WINDOW_S;
+        return WINDOW_S
       case "nanox":
       case "nanosp":
-        return WINDOW_X;
+        return WINDOW_X
       case "stax":
-        return WINDOW_STAX;
+        return WINDOW_STAX
       case "flex":
-        return WINDOW_FLEX;
+        return WINDOW_FLEX
       default:
-        throw new Error(`model ${this.startOptions.model} not recognized`);
+        throw new Error(`model ${this.startOptions.model} not recognized`)
     }
   }
 
   async fetchSnapshot(url: string): Promise<AxiosResponse<Buffer, any>> {
     // Exponential back-off retry delay between requests
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay });
+    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
 
     return await axios({
       method: "GET",
       url,
       responseType: "arraybuffer",
-    });
+    })
   }
 
   saveSnapshot(arrayBuffer: Buffer, filePath: string): void {
-    fs.writeFileSync(filePath, Buffer.from(arrayBuffer), "binary");
+    fs.writeFileSync(filePath, Buffer.from(arrayBuffer), "binary")
   }
 
   convertBufferToPNG(arrayBuffer: Buffer): PNGWithMetadata {
-    return PNG.sync.read(Buffer.from(arrayBuffer));
+    return PNG.sync.read(Buffer.from(arrayBuffer))
   }
 
   async snapshot(filename: string = ""): Promise<ISnapshot> {
-    const snapshotUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/screenshot`;
-    const { data } = await this.fetchSnapshot(snapshotUrl);
-    const modelWindow = this.getWindowRect();
+    const snapshotUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/screenshot`
+    const { data } = await this.fetchSnapshot(snapshotUrl)
+    const modelWindow = this.getWindowRect()
 
-    if (filename !== "") this.saveSnapshot(data, filename);
+    if (filename !== "") this.saveSnapshot(data, filename)
 
     const rect: ISnapshot = {
       height: modelWindow.height,
       width: modelWindow.width,
       data,
-    };
+    }
 
-    return rect;
+    return rect
   }
 
   getMainMenuSnapshot(): ISnapshot {
-    return this.mainMenuSnapshot;
+    return this.mainMenuSnapshot
   }
 
   async waitUntilScreenIs(screen: ISnapshot, timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
-    const start = new Date();
+    const start = new Date()
 
-    const inputSnapshotBufferHex = screen.data;
-    let currentSnapshotBufferHex = (await this.snapshot("")).data;
+    const inputSnapshotBufferHex = screen.data
+    let currentSnapshotBufferHex = (await this.snapshot("")).data
 
-    this.log(`Wait until screen is`);
+    this.log(`Wait until screen is`)
 
     while (!inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
-      const currentTime = new Date();
-      const elapsed = currentTime.getTime() - start.getTime();
+      const currentTime = new Date()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
-        this.log("Timeout waiting for screen to be");
-        throw new Error(`Timeout waiting for screen to be (${timeout} ms)`);
+        this.log("Timeout waiting for screen to be")
+        throw new Error(`Timeout waiting for screen to be (${timeout} ms)`)
       }
-      await Zemu.sleep();
-      this.log(`Check [${elapsed}ms]`);
-      currentSnapshotBufferHex = (await this.snapshot()).data;
+      await Zemu.sleep()
+      this.log(`Check [${elapsed}ms]`)
+      currentSnapshotBufferHex = (await this.snapshot()).data
     }
-    this.log(`Screen matches`);
+    this.log(`Screen matches`)
   }
 
   async waitUntilScreenIsNot(screen: ISnapshot, timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
-    const start = new Date();
+    const start = new Date()
 
-    const inputSnapshotBufferHex = screen.data;
-    let currentSnapshotBufferHex = (await this.snapshot("")).data;
+    const inputSnapshotBufferHex = screen.data
+    let currentSnapshotBufferHex = (await this.snapshot("")).data
 
-    this.log(`Wait until screen is not`);
+    this.log(`Wait until screen is not`)
 
     while (inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
-      const currentTime = new Date();
-      const elapsed = currentTime.getTime() - start.getTime();
+      const currentTime = new Date()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
-        this.log("Timeout waiting for screen to be not");
-        throw new Error(`Timeout waiting for screen to be not (${timeout} ms)`);
+        this.log("Timeout waiting for screen to be not")
+        throw new Error(`Timeout waiting for screen to be not (${timeout} ms)`)
       }
-      await Zemu.sleep();
-      this.log(`Check [${elapsed}ms]`);
-      currentSnapshotBufferHex = (await this.snapshot()).data;
+      await Zemu.sleep()
+      this.log(`Check [${elapsed}ms]`)
+      currentSnapshotBufferHex = (await this.snapshot()).data
     }
-    this.log(`Screen changed`);
+    this.log(`Screen changed`)
   }
 
   eventsAreEqual(events1: IEvent[], events2: IEvent[]): boolean {
-    if (events1.length !== events2.length) return false;
+    if (events1.length !== events2.length) return false
     for (let i = 0; i < events1.length; i++) {
-      if (events1[i].x !== events2[i].x) return false;
-      if (events1[i].y !== events2[i].y) return false;
-      if (events1[i].text !== events2[i].text) return false;
+      if (events1[i].x !== events2[i].x) return false
+      if (events1[i].y !== events2[i].y) return false
+      if (events1[i].text !== events2[i].text) return false
     }
-    return true;
+    return true
   }
 
   async waitForScreenChanges(prevEvents: IEvent[], timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
-    let currEvents = await this.getEvents();
-    const startTime = new Date();
+    let currEvents = await this.getEvents()
+    const startTime = new Date()
 
-    this.log(`Wait for screen changes`);
+    this.log(`Wait for screen changes`)
 
     while (this.eventsAreEqual(prevEvents, currEvents)) {
-      const elapsed = new Date().getTime() - startTime.getTime();
+      const elapsed = Date.now() - startTime.getTime()
       if (elapsed > timeout) {
-        this.log("Timeout waiting for screen to change");
-        throw new Error(`Timeout waiting for screen to change (${timeout} ms)`);
+        this.log("Timeout waiting for screen to change")
+        throw new Error(`Timeout waiting for screen to change (${timeout} ms)`)
       }
-      await Zemu.sleep();
-      this.log(`Check [${elapsed}ms]`);
-      currEvents = await this.getEvents();
+      await Zemu.sleep()
+      this.log(`Check [${elapsed}ms]`)
+      currEvents = await this.getEvents()
     }
-    this.log(JSON.stringify(currEvents));
-    this.log("Events changed");
+    this.log(JSON.stringify(currEvents))
+    this.log("Events changed")
   }
 
   formatIndexString(i: number): string {
-    return `${i}`.padStart(5, "0");
+    return `${i}`.padStart(5, "0")
   }
 
   getSnapshotPath(snapshotPrefix: string, index: number, takeSnapshots: boolean): string {
-    return takeSnapshots ? `${snapshotPrefix}/${this.formatIndexString(index)}.png` : "";
+    return takeSnapshots ? `${snapshotPrefix}/${this.formatIndexString(index)}.png` : ""
   }
 
   async toggleExpertMode(testcaseName = "", takeSnapshots = false, startImgIndex = 0): Promise<number> {
-    const nav = zondaxToggleExpertMode(this.startOptions.model);
-    return await this.navigate(".", testcaseName, nav.schedule, true, takeSnapshots, startImgIndex);
+    const nav = zondaxToggleExpertMode(this.startOptions.model)
+    return await this.navigate(".", testcaseName, nav.schedule, true, takeSnapshots, startImgIndex)
   }
 
   async toggleBlindSigning(testcaseName = "", takeSnapshots = false, startImgIndex = 0): Promise<number> {
-    const nav = zondaxToggleBlindSigning(this.startOptions.model);
-    return await this.navigate(".", testcaseName, nav.schedule, true, takeSnapshots, startImgIndex);
+    const nav = zondaxToggleBlindSigning(this.startOptions.model)
+    return await this.navigate(".", testcaseName, nav.schedule, true, takeSnapshots, startImgIndex)
   }
 
   async enableSpecialMode(
@@ -466,7 +457,7 @@ export default class Zemu {
     timeout = DEFAULT_METHOD_TIMEOUT,
   ): Promise<number> {
     if (!isTouchDevice(this.startOptions.model)) {
-      const expertImgIndex = await this.toggleExpertMode(testcaseName, takeSnapshots, startImgIndex);
+      const expertImgIndex = await this.toggleExpertMode(testcaseName, takeSnapshots, startImgIndex)
       let tmpImgIndex = await this.navigateUntilText(
         path,
         testcaseName,
@@ -476,11 +467,11 @@ export default class Zemu {
         expertImgIndex,
         timeout,
         !nanoIsSecretMode,
-      );
+      )
       if (nanoIsSecretMode) {
-        const secretClicks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // 10 double clicks
+        const secretClicks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // 10 double clicks
         // do not wait for screen update
-        tmpImgIndex = await this.navigate(path, testcaseName, secretClicks, false, takeSnapshots, tmpImgIndex);
+        tmpImgIndex = await this.navigate(path, testcaseName, secretClicks, false, takeSnapshots, tmpImgIndex)
       }
       return await this.navigateUntilText(
         ".",
@@ -490,10 +481,10 @@ export default class Zemu {
         takeSnapshots,
         tmpImgIndex,
         timeout,
-      );
+      )
     } else {
-      const nav = zondaxTouchEnableSpecialMode(this.startOptions.model, touchToggleSettingButton);
-      return await this.navigate(path, testcaseName, nav.schedule, waitForScreenUpdate, takeSnapshots, startImgIndex);
+      const nav = zondaxTouchEnableSpecialMode(this.startOptions.model, touchToggleSettingButton)
+      return await this.navigate(path, testcaseName, nav.schedule, waitForScreenUpdate, takeSnapshots, startImgIndex)
     }
   }
 
@@ -506,44 +497,44 @@ export default class Zemu {
     startImgIndex = 0,
     waitForEventsChange = false,
   ): Promise<number> {
-    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`);
-    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
+    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
-    const navSchedule = scheduleToNavElement(navigateSchedule);
+    const navSchedule = scheduleToNavElement(navigateSchedule)
 
     if (takeSnapshots) {
-      fs.ensureDirSync(snapshotPrefixGolden);
-      fs.ensureDirSync(snapshotPrefixTmp);
+      fs.ensureDirSync(snapshotPrefixGolden)
+      fs.ensureDirSync(snapshotPrefixTmp)
     }
-    let imageIndex = startImgIndex;
-    let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots);
-    this.log(`---------------------------`);
-    this.log(`Start        ${filename}`);
-    await this.snapshot(filename);
-    this.log(`Instructions ${navSchedule}`);
+    let imageIndex = startImgIndex
+    let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
+    this.log(`---------------------------`)
+    this.log(`Start        ${filename}`)
+    await this.snapshot(filename)
+    this.log(`Instructions ${navSchedule}`)
 
     for (const nav of navSchedule) {
-      imageIndex += 1;
-      filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots);
-      await this.runAction(nav, filename, waitForScreenUpdate, waitForEventsChange);
+      imageIndex += 1
+      filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
+      await this.runAction(nav, filename, waitForScreenUpdate, waitForEventsChange)
     }
 
-    return imageIndex;
+    return imageIndex
   }
 
   async takeSnapshotAndOverwrite(path: string, testcaseName: string, imageIndex: number): Promise<void> {
-    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
-    fs.ensureDirSync(snapshotPrefixTmp);
-    const filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, true);
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
+    fs.ensureDirSync(snapshotPrefixTmp)
+    const filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, true)
 
     try {
-      if (filename === "") throw new Error("Snapshot filename not defined");
-      fs.unlinkSync(filename);
+      if (filename === "") throw new Error("Snapshot filename not defined")
+      fs.unlinkSync(filename)
     } catch (err) {
-      this.log(`${err}`);
-      throw new Error("Snapshot does not exist");
+      this.log(`${err}`)
+      throw new Error("Snapshot does not exist")
     }
-    await this.snapshot(filename);
+    await this.snapshot(filename)
   }
 
   async navigateAndCompareSnapshots(
@@ -553,7 +544,7 @@ export default class Zemu {
     waitForScreenUpdate = true,
     startImgIndex = 0,
   ): Promise<boolean> {
-    const takeSnapshots = true;
+    const takeSnapshots = true
     const lastImgIndex = await this.navigate(
       path,
       testcaseName,
@@ -561,28 +552,28 @@ export default class Zemu {
       waitForScreenUpdate,
       takeSnapshots,
       startImgIndex,
-    );
-    return this.compareSnapshots(path, testcaseName, lastImgIndex);
+    )
+    return this.compareSnapshots(path, testcaseName, lastImgIndex)
   }
 
   compareSnapshots(path: string, testcaseName: string, lastSnapshotIdx: number): boolean {
-    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`);
-    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
+    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
-    this.log(`golden      ${snapshotPrefixGolden}`);
-    this.log(`tmp         ${snapshotPrefixTmp}`);
+    this.log(`golden      ${snapshotPrefixGolden}`)
+    this.log(`tmp         ${snapshotPrefixTmp}`)
 
-    this.log(`Start comparison`);
+    this.log(`Start comparison`)
     for (let j = 0; j <= lastSnapshotIdx; j += 1) {
-      this.log(`Checked     ${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`);
-      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`);
-      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${this.formatIndexString(j)}.png`);
+      this.log(`Checked     ${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`)
+      const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`)
+      const img2 = Zemu.LoadPng2RGB(`${snapshotPrefixGolden}/${this.formatIndexString(j)}.png`)
 
       if (!img1.data.equals(img2.data)) {
-        throw new Error(`Image [${this.formatIndexString(j)}] do not match!`);
+        throw new Error(`Image [${this.formatIndexString(j)}] do not match!`)
       }
     }
-    return true;
+    return true
   }
 
   async compareSnapshotsAndApprove(
@@ -593,8 +584,8 @@ export default class Zemu {
     timeout = DEFAULT_METHOD_TIMEOUT,
     isBlindSigning = false,
   ): Promise<boolean> {
-    const approveKeyword = this.startOptions.approveKeyword;
-    const takeSnapshots = true;
+    const approveKeyword = this.startOptions.approveKeyword
+    const takeSnapshots = true
     const lastSnapshotIdx = await this.navigateUntilText(
       path,
       testcaseName,
@@ -606,13 +597,13 @@ export default class Zemu {
       true,
       true,
       isBlindSigning,
-    );
+    )
     if (isTouchDevice(this.startOptions.model)) {
       // Avoid taking a snapshot of the final animation
-      await this.waitUntilScreenIs(this.mainMenuSnapshot);
-      await this.takeSnapshotAndOverwrite(path, testcaseName, lastSnapshotIdx);
+      await this.waitUntilScreenIs(this.mainMenuSnapshot)
+      await this.takeSnapshotAndOverwrite(path, testcaseName, lastSnapshotIdx)
     }
-    return this.compareSnapshots(path, testcaseName, lastSnapshotIdx);
+    return this.compareSnapshots(path, testcaseName, lastSnapshotIdx)
   }
 
   async compareSnapshotsAndReject(
@@ -622,7 +613,7 @@ export default class Zemu {
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
   ): Promise<boolean> {
-    const rejectKeyword = this.startOptions.rejectKeyword;
+    const rejectKeyword = this.startOptions.rejectKeyword
     if (!isTouchDevice(this.startOptions.model)) {
       return await this.navigateAndCompareUntilText(
         path,
@@ -631,10 +622,10 @@ export default class Zemu {
         waitForScreenUpdate,
         startImgIndex,
         timeout,
-      );
+      )
     } else {
-      const takeSnapshots = true;
-      const runLastAction = false;
+      const takeSnapshots = true
+      const runLastAction = false
       // For Stax/Flex devices navigate until reject keyword --> Reject --> Confirm rejection
       // reject keyword should be actually approve keyword (issue with OCR)
       const navLastIndex = await this.navigateUntilText(
@@ -646,11 +637,11 @@ export default class Zemu {
         startImgIndex,
         timeout,
         runLastAction,
-      );
+      )
       const rejectConfirmationNav = new TouchNavigation(this.startOptions.model, [
         ButtonKind.RejectButton,
         ButtonKind.ConfirmYesButton,
-      ]);
+      ])
       // Overwrite last snapshot since navigate starts taking a snapshot of the current screen
       const lastIndex = await this.navigate(
         path,
@@ -659,11 +650,11 @@ export default class Zemu {
         waitForScreenUpdate,
         takeSnapshots,
         navLastIndex - 1,
-      );
+      )
       // Avoid taking a snapshot of the final animation
-      await this.waitUntilScreenIs(this.mainMenuSnapshot);
-      await this.takeSnapshotAndOverwrite(path, testcaseName, lastIndex);
-      return this.compareSnapshots(path, testcaseName, lastIndex);
+      await this.waitUntilScreenIs(this.mainMenuSnapshot)
+      await this.takeSnapshotAndOverwrite(path, testcaseName, lastIndex)
+      return this.compareSnapshots(path, testcaseName, lastIndex)
     }
   }
 
@@ -679,39 +670,39 @@ export default class Zemu {
     waitForInitialEventsChange = true,
     isBlindSigning = false,
   ): Promise<number> {
-    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`);
-    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`);
+    const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
+    const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
 
     if (takeSnapshots) {
-      fs.ensureDirSync(snapshotPrefixGolden);
-      fs.ensureDirSync(snapshotPrefixTmp);
+      fs.ensureDirSync(snapshotPrefixGolden)
+      fs.ensureDirSync(snapshotPrefixTmp)
     }
 
-    let imageIndex = startImgIndex;
-    let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots);
-    if (waitForInitialEventsChange) await this.waitForScreenChanges(this.initialEvents);
-    await this.snapshot(filename);
+    let imageIndex = startImgIndex
+    let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
+    if (waitForInitialEventsChange) await this.waitForScreenChanges(this.initialEvents)
+    await this.snapshot(filename)
 
-    let start = new Date();
-    let found = false;
-    const touchDevice = isTouchDevice(this.startOptions.model);
+    let start = new Date()
+    let found = false
+    const touchDevice = isTouchDevice(this.startOptions.model)
 
-    const textRegex = new RegExp(text, "i");
+    const textRegex = new RegExp(text, "i")
 
     while (!found) {
-      const currentTime = new Date();
-      const elapsed = currentTime.getTime() - start.getTime();
+      const currentTime = new Date()
+      const elapsed = currentTime.getTime() - start.getTime()
 
       if (elapsed > timeout) {
-        throw new Error(`Timeout waiting for screen containing ${text}`);
+        throw new Error(`Timeout waiting for screen containing ${text}`)
       }
 
-      const events = await this.getEvents();
-      imageIndex += 1;
-      filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots);
+      const events = await this.getEvents()
+      imageIndex += 1
+      filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
 
-      found = events.some((event: IEvent) => textRegex.test(event.text));
-      if (found) break;
+      found = events.some((event: IEvent) => textRegex.test(event.text))
+      if (found) break
 
       const nav: INavElement = {
         type: touchDevice ? ActionKind.Touch : ActionKind.RightClick,
@@ -719,32 +710,32 @@ export default class Zemu {
           imageIndex === 1 && isBlindSigning
             ? getTouchElement(this.startOptions.model, ButtonKind.RejectButton)
             : getTouchElement(this.startOptions.model, ButtonKind.SwipeContinueButton), // Change button based on imageIndex
-      };
-      await this.runAction(nav, filename, waitForScreenUpdate, true);
-      start = new Date();
+      }
+      await this.runAction(nav, filename, waitForScreenUpdate, true)
+      start = new Date()
     }
 
-    if (!runLastAction) return imageIndex; // do not run last action if requested
+    if (!runLastAction) return imageIndex // do not run last action if requested
 
     // Approve can be performed with Tap or PressAndHold
-    const approveButton = getTouchElement(this.startOptions.model, this.startOptions.approveAction);
+    const approveButton = getTouchElement(this.startOptions.model, this.startOptions.approveAction)
 
     if (this.startOptions.approveAction === ButtonKind.DynamicTapButton) {
-      const events = await this.getEvents();
-      const matchingEvent = events.find((event: IEvent) => textRegex.test(event.text));
+      const events = await this.getEvents()
+      const matchingEvent = events.find((event: IEvent) => textRegex.test(event.text))
 
       if (matchingEvent != null) {
-        approveButton.x = Math.round(matchingEvent.x + matchingEvent.w / 2);
-        approveButton.y = Math.round(matchingEvent.y + matchingEvent.h / 2);
+        approveButton.x = Math.round(matchingEvent.x + matchingEvent.w / 2)
+        approveButton.y = Math.round(matchingEvent.y + matchingEvent.h / 2)
       }
     }
 
     const nav: INavElement = {
       type: touchDevice ? ActionKind.Touch : ActionKind.BothClick,
       button: approveButton,
-    };
-    await this.runAction(nav, filename, waitForScreenUpdate, true);
-    return imageIndex;
+    }
+    await this.runAction(nav, filename, waitForScreenUpdate, true)
+    return imageIndex
   }
 
   async navigateAndCompareUntilText(
@@ -756,7 +747,7 @@ export default class Zemu {
     timeout = DEFAULT_METHOD_TIMEOUT,
     waitForInitialEventsChange = true,
   ): Promise<boolean> {
-    const takeSnapshots = true;
+    const takeSnapshots = true
     const lastImgIndex = await this.navigateUntilText(
       path,
       testcaseName,
@@ -767,19 +758,19 @@ export default class Zemu {
       timeout,
       true, // runLastAction
       waitForInitialEventsChange,
-    );
-    return this.compareSnapshots(path, testcaseName, lastImgIndex);
+    )
+    return this.compareSnapshots(path, testcaseName, lastImgIndex)
   }
 
   async getEvents(): Promise<IEvent[]> {
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay });
-    const eventsUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/events`;
+    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
+    const eventsUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/events`
     try {
-      const { data } = await axios.get(eventsUrl);
-      return data.events;
-    } catch (error) {
-      return [];
+      const { data } = await axios.get(eventsUrl)
+      return data.events
+    } catch (_error) {
+      return []
     }
   }
 
@@ -787,34 +778,34 @@ export default class Zemu {
     await axios({
       method: "DELETE",
       url: `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/events`,
-    });
+    })
   }
 
   async dumpEvents(): Promise<void> {
-    const events = await this.getEvents();
+    const events = await this.getEvents()
     if (events != null) {
       events.forEach((x: IEvent) => {
-        this.log(`[ZEMU] ${JSON.stringify(x)}`);
-      });
+        this.log(`[ZEMU] ${JSON.stringify(x)}`)
+      })
     }
   }
 
   async waitForText(text: string | RegExp, timeout = DEFAULT_METHOD_TIMEOUT, caseSensitive = false): Promise<void> {
-    const start = new Date();
-    let found = false;
-    const flags = !caseSensitive ? "i" : "";
-    const startRegex = new RegExp(text, flags);
+    const start = new Date()
+    let found = false
+    const flags = !caseSensitive ? "i" : ""
+    const startRegex = new RegExp(text, flags)
 
     while (!found) {
-      const currentTime = new Date();
-      const elapsed = currentTime.getTime() - start.getTime();
+      const currentTime = new Date()
+      const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
-        throw new Error(`Timeout (${timeout}) waiting for text (${text})`);
+        throw new Error(`Timeout (${timeout}) waiting for text (${text})`)
       }
 
-      const events = await this.getEvents();
-      found = events.some((event: IEvent) => startRegex.test(event.text));
-      await Zemu.sleep();
+      const events = await this.getEvents()
+      found = events.some((event: IEvent) => startRegex.test(event.text))
+      await Zemu.sleep()
     }
   }
 
@@ -824,25 +815,25 @@ export default class Zemu {
     waitForScreenUpdate: boolean = true,
     waitForEventsChange: boolean = false,
   ): Promise<ISnapshot> {
-    if (!this.startOptions.model.startsWith("nano")) throw new Error("click method can only be used with nano devices");
-    const prevEvents = await this.getEvents();
-    const prevScreen = await this.snapshot();
+    if (!this.startOptions.model.startsWith("nano")) throw new Error("click method can only be used with nano devices")
+    const prevEvents = await this.getEvents()
+    const prevScreen = await this.snapshot()
 
-    const clickUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}${endpoint}`;
-    const payload = { action: "press-and-release" };
-    await axios.post(clickUrl, payload);
-    this.log(`Click ${endpoint} -> ${filename}`);
+    const clickUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}${endpoint}`
+    const payload = { action: "press-and-release" }
+    await axios.post(clickUrl, payload)
+    this.log(`Click ${endpoint} -> ${filename}`)
 
     // Wait and poll Speculos until the application screen gets updated
     if (waitForScreenUpdate) {
-      await this.waitUntilScreenIsNot(prevScreen);
-      if (waitForEventsChange) await this.waitForScreenChanges(prevEvents);
+      await this.waitUntilScreenIsNot(prevScreen)
+      if (waitForEventsChange) await this.waitForScreenChanges(prevEvents)
     } else {
       // A minimum delay is required
-      await Zemu.sleep();
+      await Zemu.sleep()
     }
 
-    return await this.snapshot(filename);
+    return await this.snapshot(filename)
   }
 
   async clickLeft(
@@ -850,7 +841,7 @@ export default class Zemu {
     waitForScreenUpdate: boolean = true,
     waitForEventsChange: boolean = false,
   ): Promise<ISnapshot> {
-    return await this.click("/button/left", filename, waitForScreenUpdate, waitForEventsChange);
+    return await this.click("/button/left", filename, waitForScreenUpdate, waitForEventsChange)
   }
 
   async clickRight(
@@ -858,7 +849,7 @@ export default class Zemu {
     waitForScreenUpdate: boolean = true,
     waitForEventsChange: boolean = false,
   ): Promise<ISnapshot> {
-    return await this.click("/button/right", filename, waitForScreenUpdate, waitForEventsChange);
+    return await this.click("/button/right", filename, waitForScreenUpdate, waitForEventsChange)
   }
 
   async clickBoth(
@@ -866,38 +857,38 @@ export default class Zemu {
     waitForScreenUpdate: boolean = true,
     waitForEventsChange: boolean = false,
   ): Promise<ISnapshot> {
-    return await this.click("/button/both", filename, waitForScreenUpdate, waitForEventsChange);
+    return await this.click("/button/both", filename, waitForScreenUpdate, waitForEventsChange)
   }
 
   private getSwipeCoordinates(button: IButton): ISwipeCoordinates {
-    let newX = button.x;
-    let newY = button.y;
-    const SWIPE_PX_MOVEMENT = 10;
+    let newX = button.x
+    let newY = button.y
+    const SWIPE_PX_MOVEMENT = 10
 
     switch (button.direction) {
       case SwipeDirection.SwipeUp:
-        newY += SWIPE_PX_MOVEMENT;
-        break;
+        newY += SWIPE_PX_MOVEMENT
+        break
 
       case SwipeDirection.SwipeDown:
-        newY -= SWIPE_PX_MOVEMENT;
-        break;
+        newY -= SWIPE_PX_MOVEMENT
+        break
 
       case SwipeDirection.SwipeRight:
-        newX += SWIPE_PX_MOVEMENT;
-        break;
+        newX += SWIPE_PX_MOVEMENT
+        break
 
       case SwipeDirection.SwipeLeft:
-        newX -= SWIPE_PX_MOVEMENT;
-        break;
+        newX -= SWIPE_PX_MOVEMENT
+        break
 
       case SwipeDirection.NoSwipe:
-        break;
+        break
     }
     return {
       x: newX,
       y: newY,
-    };
+    }
   }
 
   async fingerTouch(
@@ -907,34 +898,34 @@ export default class Zemu {
     waitForEventsChange: boolean = false,
   ): Promise<ISnapshot> {
     if (!isTouchDevice(this.startOptions.model))
-      throw new Error("fingerTouch method can only be used with touchable devices");
-    const prevEvents = await this.getEvents();
-    const prevScreen = await this.snapshot();
+      throw new Error("fingerTouch method can only be used with touchable devices")
+    const prevEvents = await this.getEvents()
+    const prevScreen = await this.snapshot()
 
-    const fingerTouchUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/finger`;
+    const fingerTouchUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/finger`
 
     // Add x2, y2 params only for Swipe
-    const swipe = this.getSwipeCoordinates(button);
+    const swipe = this.getSwipeCoordinates(button)
     const payload = {
       action: "press-and-release",
       x: button.x,
       y: button.y,
       delay: button.delay,
       ...(button.direction !== SwipeDirection.NoSwipe ? { x2: swipe.x, y2: swipe.y } : {}),
-    };
-    await axios.post(fingerTouchUrl, payload);
-    this.log(`Touch /finger -> ${filename}`);
+    }
+    await axios.post(fingerTouchUrl, payload)
+    this.log(`Touch /finger -> ${filename}`)
 
     // Wait and poll Speculos until the application screen gets updated
     if (waitForScreenUpdate) {
-      await this.waitUntilScreenIsNot(prevScreen);
-      if (waitForEventsChange) await this.waitForScreenChanges(prevEvents);
+      await this.waitUntilScreenIsNot(prevScreen)
+      if (waitForEventsChange) await this.waitForScreenChanges(prevEvents)
     } else {
       // A minimum delay is required
-      await Zemu.sleep();
+      await Zemu.sleep()
     }
 
-    return await this.snapshot(filename);
+    return await this.snapshot(filename)
   }
 
   async runAction(
@@ -945,22 +936,22 @@ export default class Zemu {
   ): Promise<void> {
     switch (navElement.type) {
       case ActionKind.RightClick:
-        await this.clickRight(filename, waitForScreenUpdate, waitForEventsChange);
-        break;
+        await this.clickRight(filename, waitForScreenUpdate, waitForEventsChange)
+        break
 
       case ActionKind.LeftClick:
-        await this.clickLeft(filename, waitForScreenUpdate, waitForEventsChange);
-        break;
+        await this.clickLeft(filename, waitForScreenUpdate, waitForEventsChange)
+        break
 
       case ActionKind.BothClick:
-        await this.clickBoth(filename, waitForScreenUpdate, waitForEventsChange);
-        break;
+        await this.clickBoth(filename, waitForScreenUpdate, waitForEventsChange)
+        break
 
       case ActionKind.Touch:
-        await this.fingerTouch(navElement.button, filename, waitForScreenUpdate, waitForEventsChange);
-        break;
+        await this.fingerTouch(navElement.button, filename, waitForScreenUpdate, waitForEventsChange)
+        break
       default:
-        throw new Error("Action type not implemented");
+        throw new Error("Action type not implemented")
     }
   }
 
@@ -971,7 +962,7 @@ export default class Zemu {
     waitForEventsChange: boolean = false,
   ): Promise<void> {
     for (const nav of navElements) {
-      await this.runAction(nav, filename, waitForScreenUpdate, waitForEventsChange);
+      await this.runAction(nav, filename, waitForScreenUpdate, waitForEventsChange)
     }
   }
 }

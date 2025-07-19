@@ -21,17 +21,19 @@ pnpm copy-files        # Copies proto files to dist/
 ```bash
 pnpm test              # Runs all tests (includes test:clean and build)
 pnpm test:clean        # Cleans up test environment
-jest                   # Run tests directly after building
-jest tests/basic.s.test.ts  # Run a specific test file
-jest --watch           # Run tests in watch mode for development
+pnpm test:watch        # Run tests in watch mode for development
+vitest run             # Run tests directly after building
+vitest tests/basic.s.test.ts  # Run a specific test file
 ```
 
 ### Linting and Formatting
 
 ```bash
-pnpm linter            # Run ESLint
-pnpm linter:fix        # Run ESLint with auto-fix
-pnpm format            # Run Prettier to format code
+pnpm lint              # Run Biome linter
+pnpm lint:fix          # Run Biome linter with auto-fix
+pnpm format            # Run Biome formatter
+pnpm check             # Run both linting and formatting
+pnpm check:fix         # Run both linting and formatting with auto-fix
 ```
 
 ## Architecture

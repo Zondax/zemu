@@ -16,78 +16,75 @@
  ******************************************************************************* */
 
 function isDict(v: any) {
-  return typeof v === "object" && v !== null && !(v instanceof Array) && !(v instanceof Date);
+  return typeof v === "object" && v !== null && !Array.isArray(v) && !(v instanceof Date)
 }
 
 export function processErrorResponse(response: any) {
   if (response) {
     if (isDict(response)) {
-      if (Object.prototype.hasOwnProperty.call(response, "statusCode")) {
+      if (Object.hasOwn(response, "statusCode")) {
         return {
           return_code: response.statusCode,
           error_message: response.statusCode.toString,
-        };
+        }
       }
 
-      if (
-        Object.prototype.hasOwnProperty.call(response, "return_code") &&
-        Object.prototype.hasOwnProperty.call(response, "error_message")
-      ) {
-        return response;
+      if (Object.hasOwn(response, "return_code") && Object.hasOwn(response, "error_message")) {
+        return response
       }
     }
     return {
       return_code: 0xffff,
       error_message: response.toString(),
-    };
+    }
   }
 
   return {
     return_code: 0xffff,
     error_message: response.toString(),
-  };
+  }
 }
 
 export default class MinimalApp {
-  private transport: any;
+  private transport: any
 
   constructor(transport: any) {
     if (!transport) {
-      throw new Error("Transport has not been defined");
+      throw new Error("Transport has not been defined")
     }
 
-    this.transport = transport;
-    transport.decorateAppAPIMethods(this, ["appInfo"]);
+    this.transport = transport
+    transport.decorateAppAPIMethods(this, ["appInfo"])
   }
 
   async appInfo() {
     return this.transport.send(0xb0, 0x01, 0, 0).then((response: any) => {
-      const errorCodeData = response.slice(-2);
-      const returnCode = errorCodeData[0] * 256 + errorCodeData[1];
+      const errorCodeData = response.slice(-2)
+      const returnCode = errorCodeData[0] * 256 + errorCodeData[1]
 
-      const result: any = {};
+      const result: any = {}
 
-      let appName = "err";
-      let appVersion = "err";
-      let flagLen = 0;
-      let flagsValue = 0;
+      let appName = "err"
+      let appVersion = "err"
+      let flagLen = 0
+      let flagsValue = 0
 
       if (response[0] !== 1) {
         // Ledger responds with format ID 1. There is no spec for any format != 1
-        result.error_message = "response format ID not recognized";
-        result.return_code = 0x9001;
+        result.error_message = "response format ID not recognized"
+        result.return_code = 0x9001
       } else {
-        const appNameLen = response[1];
-        appName = response.slice(2, 2 + appNameLen).toString("ascii");
-        let idx = 2 + appNameLen;
-        const appVersionLen = response[idx];
-        idx += 1;
-        appVersion = response.slice(idx, idx + appVersionLen).toString("ascii");
-        idx += appVersionLen;
-        const appFlagsLen = response[idx];
-        idx += 1;
-        flagLen = appFlagsLen;
-        flagsValue = response[idx];
+        const appNameLen = response[1]
+        appName = response.slice(2, 2 + appNameLen).toString("ascii")
+        let idx = 2 + appNameLen
+        const appVersionLen = response[idx]
+        idx += 1
+        appVersion = response.slice(idx, idx + appVersionLen).toString("ascii")
+        idx += appVersionLen
+        const appFlagsLen = response[idx]
+        idx += 1
+        flagLen = appFlagsLen
+        flagsValue = response[idx]
       }
 
       return {
@@ -101,7 +98,7 @@ export default class MinimalApp {
         flag_signed_mcu_code: (flagsValue & 2) !== 0,
         flag_onboarded: (flagsValue & 4) !== 0,
         flag_pin_validated: (flagsValue & 128) !== 0,
-      };
-    }, processErrorResponse);
+      }
+    }, processErrorResponse)
   }
 }
