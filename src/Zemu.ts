@@ -14,19 +14,19 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import { resolve } from "node:path"
-import type Transport from "@ledgerhq/hw-transport"
-import HttpTransport from "@ledgerhq/hw-transport-http"
-import axios, { type AxiosResponse } from "axios"
-import axiosRetry from "axios-retry"
+import { resolve } from 'node:path'
+import type Transport from '@ledgerhq/hw-transport'
+import HttpTransport from '@ledgerhq/hw-transport-http'
+import axios, { type AxiosResponse } from 'axios'
+import axiosRetry from 'axios-retry'
 // @ts-expect-error typings are missing
-import elfy from "elfy"
-import fs from "fs-extra"
-import getPort from "get-port"
-import { PNG, type PNGWithMetadata } from "pngjs"
-import rndstr from "randomstring"
-import { ClickNavigation, scheduleToNavElement, TouchNavigation } from "./actions"
-import { getTouchElement } from "./buttons"
+import elfy from 'elfy'
+import fs from 'fs-extra'
+import getPort from 'get-port'
+import { PNG, type PNGWithMetadata } from 'pngjs'
+import rndstr from 'randomstring'
+import { ClickNavigation, scheduleToNavElement, TouchNavigation } from './actions'
+import { getTouchElement } from './buttons'
 import {
   BASE_NAME,
   DEFAULT_EMU_IMG,
@@ -46,9 +46,9 @@ import {
   WINDOW_S,
   WINDOW_STAX,
   WINDOW_X,
-} from "./constants"
-import EmuContainer from "./emulator"
-import GRPCRouter from "./grpc"
+} from './constants'
+import EmuContainer from './emulator'
+import GRPCRouter from './grpc'
 import {
   ActionKind,
   ButtonKind,
@@ -61,15 +61,15 @@ import {
   type ISwipeCoordinates,
   SwipeDirection,
   type TModel,
-} from "./types"
-import { isTouchDevice, zondaxToggleBlindSigning, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from "./zondax"
+} from './types'
+import { isTouchDevice, zondaxToggleBlindSigning, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from './zondax'
 
 export default class Zemu {
   public startOptions!: IStartOptions
 
   private readonly host: string
   public transport!: Transport
-  private readonly transportProtocol: string = "http"
+  private readonly transportProtocol: string = 'http'
   public transportPort!: number
   public speculosApiPort!: number
   private readonly desiredTransportPort?: number
@@ -91,7 +91,7 @@ export default class Zemu {
     host: string = DEFAULT_HOST,
     desiredTransportPort?: number,
     desiredSpeculosApiPort?: number,
-    emuImage: string = DEFAULT_EMU_IMG,
+    emuImage: string = DEFAULT_EMU_IMG
   ) {
     this.host = host
     this.desiredTransportPort = desiredTransportPort
@@ -100,16 +100,16 @@ export default class Zemu {
     this.libElfs = libElfs
 
     if (this.elfPath == null) {
-      throw new Error("elfPath cannot be null!")
+      throw new Error('elfPath cannot be null!')
     }
 
     if (!fs.existsSync(this.elfPath)) {
-      throw new Error("elf file was not found! Did you compile?")
+      throw new Error('elf file was not found! Did you compile?')
     }
 
     Object.keys(libElfs).forEach((libName) => {
       if (!fs.existsSync(libElfs[libName])) {
-        throw new Error("lib elf file was not found! Did you compile?")
+        throw new Error('lib elf file was not found! Did you compile?')
       }
     })
 
@@ -128,7 +128,7 @@ export default class Zemu {
 
   static stopAllEmuContainers(): void {
     const timer = setTimeout(() => {
-      console.log("Could not kill all containers before timeout!")
+      console.log('Could not kill all containers before timeout!')
       process.exit(1)
     }, KILL_TIMEOUT)
     EmuContainer.killContainerByName(BASE_NAME)
@@ -167,7 +167,7 @@ export default class Zemu {
       this.startOptions.rejectKeyword = rejectWord.length === 0 ? DEFAULT_NANO_REJECT_KEYWORD : rejectWord
     }
 
-    this.log(`Checking ELF`)
+    this.log('Checking ELF')
     Zemu.checkElf(this.startOptions.model, this.elfPath)
 
     try {
@@ -179,14 +179,14 @@ export default class Zemu {
         throw e
       }
 
-      this.log(`Starting Container`)
+      this.log('Starting Container')
       await this.emuContainer.runContainer({
         ...this.startOptions,
         transportPort: this.transportPort.toString(),
         speculosApiPort: this.speculosApiPort.toString(),
       })
 
-      this.log(`Connecting to container`)
+      this.log('Connecting to container')
       await this.connect().catch(async (error) => {
         this.log(`${error}`)
         await this.close()
@@ -194,17 +194,15 @@ export default class Zemu {
       })
 
       // Captures main screen
-      this.log(`Wait for start text`)
+      this.log('Wait for start text')
 
       if (this.startOptions.startText.length === 0) {
-        this.startOptions.startText = isTouchDevice(this.startOptions.model)
-          ? DEFAULT_STAX_START_TEXT
-          : DEFAULT_NANO_START_TEXT
+        this.startOptions.startText = isTouchDevice(this.startOptions.model) ? DEFAULT_STAX_START_TEXT : DEFAULT_NANO_START_TEXT
       }
       const start = new Date()
       let found = false
       let reviewPendingFound = false
-      const flags = !this.startOptions.caseSensitive ? "i" : ""
+      const flags = !this.startOptions.caseSensitive ? 'i' : ''
       const startRegex = new RegExp(this.startOptions.startText, flags)
       const reviewPendingRegex = new RegExp(DEFAULT_PENDING_REVIEW_TEXT, flags)
 
@@ -212,23 +210,21 @@ export default class Zemu {
         const currentTime = new Date()
         const elapsed = currentTime.getTime() - start.getTime()
         if (elapsed > this.startOptions.startTimeout) {
-          throw new Error(
-            `Timeout (${this.startOptions.startTimeout}) waiting for text (${this.startOptions.startText})`,
-          )
+          throw new Error(`Timeout (${this.startOptions.startTimeout}) waiting for text (${this.startOptions.startText})`)
         }
         const events = await this.getEvents()
         if (!reviewPendingFound && events.some((event: IEvent) => reviewPendingRegex.test(event.text))) {
           const nav = isTouchDevice(this.startOptions.model)
             ? new TouchNavigation(this.startOptions.model, [ButtonKind.ConfirmYesButton])
             : new ClickNavigation([0])
-          await this.navigate("", "", nav.schedule, true, false)
+          await this.navigate('', '', nav.schedule, true, false)
           reviewPendingFound = true
         }
         found = events.some((event: IEvent) => startRegex.test(event.text))
         await Zemu.sleep()
       }
 
-      this.log(`Get initial snapshot and events`)
+      this.log('Get initial snapshot and events')
       this.mainMenuSnapshot = await this.snapshot()
       this.initialEvents = await this.getEvents()
     } catch (e) {
@@ -247,7 +243,7 @@ export default class Zemu {
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > maxWait) {
-        throw new Error("Timeout waiting to connect")
+        throw new Error('Timeout waiting to connect')
       }
 
       try {
@@ -293,20 +289,20 @@ export default class Zemu {
   }
 
   getTransport(): Transport {
-    if (this.transport == null) throw new Error("Transport is not loaded.")
+    if (this.transport == null) throw new Error('Transport is not loaded.')
     return this.transport
   }
 
   getWindowRect(): IDeviceWindow {
     switch (this.startOptions.model) {
-      case "nanos":
+      case 'nanos':
         return WINDOW_S
-      case "nanox":
-      case "nanosp":
+      case 'nanox':
+      case 'nanosp':
         return WINDOW_X
-      case "stax":
+      case 'stax':
         return WINDOW_STAX
-      case "flex":
+      case 'flex':
         return WINDOW_FLEX
       default:
         throw new Error(`model ${this.startOptions.model} not recognized`)
@@ -319,26 +315,26 @@ export default class Zemu {
     axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
 
     return await axios({
-      method: "GET",
+      method: 'GET',
       url,
-      responseType: "arraybuffer",
+      responseType: 'arraybuffer',
     })
   }
 
   saveSnapshot(arrayBuffer: Buffer, filePath: string): void {
-    fs.writeFileSync(filePath, Buffer.from(arrayBuffer), "binary")
+    fs.writeFileSync(filePath, Buffer.from(arrayBuffer), 'binary')
   }
 
   convertBufferToPNG(arrayBuffer: Buffer): PNGWithMetadata {
     return PNG.sync.read(Buffer.from(arrayBuffer))
   }
 
-  async snapshot(filename: string = ""): Promise<ISnapshot> {
+  async snapshot(filename = ''): Promise<ISnapshot> {
     const snapshotUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/screenshot`
     const { data } = await this.fetchSnapshot(snapshotUrl)
     const modelWindow = this.getWindowRect()
 
-    if (filename !== "") this.saveSnapshot(data, filename)
+    if (filename !== '') this.saveSnapshot(data, filename)
 
     const rect: ISnapshot = {
       height: modelWindow.height,
@@ -357,44 +353,44 @@ export default class Zemu {
     const start = new Date()
 
     const inputSnapshotBufferHex = screen.data
-    let currentSnapshotBufferHex = (await this.snapshot("")).data
+    let currentSnapshotBufferHex = (await this.snapshot('')).data
 
-    this.log(`Wait until screen is`)
+    this.log('Wait until screen is')
 
     while (!inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
-        this.log("Timeout waiting for screen to be")
+        this.log('Timeout waiting for screen to be')
         throw new Error(`Timeout waiting for screen to be (${timeout} ms)`)
       }
       await Zemu.sleep()
       this.log(`Check [${elapsed}ms]`)
       currentSnapshotBufferHex = (await this.snapshot()).data
     }
-    this.log(`Screen matches`)
+    this.log('Screen matches')
   }
 
   async waitUntilScreenIsNot(screen: ISnapshot, timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
     const start = new Date()
 
     const inputSnapshotBufferHex = screen.data
-    let currentSnapshotBufferHex = (await this.snapshot("")).data
+    let currentSnapshotBufferHex = (await this.snapshot('')).data
 
-    this.log(`Wait until screen is not`)
+    this.log('Wait until screen is not')
 
     while (inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
-        this.log("Timeout waiting for screen to be not")
+        this.log('Timeout waiting for screen to be not')
         throw new Error(`Timeout waiting for screen to be not (${timeout} ms)`)
       }
       await Zemu.sleep()
       this.log(`Check [${elapsed}ms]`)
       currentSnapshotBufferHex = (await this.snapshot()).data
     }
-    this.log(`Screen changed`)
+    this.log('Screen changed')
   }
 
   eventsAreEqual(events1: IEvent[], events2: IEvent[]): boolean {
@@ -411,12 +407,12 @@ export default class Zemu {
     let currEvents = await this.getEvents()
     const startTime = new Date()
 
-    this.log(`Wait for screen changes`)
+    this.log('Wait for screen changes')
 
     while (this.eventsAreEqual(prevEvents, currEvents)) {
       const elapsed = Date.now() - startTime.getTime()
       if (elapsed > timeout) {
-        this.log("Timeout waiting for screen to change")
+        this.log('Timeout waiting for screen to change')
         throw new Error(`Timeout waiting for screen to change (${timeout} ms)`)
       }
       await Zemu.sleep()
@@ -424,37 +420,37 @@ export default class Zemu {
       currEvents = await this.getEvents()
     }
     this.log(JSON.stringify(currEvents))
-    this.log("Events changed")
+    this.log('Events changed')
   }
 
   formatIndexString(i: number): string {
-    return `${i}`.padStart(5, "0")
+    return `${i}`.padStart(5, '0')
   }
 
   getSnapshotPath(snapshotPrefix: string, index: number, takeSnapshots: boolean): string {
-    return takeSnapshots ? `${snapshotPrefix}/${this.formatIndexString(index)}.png` : ""
+    return takeSnapshots ? `${snapshotPrefix}/${this.formatIndexString(index)}.png` : ''
   }
 
-  async toggleExpertMode(testcaseName = "", takeSnapshots = false, startImgIndex = 0): Promise<number> {
+  async toggleExpertMode(testcaseName = '', takeSnapshots = false, startImgIndex = 0): Promise<number> {
     const nav = zondaxToggleExpertMode(this.startOptions.model)
-    return await this.navigate(".", testcaseName, nav.schedule, true, takeSnapshots, startImgIndex)
+    return await this.navigate('.', testcaseName, nav.schedule, true, takeSnapshots, startImgIndex)
   }
 
-  async toggleBlindSigning(testcaseName = "", takeSnapshots = false, startImgIndex = 0): Promise<number> {
+  async toggleBlindSigning(testcaseName = '', takeSnapshots = false, startImgIndex = 0): Promise<number> {
     const nav = zondaxToggleBlindSigning(this.startOptions.model)
-    return await this.navigate(".", testcaseName, nav.schedule, true, takeSnapshots, startImgIndex)
+    return await this.navigate('.', testcaseName, nav.schedule, true, takeSnapshots, startImgIndex)
   }
 
   async enableSpecialMode(
     nanoModeText: string,
-    nanoIsSecretMode: boolean = false,
+    nanoIsSecretMode = false,
     touchToggleSettingButton?: ButtonKind,
-    path = ".",
-    testcaseName = "",
+    path = '.',
+    testcaseName = '',
     waitForScreenUpdate = true,
     takeSnapshots = false,
     startImgIndex = 0,
-    timeout = DEFAULT_METHOD_TIMEOUT,
+    timeout = DEFAULT_METHOD_TIMEOUT
   ): Promise<number> {
     if (!isTouchDevice(this.startOptions.model)) {
       const expertImgIndex = await this.toggleExpertMode(testcaseName, takeSnapshots, startImgIndex)
@@ -466,26 +462,17 @@ export default class Zemu {
         takeSnapshots,
         expertImgIndex,
         timeout,
-        !nanoIsSecretMode,
+        !nanoIsSecretMode
       )
       if (nanoIsSecretMode) {
         const secretClicks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] // 10 double clicks
         // do not wait for screen update
         tmpImgIndex = await this.navigate(path, testcaseName, secretClicks, false, takeSnapshots, tmpImgIndex)
       }
-      return await this.navigateUntilText(
-        ".",
-        testcaseName,
-        this.startOptions.approveKeyword,
-        true,
-        takeSnapshots,
-        tmpImgIndex,
-        timeout,
-      )
-    } else {
-      const nav = zondaxTouchEnableSpecialMode(this.startOptions.model, touchToggleSettingButton)
-      return await this.navigate(path, testcaseName, nav.schedule, waitForScreenUpdate, takeSnapshots, startImgIndex)
+      return await this.navigateUntilText('.', testcaseName, this.startOptions.approveKeyword, true, takeSnapshots, tmpImgIndex, timeout)
     }
+    const nav = zondaxTouchEnableSpecialMode(this.startOptions.model, touchToggleSettingButton)
+    return await this.navigate(path, testcaseName, nav.schedule, waitForScreenUpdate, takeSnapshots, startImgIndex)
   }
 
   async navigate(
@@ -495,7 +482,7 @@ export default class Zemu {
     waitForScreenUpdate = true,
     takeSnapshots = true,
     startImgIndex = 0,
-    waitForEventsChange = false,
+    waitForEventsChange = false
   ): Promise<number> {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
@@ -508,7 +495,7 @@ export default class Zemu {
     }
     let imageIndex = startImgIndex
     let filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, takeSnapshots)
-    this.log(`---------------------------`)
+    this.log('---------------------------')
     this.log(`Start        ${filename}`)
     await this.snapshot(filename)
     this.log(`Instructions ${navSchedule}`)
@@ -528,11 +515,11 @@ export default class Zemu {
     const filename = this.getSnapshotPath(snapshotPrefixTmp, imageIndex, true)
 
     try {
-      if (filename === "") throw new Error("Snapshot filename not defined")
+      if (filename === '') throw new Error('Snapshot filename not defined')
       fs.unlinkSync(filename)
     } catch (err) {
       this.log(`${err}`)
-      throw new Error("Snapshot does not exist")
+      throw new Error('Snapshot does not exist')
     }
     await this.snapshot(filename)
   }
@@ -542,17 +529,10 @@ export default class Zemu {
     testcaseName: string,
     navigateSchedule: Array<INavElement | number>,
     waitForScreenUpdate = true,
-    startImgIndex = 0,
+    startImgIndex = 0
   ): Promise<boolean> {
     const takeSnapshots = true
-    const lastImgIndex = await this.navigate(
-      path,
-      testcaseName,
-      navigateSchedule,
-      waitForScreenUpdate,
-      takeSnapshots,
-      startImgIndex,
-    )
+    const lastImgIndex = await this.navigate(path, testcaseName, navigateSchedule, waitForScreenUpdate, takeSnapshots, startImgIndex)
     return this.compareSnapshots(path, testcaseName, lastImgIndex)
   }
 
@@ -563,7 +543,7 @@ export default class Zemu {
     this.log(`golden      ${snapshotPrefixGolden}`)
     this.log(`tmp         ${snapshotPrefixTmp}`)
 
-    this.log(`Start comparison`)
+    this.log('Start comparison')
     for (let j = 0; j <= lastSnapshotIdx; j += 1) {
       this.log(`Checked     ${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`)
       const img1 = Zemu.LoadPng2RGB(`${snapshotPrefixTmp}/${this.formatIndexString(j)}.png`)
@@ -582,7 +562,7 @@ export default class Zemu {
     waitForScreenUpdate = true,
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
-    isBlindSigning = false,
+    isBlindSigning = false
   ): Promise<boolean> {
     const approveKeyword = this.startOptions.approveKeyword
     const takeSnapshots = true
@@ -596,7 +576,7 @@ export default class Zemu {
       timeout,
       true,
       true,
-      isBlindSigning,
+      isBlindSigning
     )
     if (isTouchDevice(this.startOptions.model)) {
       // Avoid taking a snapshot of the final animation
@@ -611,51 +591,40 @@ export default class Zemu {
     testcaseName: string,
     waitForScreenUpdate = true,
     startImgIndex = 0,
-    timeout = DEFAULT_METHOD_TIMEOUT,
+    timeout = DEFAULT_METHOD_TIMEOUT
   ): Promise<boolean> {
     const rejectKeyword = this.startOptions.rejectKeyword
     if (!isTouchDevice(this.startOptions.model)) {
-      return await this.navigateAndCompareUntilText(
-        path,
-        testcaseName,
-        rejectKeyword,
-        waitForScreenUpdate,
-        startImgIndex,
-        timeout,
-      )
-    } else {
-      const takeSnapshots = true
-      const runLastAction = false
-      // For Stax/Flex devices navigate until reject keyword --> Reject --> Confirm rejection
-      // reject keyword should be actually approve keyword (issue with OCR)
-      const navLastIndex = await this.navigateUntilText(
-        path,
-        testcaseName,
-        rejectKeyword,
-        waitForScreenUpdate,
-        takeSnapshots,
-        startImgIndex,
-        timeout,
-        runLastAction,
-      )
-      const rejectConfirmationNav = new TouchNavigation(this.startOptions.model, [
-        ButtonKind.RejectButton,
-        ButtonKind.ConfirmYesButton,
-      ])
-      // Overwrite last snapshot since navigate starts taking a snapshot of the current screen
-      const lastIndex = await this.navigate(
-        path,
-        testcaseName,
-        rejectConfirmationNav.schedule,
-        waitForScreenUpdate,
-        takeSnapshots,
-        navLastIndex - 1,
-      )
-      // Avoid taking a snapshot of the final animation
-      await this.waitUntilScreenIs(this.mainMenuSnapshot)
-      await this.takeSnapshotAndOverwrite(path, testcaseName, lastIndex)
-      return this.compareSnapshots(path, testcaseName, lastIndex)
+      return await this.navigateAndCompareUntilText(path, testcaseName, rejectKeyword, waitForScreenUpdate, startImgIndex, timeout)
     }
+    const takeSnapshots = true
+    const runLastAction = false
+    // For Stax/Flex devices navigate until reject keyword --> Reject --> Confirm rejection
+    // reject keyword should be actually approve keyword (issue with OCR)
+    const navLastIndex = await this.navigateUntilText(
+      path,
+      testcaseName,
+      rejectKeyword,
+      waitForScreenUpdate,
+      takeSnapshots,
+      startImgIndex,
+      timeout,
+      runLastAction
+    )
+    const rejectConfirmationNav = new TouchNavigation(this.startOptions.model, [ButtonKind.RejectButton, ButtonKind.ConfirmYesButton])
+    // Overwrite last snapshot since navigate starts taking a snapshot of the current screen
+    const lastIndex = await this.navigate(
+      path,
+      testcaseName,
+      rejectConfirmationNav.schedule,
+      waitForScreenUpdate,
+      takeSnapshots,
+      navLastIndex - 1
+    )
+    // Avoid taking a snapshot of the final animation
+    await this.waitUntilScreenIs(this.mainMenuSnapshot)
+    await this.takeSnapshotAndOverwrite(path, testcaseName, lastIndex)
+    return this.compareSnapshots(path, testcaseName, lastIndex)
   }
 
   async navigateUntilText(
@@ -668,7 +637,7 @@ export default class Zemu {
     timeout = DEFAULT_METHOD_TIMEOUT,
     runLastAction = true,
     waitForInitialEventsChange = true,
-    isBlindSigning = false,
+    isBlindSigning = false
   ): Promise<number> {
     const snapshotPrefixGolden = resolve(`${path}/snapshots/${testcaseName}`)
     const snapshotPrefixTmp = resolve(`${path}/snapshots-tmp/${testcaseName}`)
@@ -687,7 +656,7 @@ export default class Zemu {
     let found = false
     const touchDevice = isTouchDevice(this.startOptions.model)
 
-    const textRegex = new RegExp(text, "i")
+    const textRegex = new RegExp(text, 'i')
 
     while (!found) {
       const currentTime = new Date()
@@ -745,7 +714,7 @@ export default class Zemu {
     waitForScreenUpdate = true,
     startImgIndex = 0,
     timeout = DEFAULT_METHOD_TIMEOUT,
-    waitForInitialEventsChange = true,
+    waitForInitialEventsChange = true
   ): Promise<boolean> {
     const takeSnapshots = true
     const lastImgIndex = await this.navigateUntilText(
@@ -757,7 +726,7 @@ export default class Zemu {
       startImgIndex,
       timeout,
       true, // runLastAction
-      waitForInitialEventsChange,
+      waitForInitialEventsChange
     )
     return this.compareSnapshots(path, testcaseName, lastImgIndex)
   }
@@ -776,7 +745,7 @@ export default class Zemu {
 
   async deleteEvents(): Promise<void> {
     await axios({
-      method: "DELETE",
+      method: 'DELETE',
       url: `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/events`,
     })
   }
@@ -793,7 +762,7 @@ export default class Zemu {
   async waitForText(text: string | RegExp, timeout = DEFAULT_METHOD_TIMEOUT, caseSensitive = false): Promise<void> {
     const start = new Date()
     let found = false
-    const flags = !caseSensitive ? "i" : ""
+    const flags = !caseSensitive ? 'i' : ''
     const startRegex = new RegExp(text, flags)
 
     while (!found) {
@@ -809,18 +778,13 @@ export default class Zemu {
     }
   }
 
-  async click(
-    endpoint: string,
-    filename: string = "",
-    waitForScreenUpdate: boolean = true,
-    waitForEventsChange: boolean = false,
-  ): Promise<ISnapshot> {
-    if (!this.startOptions.model.startsWith("nano")) throw new Error("click method can only be used with nano devices")
+  async click(endpoint: string, filename = '', waitForScreenUpdate = true, waitForEventsChange = false): Promise<ISnapshot> {
+    if (!this.startOptions.model.startsWith('nano')) throw new Error('click method can only be used with nano devices')
     const prevEvents = await this.getEvents()
     const prevScreen = await this.snapshot()
 
     const clickUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}${endpoint}`
-    const payload = { action: "press-and-release" }
+    const payload = { action: 'press-and-release' }
     await axios.post(clickUrl, payload)
     this.log(`Click ${endpoint} -> ${filename}`)
 
@@ -836,28 +800,16 @@ export default class Zemu {
     return await this.snapshot(filename)
   }
 
-  async clickLeft(
-    filename: string = "",
-    waitForScreenUpdate: boolean = true,
-    waitForEventsChange: boolean = false,
-  ): Promise<ISnapshot> {
-    return await this.click("/button/left", filename, waitForScreenUpdate, waitForEventsChange)
+  async clickLeft(filename = '', waitForScreenUpdate = true, waitForEventsChange = false): Promise<ISnapshot> {
+    return await this.click('/button/left', filename, waitForScreenUpdate, waitForEventsChange)
   }
 
-  async clickRight(
-    filename: string = "",
-    waitForScreenUpdate: boolean = true,
-    waitForEventsChange: boolean = false,
-  ): Promise<ISnapshot> {
-    return await this.click("/button/right", filename, waitForScreenUpdate, waitForEventsChange)
+  async clickRight(filename = '', waitForScreenUpdate = true, waitForEventsChange = false): Promise<ISnapshot> {
+    return await this.click('/button/right', filename, waitForScreenUpdate, waitForEventsChange)
   }
 
-  async clickBoth(
-    filename: string = "",
-    waitForScreenUpdate: boolean = true,
-    waitForEventsChange: boolean = false,
-  ): Promise<ISnapshot> {
-    return await this.click("/button/both", filename, waitForScreenUpdate, waitForEventsChange)
+  async clickBoth(filename = '', waitForScreenUpdate = true, waitForEventsChange = false): Promise<ISnapshot> {
+    return await this.click('/button/both', filename, waitForScreenUpdate, waitForEventsChange)
   }
 
   private getSwipeCoordinates(button: IButton): ISwipeCoordinates {
@@ -891,14 +843,8 @@ export default class Zemu {
     }
   }
 
-  async fingerTouch(
-    button: IButton,
-    filename: string = "",
-    waitForScreenUpdate: boolean = true,
-    waitForEventsChange: boolean = false,
-  ): Promise<ISnapshot> {
-    if (!isTouchDevice(this.startOptions.model))
-      throw new Error("fingerTouch method can only be used with touchable devices")
+  async fingerTouch(button: IButton, filename = '', waitForScreenUpdate = true, waitForEventsChange = false): Promise<ISnapshot> {
+    if (!isTouchDevice(this.startOptions.model)) throw new Error('fingerTouch method can only be used with touchable devices')
     const prevEvents = await this.getEvents()
     const prevScreen = await this.snapshot()
 
@@ -907,7 +853,7 @@ export default class Zemu {
     // Add x2, y2 params only for Swipe
     const swipe = this.getSwipeCoordinates(button)
     const payload = {
-      action: "press-and-release",
+      action: 'press-and-release',
       x: button.x,
       y: button.y,
       delay: button.delay,
@@ -928,12 +874,7 @@ export default class Zemu {
     return await this.snapshot(filename)
   }
 
-  async runAction(
-    navElement: INavElement,
-    filename: string = "",
-    waitForScreenUpdate: boolean = true,
-    waitForEventsChange: boolean = false,
-  ): Promise<void> {
+  async runAction(navElement: INavElement, filename = '', waitForScreenUpdate = true, waitForEventsChange = false): Promise<void> {
     switch (navElement.type) {
       case ActionKind.RightClick:
         await this.clickRight(filename, waitForScreenUpdate, waitForEventsChange)
@@ -951,16 +892,11 @@ export default class Zemu {
         await this.fingerTouch(navElement.button, filename, waitForScreenUpdate, waitForEventsChange)
         break
       default:
-        throw new Error("Action type not implemented")
+        throw new Error('Action type not implemented')
     }
   }
 
-  async runActionBatch(
-    navElements: INavElement[],
-    filename: string = "",
-    waitForScreenUpdate: boolean = true,
-    waitForEventsChange: boolean = false,
-  ): Promise<void> {
+  async runActionBatch(navElements: INavElement[], filename = '', waitForScreenUpdate = true, waitForEventsChange = false): Promise<void> {
     for (const nav of navElements) {
       await this.runAction(nav, filename, waitForScreenUpdate, waitForEventsChange)
     }

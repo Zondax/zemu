@@ -13,14 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { getTouchElement } from "./buttons"
-import { ActionKind, ButtonKind, type INavElement, type TModel } from "./types"
+import { getTouchElement } from './buttons'
+import { ActionKind, ButtonKind, type INavElement, type TModel } from './types'
 
 export function scheduleToNavElement(clickSchedule: Array<INavElement | number>): INavElement[] {
-  const dummyButton = getTouchElement("nanos", ButtonKind.QuitAppButton)
+  const dummyButton = getTouchElement('nanos', ButtonKind.QuitAppButton)
   const nav: INavElement[] = []
   for (const click of clickSchedule) {
-    if (typeof click !== "number") {
+    if (typeof click !== 'number') {
       nav.push(click)
       continue
     }
@@ -56,7 +56,7 @@ export class TouchNavigation {
     this.schedule = []
     for (const buttonKind of buttonKindArray) {
       const touchButton = getTouchElement(model, buttonKind)
-      if (touchButton == null) throw new Error("Undefined touch action")
+      if (touchButton == null) throw new Error('Undefined touch action')
       this.schedule.push({
         type: ActionKind.Touch,
         button: touchButton,

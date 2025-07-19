@@ -14,20 +14,20 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import path from "node:path"
-import { Transform } from "node:stream"
-import Docker, { type Container, type ContainerInfo } from "dockerode"
+import path from 'node:path'
+import { Transform } from 'node:stream'
+import Docker, { type Container, type ContainerInfo } from 'dockerode'
 
-export const DEV_CERT_PRIVATE_KEY = "ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b"
-export const BOLOS_SDK = "/project/deps/nanos-secure-sdk"
-export const DEFAULT_APP_PATH = "/project/app/bin"
+export const DEV_CERT_PRIVATE_KEY = 'ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b'
+export const BOLOS_SDK = '/project/deps/nanos-secure-sdk'
+export const DEFAULT_APP_PATH = '/project/app/bin'
 
 export default class EmuContainer {
   private logger: {
     enabled: boolean
     timestamp: {
       enabled: boolean
-      format: "unix" | "iso"
+      format: 'unix' | 'iso'
     }
   }
 
@@ -46,7 +46,7 @@ export default class EmuContainer {
       enabled: false,
       timestamp: {
         enabled: false,
-        format: "iso",
+        format: 'iso',
       },
     }
   }
@@ -56,7 +56,7 @@ export default class EmuContainer {
     docker.listContainers({ all: true, filters: { name: [name] } }, (listError, containers?: ContainerInfo[]) => {
       if (listError != null) throw listError
       if (containers == null || containers.length === 0) {
-        console.log("No containers found")
+        console.log('No containers found')
         return
       }
       containers.forEach((containerInfo) => {
@@ -72,8 +72,8 @@ export default class EmuContainer {
     await new Promise<void>((resolve) => {
       docker.pull(imageName, {}, (err: any, stream: any) => {
         function onProgress(event: any): void {
-          const progress = event?.progress ?? ""
-          const status = event?.status ?? ""
+          const progress = event?.progress ?? ''
+          const status = event?.status ?? ''
           process.stdout.write(`[DOCKER] ${status}: ${progress}\n`)
         }
 
@@ -81,9 +81,8 @@ export default class EmuContainer {
           if (err != null) {
             process.stdout.write(`[DOCKER] ${err}\n`)
             throw err
-          } else {
-            resolve()
           }
+          resolve()
         }
 
         if (err != null) {
@@ -103,14 +102,14 @@ export default class EmuContainer {
 
       if (this.logger?.timestamp.enabled) {
         switch (this.logger?.timestamp.format) {
-          case "iso":
+          case 'iso':
             msg = `[${new Date().toISOString()}] ${message}`
             break
-          case "unix":
+          case 'unix':
             msg = `[${Date.now()}] ${message}`
             break
           default:
-            throw new Error("invalid logger timestamp format")
+            throw new Error('invalid logger timestamp format')
         }
       }
 
@@ -124,7 +123,7 @@ export default class EmuContainer {
       enabled: boolean
       timestamp: {
         enabled: boolean
-        format: "unix" | "iso"
+        format: 'unix' | 'iso'
       }
     }
     custom: string
@@ -134,39 +133,38 @@ export default class EmuContainer {
   }): Promise<void> {
     const docker = new Docker()
 
-    this.logger = options.logger ?? { enabled: options.logging, timestamp: { enabled: false, format: "iso" } }
+    this.logger = options.logger ?? { enabled: options.logging, timestamp: { enabled: false, format: 'iso' } }
 
     const appFilename = path.basename(this.elfLocalPath)
     const appDir = path.dirname(this.elfLocalPath)
 
     const dirBindings = [`${appDir}:${DEFAULT_APP_PATH}`]
 
-    let libArgs = ""
+    let libArgs = ''
     Object.entries(this.libElfs).forEach(([libName, libPath]) => {
       const libFilename = path.basename(libPath)
       libArgs += ` -l ${libName}:${DEFAULT_APP_PATH}/${libFilename}`
     })
 
-    const modelOptions = options.model !== "" ? options.model : "nanos"
+    const modelOptions = options.model !== '' ? options.model : 'nanos'
 
     const customOptions = options.custom
 
-    const displaySetting = "--display headless"
+    const displaySetting = '--display headless'
     const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
 
     this.log(`[ZEMU] Command: ${command}`)
 
     const portBindings: Record<string, Array<{ HostPort: string }>> = {
-      "9998/tcp": [{ HostPort: options.transportPort }],
-      "5000/tcp": [{ HostPort: options.speculosApiPort }],
+      '9998/tcp': [{ HostPort: options.transportPort }],
+      '5000/tcp': [{ HostPort: options.speculosApiPort }],
     }
 
-    if (customOptions.includes("--debug")) {
-      portBindings[`1234/tcp`] = [{ HostPort: "1234" }]
+    if (customOptions.includes('--debug')) {
+      portBindings['1234/tcp'] = [{ HostPort: '1234' }]
     }
 
-    const displayEnvironment: string =
-      process.platform === "darwin" ? "host.docker.internal:0" : (process.env.DISPLAY ?? "")
+    const displayEnvironment: string = process.platform === 'darwin' ? 'host.docker.internal:0' : (process.env.DISPLAY ?? '')
     const environment = [
       `SCP_PRIVKEY='${DEV_CERT_PRIVATE_KEY}'`,
       `BOLOS_SDK='${BOLOS_SDK}'`,
@@ -181,7 +179,7 @@ export default class EmuContainer {
       Tty: true,
       AttachStdout: true,
       AttachStderr: true,
-      User: "1000",
+      User: '1000',
       Env: environment,
       HostConfig: {
         PortBindings: portBindings,
@@ -197,14 +195,14 @@ export default class EmuContainer {
         transform: (chunk, _encoding, callback) => {
           if (this.logger?.timestamp.enabled) {
             switch (this.logger?.timestamp.format) {
-              case "iso":
+              case 'iso':
                 callback(null, `[${new Date().toISOString()}] ${chunk}`)
                 break
-              case "unix":
+              case 'unix':
                 callback(null, `[${Date.now()}] ${chunk}`)
                 break
               default:
-                throw new Error("invalid logger timestamp format")
+                throw new Error('invalid logger timestamp format')
             }
           } else {
             callback(null, `${chunk}`)
@@ -212,15 +210,12 @@ export default class EmuContainer {
         },
       })
 
-      this.currentContainer.attach(
-        { stream: true, stdout: true, stderr: true },
-        (err: any, stream: NodeJS.ReadWriteStream | undefined) => {
-          if (err != null) throw err
-          if (stream == null) return
+      this.currentContainer.attach({ stream: true, stdout: true, stderr: true }, (err: any, stream: NodeJS.ReadWriteStream | undefined) => {
+        if (err != null) throw err
+        if (stream == null) return
 
-          stream.pipe(timestampTransform).pipe(process.stdout)
-        },
-      )
+        stream.pipe(timestampTransform).pipe(process.stdout)
+      })
       this.log(`[ZEMU] Attached ${this.currentContainer.id}`)
     }
 
@@ -232,22 +227,22 @@ export default class EmuContainer {
   async stop(): Promise<void> {
     if (this.currentContainer != null) {
       const container = this.currentContainer
-      delete this.currentContainer
-      this.log(`[ZEMU] Stopping container`)
+      this.currentContainer = undefined
+      this.log('[ZEMU] Stopping container')
       try {
         await container.stop({ t: 0 })
       } catch (e) {
         this.log(`[ZEMU] Stopping: ${e}`)
         throw e
       }
-      this.log(`[ZEMU] Stopped`)
+      this.log('[ZEMU] Stopped')
       try {
         await container.remove()
       } catch (err) {
-        this.log("[ZEMU] Unable to remove container")
+        this.log('[ZEMU] Unable to remove container')
         throw err
       }
-      this.log(`[ZEMU] Removed`)
+      this.log('[ZEMU] Removed')
     }
   }
 }

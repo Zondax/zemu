@@ -1,8 +1,8 @@
-import Zemu from "../src"
+import Zemu from '../src'
 
 const catchExit = async () => {
-  process.on("SIGINT", () => {
-    console.log("Stopping dangling containers")
+  process.on('SIGINT', () => {
+    console.log('Stopping dangling containers')
     Zemu.stopAllEmuContainers()
   })
 }

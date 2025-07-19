@@ -13,10 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import Zemu from "./Zemu"
+import Zemu from './Zemu'
 
 export default Zemu
-export { ClickNavigation, TouchNavigation } from "./actions"
-export { DEFAULT_START_OPTIONS } from "./constants"
-export { ButtonKind, type IDeviceModel, type INavElement, type IStartOptions } from "./types"
-export { isTouchDevice, zondaxMainmenuNavigation } from "./zondax"
+export { ClickNavigation, TouchNavigation } from './actions'
+export { DEFAULT_START_OPTIONS } from './constants'
+export { ButtonKind, type IDeviceModel, type INavElement, type IStartOptions } from './types'
+export { isTouchDevice, zondaxMainmenuNavigation } from './zondax'

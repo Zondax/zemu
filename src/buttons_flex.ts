@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { ButtonKind, type IButton, SwipeDirection } from "./types"
+import { ButtonKind, type IButton, SwipeDirection } from './types'
 
 /* eslint-disable @typescript-eslint/no-namespace */
 export namespace flex {

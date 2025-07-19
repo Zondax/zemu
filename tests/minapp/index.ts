@@ -16,20 +16,20 @@
  ******************************************************************************* */
 
 function isDict(v: any) {
-  return typeof v === "object" && v !== null && !Array.isArray(v) && !(v instanceof Date)
+  return typeof v === 'object' && v !== null && !Array.isArray(v) && !(v instanceof Date)
 }
 
 export function processErrorResponse(response: any) {
   if (response) {
     if (isDict(response)) {
-      if (Object.hasOwn(response, "statusCode")) {
+      if (Object.hasOwn(response, 'statusCode')) {
         return {
           return_code: response.statusCode,
           error_message: response.statusCode.toString,
         }
       }
 
-      if (Object.hasOwn(response, "return_code") && Object.hasOwn(response, "error_message")) {
+      if (Object.hasOwn(response, 'return_code') && Object.hasOwn(response, 'error_message')) {
         return response
       }
     }
@@ -50,11 +50,11 @@ export default class MinimalApp {
 
   constructor(transport: any) {
     if (!transport) {
-      throw new Error("Transport has not been defined")
+      throw new Error('Transport has not been defined')
     }
 
     this.transport = transport
-    transport.decorateAppAPIMethods(this, ["appInfo"])
+    transport.decorateAppAPIMethods(this, ['appInfo'])
   }
 
   async appInfo() {
@@ -64,22 +64,22 @@ export default class MinimalApp {
 
       const result: any = {}
 
-      let appName = "err"
-      let appVersion = "err"
+      let appName = 'err'
+      let appVersion = 'err'
       let flagLen = 0
       let flagsValue = 0
 
       if (response[0] !== 1) {
         // Ledger responds with format ID 1. There is no spec for any format != 1
-        result.error_message = "response format ID not recognized"
+        result.error_message = 'response format ID not recognized'
         result.return_code = 0x9001
       } else {
         const appNameLen = response[1]
-        appName = response.slice(2, 2 + appNameLen).toString("ascii")
+        appName = response.slice(2, 2 + appNameLen).toString('ascii')
         let idx = 2 + appNameLen
         const appVersionLen = response[idx]
         idx += 1
-        appVersion = response.slice(idx, idx + appVersionLen).toString("ascii")
+        appVersion = response.slice(idx, idx + appVersionLen).toString('ascii')
         idx += appVersionLen
         const appFlagsLen = response[idx]
         idx += 1

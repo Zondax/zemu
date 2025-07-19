@@ -39,7 +39,7 @@ export interface ISwipeCoordinates {
   y: number
 }
 
-export type TModel = "nanos" | "nanosp" | "nanox" | "stax" | "flex"
+export type TModel = 'nanos' | 'nanosp' | 'nanox' | 'stax' | 'flex'
 
 export interface IStartOptions {
   logging: boolean
@@ -47,7 +47,7 @@ export interface IStartOptions {
     enabled: boolean
     timestamp: {
       enabled: boolean
-      format: "unix" | "iso"
+      format: 'unix' | 'iso'
     }
   }
   startDelay: number
@@ -82,49 +82,49 @@ export interface INavElement {
 
 export enum SwipeDirection {
   NoSwipe = 0,
-  SwipeUp,
-  SwipeDown,
-  SwipeRight,
-  SwipeLeft,
+  SwipeUp = 1,
+  SwipeDown = 2,
+  SwipeRight = 3,
+  SwipeLeft = 4,
 }
 
 export enum ActionKind {
   LeftClick = 0,
-  RightClick,
-  BothClick,
-  Touch,
+  RightClick = 1,
+  BothClick = 2,
+  Touch = 3,
 }
 
 export enum ButtonKind {
   InfoButton = 0,
-  QuitAppButton,
+  QuitAppButton = 1,
 
-  SwipeContinueButton,
+  SwipeContinueButton = 2,
 
-  PrevPageButton,
+  PrevPageButton = 3,
 
-  SettingsNavRightButton,
-  SettingsNavLeftButton,
-  SettingsQuitButton,
+  SettingsNavRightButton = 4,
+  SettingsNavLeftButton = 5,
+  SettingsQuitButton = 6,
 
-  ToggleSettingButton1,
-  ToggleSettingButton2,
-  ToggleSettingButton3,
+  ToggleSettingButton1 = 7,
+  ToggleSettingButton2 = 8,
+  ToggleSettingButton3 = 9,
 
-  NavRightButton,
-  NavLeftButton,
+  NavRightButton = 10,
+  NavLeftButton = 11,
 
-  ApproveHoldButton,
-  ApproveTapButton,
-  RejectButton,
+  ApproveHoldButton = 12,
+  ApproveTapButton = 13,
+  RejectButton = 14,
 
-  ConfirmYesButton,
-  ConfirmNoButton,
+  ConfirmYesButton = 15,
+  ConfirmNoButton = 16,
 
-  ShowQRButton,
-  CloseQRButton,
+  ShowQRButton = 17,
+  CloseQRButton = 18,
 
   // Text to compare must match this button
   // Zemu will find the center where the text is displayed and tap there
-  DynamicTapButton,
+  DynamicTapButton = 19,
 }

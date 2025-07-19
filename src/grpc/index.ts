@@ -1,9 +1,9 @@
-import { resolve } from "node:path"
-import { loadPackageDefinition, Server, ServerCredentials } from "@grpc/grpc-js"
-import { loadSync } from "@grpc/proto-loader"
-import type Transport from "@ledgerhq/hw-transport"
+import { resolve } from 'node:path'
+import { loadPackageDefinition, Server, ServerCredentials } from '@grpc/grpc-js'
+import { loadSync } from '@grpc/proto-loader'
+import type Transport from '@ledgerhq/hw-transport'
 
-const PROTO_PATH = resolve(__dirname, "zemu.proto")
+const PROTO_PATH = resolve(__dirname, 'zemu.proto')
 
 export default class GRPCRouter {
   private readonly httpTransport: Transport

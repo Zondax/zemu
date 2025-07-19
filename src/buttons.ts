@@ -14,9 +14,9 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import { flex } from "./buttons_flex"
-import { stax } from "./buttons_stax"
-import { type ButtonKind, type IButton, SwipeDirection, type TModel } from "./types"
+import { flex } from './buttons_flex'
+import { stax } from './buttons_stax'
+import { type ButtonKind, type IButton, SwipeDirection, type TModel } from './types'
 
 const dummyButton: IButton = {
   x: 0,
@@ -27,7 +27,7 @@ const dummyButton: IButton = {
 
 export function getTouchElement(model: TModel, buttonKind: ButtonKind): IButton {
   switch (model) {
-    case "stax": {
+    case 'stax': {
       const button = stax.TouchElements.get(buttonKind)
       if (button != null) {
         return button
@@ -35,7 +35,7 @@ export function getTouchElement(model: TModel, buttonKind: ButtonKind): IButton 
       break
     }
 
-    case "flex": {
+    case 'flex': {
       const button = flex.TouchElements.get(buttonKind)
       if (button != null) {
         return button
