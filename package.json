@@ -18,13 +18,17 @@
     "Testing",
     "Zemu"
   ],
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=8.0.0"
+  },
   "scripts": {
-    "build": "yarn rimraf dist && tsc && yarn copy-files",
+    "build": "pnpm rimraf dist && tsc && pnpm copy-files",
     "copy-files": "copyfiles -u 0 src/**/*.proto dist/",
-    "test:clean": "yarn ts-node tests/pullImageKillOld.ts",
-    "test": "yarn test:clean && yarn build && jest",
+    "test:clean": "pnpm ts-node tests/pullImageKillOld.ts",
+    "test": "pnpm test:clean && pnpm build && jest",
     "linter": "eslint --max-warnings 0 src/**/*.ts",
-    "linter:fix": "yarn linter --fix",
+    "linter:fix": "pnpm linter --fix",
     "format": "prettier --write ."
   },
   "bugs": {
@@ -48,7 +52,7 @@
     "@types/dockerode": "^3.3.30",
     "@types/fs-extra": "^11.0.4",
     "@types/jest": "^29.5.12",
-    "@types/node": "^20.14.11",
+    "@types/node": "^24.0.15",
     "@types/pngjs": "^6.0.5",
     "@types/randomstring": "^1.3.0",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
@@ -70,6 +74,5 @@
   },
   "files": [
     "dist/**/*"
-  ],
-  "packageManager": "yarn@4.1.1"
+  ]
 }

@@ -13,13 +13,13 @@ updates:
     target-branch: dev
 
   # Enable version updates for GitHub Actions
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: 'daily'
-      time: '11:00'
+      interval: "daily"
+      time: "11:00"
     commit-message:
-      prefix: 'chore'
-      prefix-development: 'chore'
-      include: 'scope'
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
     target-branch: dev

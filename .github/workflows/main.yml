@@ -15,10 +15,13 @@ jobs:
           submodules: true
       - name: Install node
         uses: actions/setup-node@v4
-      - run: npm install -g yarn
-      - run: yarn install
-      - run: yarn format
-      - run: yarn linter
+        with:
+          node-version: 22
+      - name: Enable Corepack
+        run: corepack enable
+      - run: pnpm install
+      - run: pnpm format
+      - run: pnpm linter
 
   build-test:
     name: Build and Test
@@ -31,7 +34,10 @@ jobs:
           submodules: true
       - name: Install node
         uses: actions/setup-node@v4
-      - run: npm install -g yarn
-      - run: yarn install
-      - run: yarn build
-      - run: yarn test
+        with:
+          node-version: 22
+      - name: Enable Corepack
+        run: corepack enable
+      - run: pnpm install
+      - run: pnpm build
+      - run: pnpm test
