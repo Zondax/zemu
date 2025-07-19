@@ -18,7 +18,7 @@ jobs:
     with:
       package_manager: pnpm
       node_version: "22"
-      enable_tests: true
+      enable_tests: false  # Disable tests here since they need Docker
       enable_coverage: false
       test_command: "test"
       lint_command: "check"
