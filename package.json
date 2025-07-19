@@ -29,10 +29,11 @@
     "test": "pnpm test:clean && pnpm build && vitest run",
     "test:watch": "vitest",
     "lint": "biome lint src/ tests/",
-    "lint:fix": "biome lint --write src/ tests/",
+    "lint:fix": "biome check --write --unsafe .",
     "format": "biome format --write src/ tests/",
     "check": "biome check src/ tests/",
-    "check:fix": "biome check --write src/ tests/"
+    "check:fix": "biome check --write src/ tests/",
+    "fix": "pnpm run lint:fix"
   },
   "bugs": {
     "url": "https://github.com/zondax/zemu/issues"
