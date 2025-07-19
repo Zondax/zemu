@@ -67,7 +67,7 @@ test.concurrent('Basic Control - X', async () => {
   }
 })
 
-test.concurrent('Load/Compare Snapshots', async () => {
+test.concurrent('Load/Compare Snapshots', () => {
   const image1A = Zemu.LoadPng2RGB('tests/snapshots/image1A.png')
   const image1B = Zemu.LoadPng2RGB('tests/snapshots/image1B.png')
   const image2A = Zemu.LoadPng2RGB('tests/snapshots/image2A.png')

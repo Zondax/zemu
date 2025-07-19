@@ -57,7 +57,7 @@ export default class MinimalApp {
     transport.decorateAppAPIMethods(this, ['appInfo'])
   }
 
-  async appInfo() {
+  appInfo() {
     return this.transport.send(0xb0, 0x01, 0, 0).then((response: any) => {
       const errorCodeData = response.slice(-2)
       const returnCode = errorCodeData[0] * 256 + errorCodeData[1]

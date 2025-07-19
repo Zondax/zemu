@@ -1,6 +1,6 @@
 import Zemu from '../src'
 
-const catchExit = async () => {
+const catchExit = () => {
   process.on('SIGINT', () => {
     console.log('Stopping dangling containers')
     Zemu.stopAllEmuContainers()

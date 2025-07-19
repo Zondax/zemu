@@ -107,11 +107,11 @@ export default class Zemu {
       throw new Error('elf file was not found! Did you compile?')
     }
 
-    Object.keys(libElfs).forEach((libName) => {
+    for (const libName of Object.keys(libElfs)) {
       if (!fs.existsSync(libElfs[libName])) {
         throw new Error('lib elf file was not found! Did you compile?')
       }
-    })
+    }
 
     this.containerName = BASE_NAME + rndstr.generate(8)
     this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, emuImage, this.containerName)
@@ -753,9 +753,9 @@ export default class Zemu {
   async dumpEvents(): Promise<void> {
     const events = await this.getEvents()
     if (events != null) {
-      events.forEach((x: IEvent) => {
+      for (const x of events) {
         this.log(`[ZEMU] ${JSON.stringify(x)}`)
-      })
+      }
     }
   }
 

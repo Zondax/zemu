@@ -59,11 +59,11 @@ export default class EmuContainer {
         console.log('No containers found')
         return
       }
-      containers.forEach((containerInfo) => {
+      for (const containerInfo of containers) {
         docker.getContainer(containerInfo.Id).remove({ force: true }, (removeError) => {
           if (removeError != null) throw removeError
         })
-      })
+      }
     })
   }
 
@@ -141,10 +141,10 @@ export default class EmuContainer {
     const dirBindings = [`${appDir}:${DEFAULT_APP_PATH}`]
 
     let libArgs = ''
-    Object.entries(this.libElfs).forEach(([libName, libPath]) => {
+    for (const [libName, libPath] of Object.entries(this.libElfs)) {
       const libFilename = path.basename(libPath)
       libArgs += ` -l ${libName}:${DEFAULT_APP_PATH}/${libFilename}`
-    })
+    }
 
     const modelOptions = options.model !== '' ? options.model : 'nanos'
 
