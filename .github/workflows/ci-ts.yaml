@@ -1,0 +1,25 @@
+name: CI-ts
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  schedule:
+    - cron: "0 0 * * *" # Daily at midnight UTC
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ts-checks:
+    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@main
+    with:
+      package_manager: pnpm
+      node_version: "22"
+      enable_tests: false  # Disable tests here since they need Docker
+      enable_coverage: false
+      test_command: "test"
+      lint_command: "check"
+      format_command: "check"

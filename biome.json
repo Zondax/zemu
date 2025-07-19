@@ -1,0 +1,104 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "complexity": {
+        "noForEach": "warn",
+        "useArrowFunction": "off"
+      },
+      "correctness": {
+        "noChildrenProp": "warn",
+        "noInnerDeclarations": "warn",
+        "noUnusedVariables": "warn",
+        "useExhaustiveDependencies": "warn"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "warn"
+      },
+      "style": {
+        "noImplicitBoolean": "warn",
+        "noInferrableTypes": "error",
+        "noNegationElse": "off",
+        "noNonNullAssertion": "warn",
+        "noParameterAssign": "warn",
+        "noRestrictedGlobals": {
+          "level": "error",
+          "options": {
+            "deniedGlobals": {
+              "isFinite": "Use Number.isFinite instead",
+              "isNaN": "Use Number.isNaN instead"
+            }
+          }
+        },
+        "noUnusedTemplateLiteral": "error",
+        "noUselessElse": "error",
+        "useAsConstAssertion": "error",
+        "useBlockStatements": "off",
+        "useCollapsedElseIf": "warn",
+        "useConst": "warn",
+        "useDefaultParameterLast": "warn",
+        "useEnumInitializers": "error",
+        "useExponentiationOperator": "warn",
+        "useFragmentSyntax": "warn",
+        "useImportType": "off",
+        "useNodejsImportProtocol": "warn",
+        "useNumberNamespace": "warn",
+        "useSelfClosingElements": "error",
+        "useShorthandAssign": "warn",
+        "useSingleVarDeclarator": "warn"
+      },
+      "suspicious": {
+        "noArrayIndexKey": "warn",
+        "noConsole": "off",
+        "noExplicitAny": "off",
+        "useAwait": "warn"
+      },
+      "nursery": {}
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 140,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "jsxRuntime": "transparent",
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "es5",
+      "semicolons": "asNeeded"
+    },
+    "globals": ["test", "describe", "it", "expect", "beforeEach", "afterEach", "beforeAll", "afterAll", "vi"]
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "maxSize": 100485760,
+    "includes": [
+      "**",
+      "!**/node_modules/**",
+      "!**/dist/**",
+      "!**/.github/**",
+      "!**/coverage/**",
+      "!**/build/**",
+      "!**/.next/**",
+      "!**/.turbo/**",
+      "!**/*.d.ts"
+    ]
+  }
+}

@@ -1,55 +1,24 @@
-name: Publish package
+name: Publish NPM Package
 
 on:
   release:
-    types:
-      - created
+    types: [created]
+  push:
     tags:
-      - "v[0-9]+(\\.[0-9]+)*"
+      - "v[0-9]+"
+      - "v[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build-test:
-    name: Build and Test
-    timeout-minutes: 5
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Install node
-        uses: actions/setup-node@v4
-      - run: npm install -g yarn
-      - run: yarn install
-      - run: yarn build
-      - run: yarn test
-
-  publish:
-    timeout-minutes: 5
-    runs-on: ubuntu-latest
-    needs: [build-test]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Install node
-        uses: actions/setup-node@v4
-        with:
-          registry-url: "https://registry.npmjs.org"
-          scope: "@zondax"
-      - run: npm install -g yarn
-      - run: yarn install
-      - run: yarn build
-      - run: mv README-npm README.md
-      - name: Get latest release version number
-        id: get_version
-        run: echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
-      - name: Show version
-        run: echo ${{ steps.get_version.outputs.version }}
-      - name: Update tag
-        run: npm --no-git-tag-version version ${{ steps.get_version.outputs.version }}
-      - name: Publish package
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN_PUBLISH_AUTO }}
+  publish-npm:
+    uses: zondax/_workflows/.github/workflows/_publish-npm.yaml@main
+    with:
+      timeout_minutes: 10
+      dry_run: false
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN_PUBLISH_AUTO }}
