@@ -18,8 +18,8 @@ jobs:
     with:
       package_manager: pnpm
       node_version: "22"
-      working_directory: "."
       enable_tests: true
-      build_command: "pnpm build"
-      test_command: "pnpm test"
-      lint_command: "pnpm check"
+      enable_coverage: false
+      test_command: "test"
+      lint_command: "check"
+      format_command: "check"
