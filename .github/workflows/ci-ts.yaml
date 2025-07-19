@@ -1,0 +1,25 @@
+name: CI-ts
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+  schedule:
+    - cron: "0 0 * * *" # Daily at midnight UTC
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ts-checks:
+    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@main
+    with:
+      package_manager: pnpm
+      node_version: "22"
+      working_directory: "."
+      enable_tests: true
+      build_command: "pnpm build"
+      test_command: "pnpm test"
+      lint_command: "pnpm check"
