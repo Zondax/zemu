@@ -47,6 +47,7 @@ import {
   WINDOW_STAX,
   WINDOW_X,
 } from './constants'
+import { ContainerPool, type IPoolConfig, type IPooledContainer } from './containerPool'
 import EmuContainer from './emulator'
 import GRPCRouter from './grpc'
 import {
@@ -63,7 +64,6 @@ import {
   type TModel,
 } from './types'
 import { isTouchDevice, zondaxToggleBlindSigning, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from './zondax'
-import { ContainerPool, type IPooledContainer, type IPoolConfig } from './containerPool'
 
 export default class Zemu {
   public startOptions!: IStartOptions
@@ -89,9 +89,9 @@ export default class Zemu {
   // Container pool management
   private static containerPool: ContainerPool | null = null
   private static poolEnabled: boolean = process.env.ZEMU_DISABLE_POOL !== 'true'
-  private static poolInitialized: boolean = false
+  private static poolInitialized = false
   private pooledContainer: IPooledContainer | null = null
-  private usingPool: boolean = false
+  private usingPool = false
 
   constructor(
     elfPath: string,
@@ -147,13 +147,13 @@ export default class Zemu {
 
     try {
       Zemu.containerPool = ContainerPool.getInstance()
-      
+
       const defaultConfig: IPoolConfig = {
         nanos: 2,
         nanox: 1,
         nanosp: 1,
         stax: 1,
-        flex: 1
+        flex: 1,
       }
 
       await Zemu.containerPool.initialize(config || defaultConfig)
@@ -191,14 +191,12 @@ export default class Zemu {
       console.log('Could not kill all containers before timeout!')
       process.exit(1)
     }, KILL_TIMEOUT)
-    
+
     // Clean up pool first
     if (Zemu.containerPool) {
-      Zemu.containerPool.cleanup().catch(error => 
-        console.warn('Failed to cleanup container pool:', error)
-      )
+      Zemu.containerPool.cleanup().catch((error) => console.warn('Failed to cleanup container pool:', error))
     }
-    
+
     // Then kill any remaining containers
     EmuContainer.killContainerByName(BASE_NAME)
     clearTimeout(timer)
@@ -269,7 +267,7 @@ export default class Zemu {
 
       // Try to acquire container from pool
       this.pooledContainer = await Zemu.containerPool.acquire(this.startOptions.model, this.elfPath, this.libElfs)
-      
+
       if (this.pooledContainer) {
         this.log('Using pooled container')
         this.usingPool = true
@@ -291,7 +289,7 @@ export default class Zemu {
 
   private async startWithNewContainer(): Promise<void> {
     this.log('Creating new container')
-    
+
     await this.assignPortsToListen()
 
     if (this.transportPort === undefined || this.speculosApiPort === undefined) {
@@ -407,7 +405,7 @@ export default class Zemu {
   async close(): Promise<void> {
     try {
       this.stopGRPCServer()
-      
+
       if (this.usingPool && this.pooledContainer && Zemu.containerPool) {
         this.log('Returning container to pool')
         await Zemu.containerPool.release(this.pooledContainer)

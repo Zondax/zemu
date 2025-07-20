@@ -55,7 +55,7 @@ export namespace stax {
   // Placeholder if Ledger moves this button
   export const settingsNavRightButton: IButton = navRightButton
 
-  export const settingsNavnavLeftButton: IButton = {
+  export const settingsNavLeftButton: IButton = {
     x: 275,
     y: 625,
     delay: 0.25,
@@ -156,7 +156,7 @@ export namespace stax {
     [ButtonKind.PrevPageButton, stax.prevPageButton],
 
     [ButtonKind.SettingsNavRightButton, stax.settingsNavRightButton],
-    [ButtonKind.SettingsNavLeftButton, stax.settingsNavnavLeftButton],
+    [ButtonKind.SettingsNavLeftButton, stax.settingsNavLeftButton],
     [ButtonKind.SettingsQuitButton, stax.settingsQuitButton],
 
     [ButtonKind.ToggleSettingButton1, stax.toggleOption1],

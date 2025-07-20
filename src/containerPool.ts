@@ -16,10 +16,10 @@
 
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
-import { DEFAULT_HOST, DEFAULT_EMU_IMG, BASE_NAME, DEFAULT_START_DELAY } from './constants'
-import EmuContainer from './emulator'
-import type { TModel, IStartOptions } from './types'
 import rndstr from 'randomstring'
+import { BASE_NAME, DEFAULT_EMU_IMG, DEFAULT_HOST, DEFAULT_START_DELAY } from './constants'
+import EmuContainer from './emulator'
+import type { IStartOptions, TModel } from './types'
 
 export interface IPooledContainer {
   container: EmuContainer
@@ -45,7 +45,6 @@ export class ContainerPool {
   private pools: Map<TModel, IPooledContainer[]> = new Map()
   private busyContainers: Set<string> = new Set()
   private portRanges: Map<TModel, { transportStart: number; speculosStart: number }> = new Map()
-  private readonly maxWaitTime = 30000 // 30 seconds max wait for available container
   private readonly host: string = DEFAULT_HOST
   private readonly emuImage: string = DEFAULT_EMU_IMG
 
@@ -84,7 +83,7 @@ export class ContainerPool {
   private async createPoolForModel(model: TModel, count: number): Promise<void> {
     const containers: IPooledContainer[] = []
     const portRange = this.portRanges.get(model)
-    
+
     if (!portRange) {
       throw new Error(`No port range configured for model ${model}`)
     }
@@ -97,7 +96,7 @@ export class ContainerPool {
 
       try {
         const container = await this.createContainer(model, containerName, transportPort, speculosApiPort)
-        
+
         const pooledContainer: IPooledContainer = {
           container,
           transportPort,
@@ -106,7 +105,7 @@ export class ContainerPool {
           containerName,
           isAvailable: true,
           createdAt: new Date(),
-          lastUsed: new Date()
+          lastUsed: new Date(),
         }
 
         containers.push(pooledContainer)
@@ -117,7 +116,7 @@ export class ContainerPool {
     })
 
     await Promise.all(createPromises)
-    
+
     if (containers.length > 0) {
       this.pools.set(model, containers)
     } else {
@@ -148,7 +147,7 @@ export class ContainerPool {
       caseSensitive: false,
       X11: false,
       custom: '',
-      sdk: ''
+      sdk: '',
     }
 
     await container.runContainer({
@@ -163,7 +162,7 @@ export class ContainerPool {
     return container
   }
 
-  private async waitForContainerReady(transportPort: number, speculosApiPort: number): Promise<void> {
+  private async waitForContainerReady(_transportPort: number, speculosApiPort: number): Promise<void> {
     const startTime = Date.now()
     const maxWait = DEFAULT_START_DELAY
 
@@ -173,9 +172,9 @@ export class ContainerPool {
         const apiUrl = `http://${this.host}:${speculosApiPort}/screenshot`
         await axios.get(apiUrl, { timeout: 1000 })
         return // Container is ready
-      } catch (error) {
+      } catch (_error) {
         // Container not ready yet, wait and retry
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise((resolve) => setTimeout(resolve, 500))
       }
     }
 
@@ -189,9 +188,7 @@ export class ContainerPool {
     }
 
     // Find an available container
-    const availableContainer = pool.find(container => 
-      container.isAvailable && !this.busyContainers.has(container.containerName)
-    )
+    const availableContainer = pool.find((container) => container.isAvailable && !this.busyContainers.has(container.containerName))
 
     if (!availableContainer) {
       return null // No available containers in pool
@@ -217,7 +214,7 @@ export class ContainerPool {
     try {
       // Reset container state for next use
       await this.resetContainerState(container)
-      
+
       // Mark as available
       container.isAvailable = true
       this.busyContainers.delete(container.containerName)
@@ -227,50 +224,42 @@ export class ContainerPool {
     }
   }
 
-  private async resetContainer(
-    container: IPooledContainer,
-    elfPath: string,
-    libElfs: Record<string, string>
-  ): Promise<void> {
+  private async resetContainer(container: IPooledContainer, elfPath: string, libElfs: Record<string, string>): Promise<void> {
     // Reset Speculos via API
     await this.resetContainerState(container)
-    
+
     // Load new ELF if different from current
     await this.loadElfInContainer(container, elfPath, libElfs)
   }
 
   private async resetContainerState(container: IPooledContainer): Promise<void> {
     axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
-    
+
     try {
       // Reset device state via Speculos API
       const resetUrl = `http://${this.host}:${container.speculosApiPort}/button/both`
       await axios.post(resetUrl, { action: 'reset' }, { timeout: 5000 })
-      
+
       // Clear events
       const eventsUrl = `http://${this.host}:${container.speculosApiPort}/events`
       await axios.delete(eventsUrl, { timeout: 5000 })
-      
+
       // Small delay to ensure reset is complete
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000))
     } catch (error) {
       throw new Error(`Failed to reset container state: ${error}`)
     }
   }
 
-  private async loadElfInContainer(
-    container: IPooledContainer,
-    elfPath: string,
-    libElfs: Record<string, string>
-  ): Promise<void> {
+  private async loadElfInContainer(container: IPooledContainer, elfPath: string, libElfs: Record<string, string>): Promise<void> {
     // For now, we'll restart the container with new ELF
     // In future, could implement dynamic ELF loading via Speculos API
     try {
       await container.container.stop()
-      
+
       // Recreate container with new ELF
       const newContainer = new EmuContainer(elfPath, libElfs, this.emuImage, container.containerName)
-      
+
       const startOptions: IStartOptions = {
         model: container.model,
         startText: '',
@@ -283,7 +272,7 @@ export class ContainerPool {
         caseSensitive: false,
         X11: false,
         custom: '',
-        sdk: ''
+        sdk: '',
       }
 
       await newContainer.runContainer({
@@ -293,7 +282,7 @@ export class ContainerPool {
       })
 
       await this.waitForContainerReady(container.transportPort, container.speculosApiPort)
-      
+
       container.container = newContainer
     } catch (error) {
       throw new Error(`Failed to load ELF in container: ${error}`)
@@ -303,14 +292,14 @@ export class ContainerPool {
   private async removeFromPool(container: IPooledContainer): Promise<void> {
     const pool = this.pools.get(container.model)
     if (pool) {
-      const index = pool.findIndex(c => c.containerName === container.containerName)
+      const index = pool.findIndex((c) => c.containerName === container.containerName)
       if (index !== -1) {
         pool.splice(index, 1)
       }
     }
-    
+
     this.busyContainers.delete(container.containerName)
-    
+
     try {
       await container.container.stop()
     } catch (error) {
@@ -321,18 +310,16 @@ export class ContainerPool {
   async cleanup(): Promise<void> {
     const cleanupPromises: Promise<void>[] = []
 
-    for (const [model, pool] of this.pools.entries()) {
+    for (const [, pool] of this.pools.entries()) {
       for (const container of pool) {
         cleanupPromises.push(
-          container.container.stop().catch(error => 
-            console.warn(`Failed to stop container ${container.containerName}:`, error)
-          )
+          container.container.stop().catch((error) => console.warn(`Failed to stop container ${container.containerName}:`, error))
         )
       }
     }
 
     await Promise.all(cleanupPromises)
-    
+
     this.pools.clear()
     this.busyContainers.clear()
   }
@@ -341,13 +328,13 @@ export class ContainerPool {
     const status: Record<string, { total: number; available: number; busy: number }> = {}
 
     for (const [model, pool] of this.pools.entries()) {
-      const available = pool.filter(c => c.isAvailable).length
-      const busy = pool.filter(c => !c.isAvailable).length
-      
+      const available = pool.filter((c) => c.isAvailable).length
+      const busy = pool.filter((c) => !c.isAvailable).length
+
       status[model] = {
         total: pool.length,
         available,
-        busy
+        busy,
       }
     }
 
