@@ -59,10 +59,10 @@ export class TransportError extends Error {
  */
 export function isCriticalTransportError(error: unknown): boolean {
   if (!error || typeof error !== 'object') return false
-  
+
   const statusCode = (error as any).statusCode
   if (typeof statusCode !== 'number') return false
-  
+
   return CRITICAL_TRANSPORT_ERRORS.includes(statusCode as any)
 }
 

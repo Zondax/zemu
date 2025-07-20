@@ -27,7 +27,6 @@ import { PNG, type PNGWithMetadata } from 'pngjs'
 import rndstr from 'randomstring'
 import { ClickNavigation, scheduleToNavElement, TouchNavigation } from './actions'
 import { getTouchElement } from './buttons'
-import { isCriticalTransportError, TransportError, getAPDUStatusMessage } from './errors'
 import {
   BASE_NAME,
   DEFAULT_EMU_IMG,
@@ -50,6 +49,7 @@ import {
 } from './constants'
 import { ContainerPool, type IPoolConfig, type IPooledContainer } from './containerPool'
 import EmuContainer from './emulator'
+import { getAPDUStatusMessage, isCriticalTransportError, TransportError } from './errors'
 import GRPCRouter from './grpc'
 import {
   ActionKind,
@@ -439,16 +439,16 @@ export default class Zemu {
 
   getTransport(): Transport {
     if (this.transport == null) throw new Error('Transport is not loaded.')
-    
+
     // Create a wrapper to intercept transport errors
     const self = this
     const originalTransport = this.transport
-    
+
     // Return a proxy that intercepts send() calls
     return new Proxy(originalTransport, {
       get(target, prop, receiver) {
         if (prop === 'send') {
-          return async function(cla: number, ins: number, p1: number, p2: number, data?: Buffer, statusList?: number[]) {
+          return async function (cla: number, ins: number, p1: number, p2: number, data?: Buffer, statusList?: number[]) {
             try {
               self.lastTransportError = null // Clear previous error
               const result = await target.send(cla, ins, p1, p2, data, statusList)
@@ -456,22 +456,22 @@ export default class Zemu {
             } catch (error) {
               // Store the error for later checks
               self.lastTransportError = error as Error
-              
+
               // Log critical errors
               if (isCriticalTransportError(error)) {
                 const statusCode = (error as any).statusCode
                 self.log(`Critical transport error detected: ${getAPDUStatusMessage(statusCode)}`)
               }
-              
+
               // Re-throw the error
               throw error
             }
           }
         }
-        
+
         // For exchange and other methods, apply similar wrapping
         if (prop === 'exchange') {
-          return async function(apdu: Buffer) {
+          return async function (apdu: Buffer) {
             try {
               self.lastTransportError = null
               const result = await target.exchange(apdu)
@@ -486,10 +486,10 @@ export default class Zemu {
             }
           }
         }
-        
+
         // For all other properties/methods, return as-is
         return Reflect.get(target, prop, receiver)
-      }
+      },
     }) as Transport
   }
 
@@ -567,7 +567,7 @@ export default class Zemu {
           this.lastTransportError
         )
       }
-      
+
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
@@ -599,7 +599,7 @@ export default class Zemu {
           this.lastTransportError
         )
       }
-      
+
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
@@ -956,7 +956,7 @@ export default class Zemu {
     if (this.lastTransportError && isCriticalTransportError(this.lastTransportError)) {
       throw this.lastTransportError
     }
-    
+
     // eslint-disable-next-line @typescript-eslint/unbound-method
     axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
     const eventsUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/events`
@@ -1003,7 +1003,7 @@ export default class Zemu {
           this.lastTransportError
         )
       }
-      
+
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
