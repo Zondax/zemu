@@ -47,7 +47,8 @@ describe('Error Handling', () => {
         expect(elapsedTime).toBeLessThan(1000)
         
         // Check if we got the expected error code
-        expect(error.statusCode).toBe(0x6984)
+        // Invalid CLA (0xFF) triggers CLA_NOT_SUPPORTED (0x6E00)
+        expect(error.statusCode).toBe(0x6E00)
       }
     } finally {
       await sim.close()
