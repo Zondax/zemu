@@ -12,7 +12,7 @@ const ZEMU_OPTIONS_S: IStartOptions = {
   X11: false,
   custom: '',
   model: 'nanos',
-  containerPooling: false, // Disable pooling for this test
+  disablePool: true, // Disable pooling for this test
 }
 
 describe('Error Handling', () => {
