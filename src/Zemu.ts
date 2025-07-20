@@ -191,13 +191,15 @@ export default class Zemu {
 
   static stopAllEmuContainers(): void {
     const timer = setTimeout(() => {
-      console.log('Could not kill all containers before timeout!')
+      process.stderr.write('Could not kill all containers before timeout!\n')
       process.exit(1)
     }, KILL_TIMEOUT)
 
     // Clean up pool first
     if (Zemu.containerPool) {
-      Zemu.containerPool.cleanup().catch((error) => console.warn('Failed to cleanup container pool:', error))
+      Zemu.containerPool.cleanup().catch((error) => {
+        process.stderr.write(`Failed to cleanup container pool: ${error}\n`)
+      })
     }
 
     // Then kill any remaining containers
@@ -409,14 +411,12 @@ export default class Zemu {
   }
 
   async close(): Promise<void> {
-    try {
-      this.stopGRPCServer()
+    this.stopGRPCServer()
 
+    try {
       if (this.usingPool && this.pooledContainer && Zemu.containerPool) {
         this.log('Returning container to pool')
         await Zemu.containerPool.release(this.pooledContainer)
-        this.usingPool = false
-        this.pooledContainer = null
       } else {
         this.log('Stopping container')
         await this.emuContainer.stop()
@@ -424,16 +424,19 @@ export default class Zemu {
     } catch (error) {
       this.log(`Error during close: ${error}`)
       // If pool return fails, try to stop container directly
+      if (this.usingPool && this.emuContainer) {
+        this.log('Attempting direct container stop after pool release failure')
+        await this.emuContainer.stop().catch((stopError) => {
+          this.log(`Failed to stop container directly: ${stopError}`)
+        })
+      }
+      throw error
+    } finally {
+      // Always clean up state
       if (this.usingPool) {
-        try {
-          await this.emuContainer.stop()
-        } catch (stopError) {
-          this.log(`Failed to stop container after pool release failure: ${stopError}`)
-        }
         this.usingPool = false
         this.pooledContainer = null
       }
-      throw error
     }
   }
 
@@ -469,7 +472,7 @@ export default class Zemu {
           }
         }
 
-        // For exchange and other methods, apply similar wrapping
+        // For exchange method, apply similar wrapping
         if (prop === 'exchange') {
           return async function (apdu: Buffer) {
             try {
@@ -481,6 +484,23 @@ export default class Zemu {
               if (isCriticalTransportError(error)) {
                 const statusCode = (error as any).statusCode
                 self.log(`Critical transport error detected: ${getAPDUStatusMessage(statusCode)}`)
+              }
+              throw error
+            }
+          }
+        }
+
+        // For setScrambleKey method, wrap if it exists
+        if (prop === 'setScrambleKey' && typeof target[prop] === 'function') {
+          return async function (key: string) {
+            try {
+              self.lastTransportError = null
+              const result = await (target as any).setScrambleKey(key)
+              return result
+            } catch (error) {
+              self.lastTransportError = error as Error
+              if (isCriticalTransportError(error)) {
+                self.log(`Critical transport error in setScrambleKey: ${error}`)
               }
               throw error
             }

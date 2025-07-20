@@ -26,3 +26,4 @@ jobs:
       dry_run: false
     secrets:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN_PUBLISH_AUTO }}
+

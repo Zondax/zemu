@@ -58,7 +58,6 @@ export default class EmuContainer {
     docker.listContainers({ all: true, filters: { name: [name] } }, (listError, containers?: ContainerInfo[]) => {
       if (listError != null) throw listError
       if (containers == null || containers.length === 0) {
-        console.log('No containers found')
         return
       }
       for (const containerInfo of containers) {

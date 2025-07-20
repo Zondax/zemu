@@ -16,35 +16,6 @@ const ZEMU_OPTIONS_S: IStartOptions = {
 }
 
 describe('Error Handling - Simple', () => {
-  test.skip('First understand current timeout behavior', async () => {
-    const sim = new Zemu(DEMO_APP_PATH_S)
-
-    try {
-      await sim.start(ZEMU_OPTIONS_S)
-      const transport = sim.getTransport()
-
-      console.log('=== Testing invalid APDU command ===')
-
-      // Send an invalid APDU command that should trigger error 0x6984
-      const startTime = Date.now()
-
-      try {
-        // Invalid CLA (0xFF) should cause error
-        const result = await transport.send(0xff, 0x00, 0x00, 0x00)
-        console.log('Result:', result)
-      } catch (error: any) {
-        const elapsedTime = Date.now() - startTime
-        console.log(`Error occurred after ${elapsedTime}ms`)
-        console.log('Error:', error)
-        console.log('Error statusCode:', error.statusCode)
-        console.log('Error name:', error.name)
-        console.log('Error message:', error.message)
-      }
-    } finally {
-      await sim.close()
-    }
-  }, 30000)
-
   test('Test waitUntilScreenIs with timeout', async () => {
     // Disable pooling globally for this test
     process.env.ZEMU_CONTAINER_POOLING = 'false'
@@ -53,7 +24,6 @@ describe('Error Handling - Simple', () => {
 
     try {
       await sim.start(ZEMU_OPTIONS_S)
-      console.log('=== Testing waitUntilScreenIs behavior ===')
 
       // Get a snapshot that will never match to force timeout
       const snapshot = await sim.snapshot()
@@ -71,8 +41,6 @@ describe('Error Handling - Simple', () => {
         await sim.waitUntilScreenIs(modifiedSnapshot, 2000)
       } catch (error: any) {
         const elapsedTime = Date.now() - startTime
-        console.log(`Timeout occurred after ${elapsedTime}ms`)
-        console.log('Error message:', error.message)
 
         // Verify it actually waited for the timeout
         expect(elapsedTime).toBeGreaterThan(1900)

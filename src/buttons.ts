@@ -18,7 +18,7 @@ import { flex } from './buttons_flex'
 import { stax } from './buttons_stax'
 import { type ButtonKind, type IButton, SwipeDirection, type TModel } from './types'
 
-const dummyButton: IButton = {
+const _dummyButton: IButton = {
   x: 0,
   y: 0,
   delay: 0,
@@ -32,7 +32,7 @@ export function getTouchElement(model: TModel, buttonKind: ButtonKind): IButton 
       if (button != null) {
         return button
       }
-      break
+      throw new Error(`ButtonKind ${buttonKind} not found for model ${model}`)
     }
 
     case 'flex': {
@@ -40,15 +40,12 @@ export function getTouchElement(model: TModel, buttonKind: ButtonKind): IButton 
       if (button != null) {
         return button
       }
-      break
+      throw new Error(`ButtonKind ${buttonKind} not found for model ${model}`)
     }
 
     // Add cases for other models here when they become available
 
     default:
-      return dummyButton
+      throw new Error(`Unsupported ButtonKind: ${model}, ${buttonKind}`)
   }
-
-  console.log(`Unsupported ButtonKind: ${model}, ${buttonKind}`)
-  return dummyButton
 }
