@@ -16,14 +16,14 @@ const ZEMU_OPTIONS_S: IStartOptions = {
 }
 
 describe('Error Handling', () => {
-  test('Should fail fast on error 0x6984 instead of timing out', async () => {
+  test('Should fail fast on error 0x6E00 (CLA_NOT_SUPPORTED) instead of timing out', async () => {
     const sim = new Zemu(DEMO_APP_PATH_S)
 
     try {
       await sim.start(ZEMU_OPTIONS_S)
       const transport = sim.getTransport()
 
-      // Send an invalid APDU command that should trigger error 0x6984
+      // Send an invalid APDU command that should trigger CLA_NOT_SUPPORTED (0x6E00)
       // CLA=0xFF is typically invalid for Ledger apps
       const invalidCLA = 0xff
       const validINS = 0x00
@@ -34,7 +34,7 @@ describe('Error Handling', () => {
       const startTime = Date.now()
 
       try {
-        // This should fail with error 0x6984 (invalid data)
+        // This should fail with CLA_NOT_SUPPORTED (0x6E00)
         await transport.send(invalidCLA, validINS, p1, p2)
 
         // If we get here, the test failed - we expected an error
