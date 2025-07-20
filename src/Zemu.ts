@@ -63,6 +63,7 @@ import {
   type TModel,
 } from './types'
 import { isTouchDevice, zondaxToggleBlindSigning, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from './zondax'
+import { ContainerPool, type IPooledContainer, type IPoolConfig } from './containerPool'
 
 export default class Zemu {
   public startOptions!: IStartOptions
@@ -75,8 +76,8 @@ export default class Zemu {
   private readonly desiredTransportPort?: number
   private readonly desiredSpeculosApiPort?: number
 
-  private readonly emuContainer: EmuContainer
-  public readonly containerName: string
+  private emuContainer: EmuContainer
+  public containerName: string
 
   public readonly elfPath: string
   public readonly libElfs: Record<string, string>
@@ -84,6 +85,13 @@ export default class Zemu {
 
   public mainMenuSnapshot!: ISnapshot
   public initialEvents!: IEvent[]
+
+  // Container pool management
+  private static containerPool: ContainerPool | null = null
+  private static poolEnabled: boolean = process.env.ZEMU_DISABLE_POOL !== 'true'
+  private static poolInitialized: boolean = false
+  private pooledContainer: IPooledContainer | null = null
+  private usingPool: boolean = false
 
   constructor(
     elfPath: string,
@@ -115,6 +123,58 @@ export default class Zemu {
 
     this.containerName = BASE_NAME + rndstr.generate(8)
     this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, emuImage, this.containerName)
+    this.pooledContainer = null
+    this.usingPool = false
+  }
+
+  // Static pool management methods
+  static disablePool(): void {
+    Zemu.poolEnabled = false
+  }
+
+  static enablePool(): void {
+    Zemu.poolEnabled = true
+  }
+
+  static isPoolEnabled(): boolean {
+    return Zemu.poolEnabled
+  }
+
+  static async initializePool(config?: IPoolConfig): Promise<void> {
+    if (!Zemu.poolEnabled) {
+      return
+    }
+
+    try {
+      Zemu.containerPool = ContainerPool.getInstance()
+      
+      const defaultConfig: IPoolConfig = {
+        nanos: 2,
+        nanox: 1,
+        nanosp: 1,
+        stax: 1,
+        flex: 1
+      }
+
+      await Zemu.containerPool.initialize(config || defaultConfig)
+      Zemu.poolInitialized = true
+    } catch (error) {
+      console.warn('Container pool initialization failed, falling back to individual containers:', error)
+      Zemu.poolEnabled = false
+      Zemu.containerPool = null
+    }
+  }
+
+  static async cleanupPool(): Promise<void> {
+    if (Zemu.containerPool) {
+      await Zemu.containerPool.cleanup()
+      Zemu.containerPool = null
+      Zemu.poolInitialized = false
+    }
+  }
+
+  static getPoolStatus(): Record<string, { total: number; available: number; busy: number }> | null {
+    return Zemu.containerPool?.getPoolStatus() || null
   }
 
   static LoadPng2RGB(filename: string): PNGWithMetadata {
@@ -131,6 +191,15 @@ export default class Zemu {
       console.log('Could not kill all containers before timeout!')
       process.exit(1)
     }, KILL_TIMEOUT)
+    
+    // Clean up pool first
+    if (Zemu.containerPool) {
+      Zemu.containerPool.cleanup().catch(error => 
+        console.warn('Failed to cleanup container pool:', error)
+      )
+    }
+    
+    // Then kill any remaining containers
     EmuContainer.killContainerByName(BASE_NAME)
     clearTimeout(timer)
   }
@@ -171,66 +240,118 @@ export default class Zemu {
     Zemu.checkElf(this.startOptions.model, this.elfPath)
 
     try {
-      await this.assignPortsToListen()
-
-      if (this.transportPort === undefined || this.speculosApiPort === undefined) {
-        const e = new Error("The Speculos API port or/and transport port couldn't be reserved")
-        this.log(`[ZEMU] ${e}`)
-        throw e
-      }
-
-      this.log('Starting Container')
-      await this.emuContainer.runContainer({
-        ...this.startOptions,
-        transportPort: this.transportPort.toString(),
-        speculosApiPort: this.speculosApiPort.toString(),
-      })
-
-      this.log('Connecting to container')
-      await this.connect().catch(async (error) => {
-        this.log(`${error}`)
-        await this.close()
-        throw error
-      })
-
-      // Captures main screen
-      this.log('Wait for start text')
-
-      if (this.startOptions.startText.length === 0) {
-        this.startOptions.startText = isTouchDevice(this.startOptions.model) ? DEFAULT_STAX_START_TEXT : DEFAULT_NANO_START_TEXT
-      }
-      const start = new Date()
-      let found = false
-      let reviewPendingFound = false
-      const flags = !this.startOptions.caseSensitive ? 'i' : ''
-      const startRegex = new RegExp(this.startOptions.startText, flags)
-      const reviewPendingRegex = new RegExp(DEFAULT_PENDING_REVIEW_TEXT, flags)
-
-      while (!found) {
-        const currentTime = new Date()
-        const elapsed = currentTime.getTime() - start.getTime()
-        if (elapsed > this.startOptions.startTimeout) {
-          throw new Error(`Timeout (${this.startOptions.startTimeout}) waiting for text (${this.startOptions.startText})`)
+      // Try to use pool if enabled and not explicitly disabled
+      if (Zemu.poolEnabled && !options.disablePool) {
+        await this.tryStartWithPool()
+        if (this.usingPool) {
+          return
         }
-        const events = await this.getEvents()
-        if (!reviewPendingFound && events.some((event: IEvent) => reviewPendingRegex.test(event.text))) {
-          const nav = isTouchDevice(this.startOptions.model)
-            ? new TouchNavigation(this.startOptions.model, [ButtonKind.ConfirmYesButton])
-            : new ClickNavigation([0])
-          await this.navigate('', '', nav.schedule, true, false)
-          reviewPendingFound = true
-        }
-        found = events.some((event: IEvent) => startRegex.test(event.text))
-        await Zemu.sleep()
       }
 
-      this.log('Get initial snapshot and events')
-      this.mainMenuSnapshot = await this.snapshot()
-      this.initialEvents = await this.getEvents()
+      // Fallback to traditional container creation
+      await this.startWithNewContainer()
     } catch (e) {
       this.log(`[ZEMU] ${e}`)
       throw e
     }
+  }
+
+  private async tryStartWithPool(): Promise<void> {
+    try {
+      // Initialize pool if not already done
+      if (!Zemu.poolInitialized && Zemu.containerPool === null) {
+        await Zemu.initializePool()
+      }
+
+      if (!Zemu.containerPool || !Zemu.poolInitialized) {
+        return // Pool not available, will fallback
+      }
+
+      // Try to acquire container from pool
+      this.pooledContainer = await Zemu.containerPool.acquire(this.startOptions.model, this.elfPath, this.libElfs)
+      
+      if (this.pooledContainer) {
+        this.log('Using pooled container')
+        this.usingPool = true
+        this.emuContainer = this.pooledContainer.container
+        this.transportPort = this.pooledContainer.transportPort
+        this.speculosApiPort = this.pooledContainer.speculosApiPort
+        this.containerName = this.pooledContainer.containerName
+
+        // Connect to the pooled container
+        await this.connect()
+        await this.finalizeStart()
+      }
+    } catch (error) {
+      this.log(`Pool container failed, falling back to new container: ${error}`)
+      this.usingPool = false
+      this.pooledContainer = null
+    }
+  }
+
+  private async startWithNewContainer(): Promise<void> {
+    this.log('Creating new container')
+    
+    await this.assignPortsToListen()
+
+    if (this.transportPort === undefined || this.speculosApiPort === undefined) {
+      const e = new Error("The Speculos API port or/and transport port couldn't be reserved")
+      this.log(`[ZEMU] ${e}`)
+      throw e
+    }
+
+    this.log('Starting Container')
+    await this.emuContainer.runContainer({
+      ...this.startOptions,
+      transportPort: this.transportPort.toString(),
+      speculosApiPort: this.speculosApiPort.toString(),
+    })
+
+    this.log('Connecting to container')
+    await this.connect().catch(async (error) => {
+      this.log(`${error}`)
+      await this.close()
+      throw error
+    })
+
+    await this.finalizeStart()
+  }
+
+  private async finalizeStart(): Promise<void> {
+    // Captures main screen
+    this.log('Wait for start text')
+
+    if (this.startOptions.startText.length === 0) {
+      this.startOptions.startText = isTouchDevice(this.startOptions.model) ? DEFAULT_STAX_START_TEXT : DEFAULT_NANO_START_TEXT
+    }
+    const start = new Date()
+    let found = false
+    let reviewPendingFound = false
+    const flags = !this.startOptions.caseSensitive ? 'i' : ''
+    const startRegex = new RegExp(this.startOptions.startText, flags)
+    const reviewPendingRegex = new RegExp(DEFAULT_PENDING_REVIEW_TEXT, flags)
+
+    while (!found) {
+      const currentTime = new Date()
+      const elapsed = currentTime.getTime() - start.getTime()
+      if (elapsed > this.startOptions.startTimeout) {
+        throw new Error(`Timeout (${this.startOptions.startTimeout}) waiting for text (${this.startOptions.startText})`)
+      }
+      const events = await this.getEvents()
+      if (!reviewPendingFound && events.some((event: IEvent) => reviewPendingRegex.test(event.text))) {
+        const nav = isTouchDevice(this.startOptions.model)
+          ? new TouchNavigation(this.startOptions.model, [ButtonKind.ConfirmYesButton])
+          : new ClickNavigation([0])
+        await this.navigate('', '', nav.schedule, true, false)
+        reviewPendingFound = true
+      }
+      found = events.some((event: IEvent) => startRegex.test(event.text))
+      await Zemu.sleep()
+    }
+
+    this.log('Get initial snapshot and events')
+    this.mainMenuSnapshot = await this.snapshot()
+    this.initialEvents = await this.getEvents()
   }
 
   async connect(): Promise<void> {
@@ -284,8 +405,32 @@ export default class Zemu {
   }
 
   async close(): Promise<void> {
-    await this.emuContainer.stop()
-    this.stopGRPCServer()
+    try {
+      this.stopGRPCServer()
+      
+      if (this.usingPool && this.pooledContainer && Zemu.containerPool) {
+        this.log('Returning container to pool')
+        await Zemu.containerPool.release(this.pooledContainer)
+        this.usingPool = false
+        this.pooledContainer = null
+      } else {
+        this.log('Stopping container')
+        await this.emuContainer.stop()
+      }
+    } catch (error) {
+      this.log(`Error during close: ${error}`)
+      // If pool return fails, try to stop container directly
+      if (this.usingPool) {
+        try {
+          await this.emuContainer.stop()
+        } catch (stopError) {
+          this.log(`Failed to stop container after pool release failure: ${stopError}`)
+        }
+        this.usingPool = false
+        this.pooledContainer = null
+      }
+      throw error
+    }
   }
 
   getTransport(): Transport {
