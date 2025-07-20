@@ -14,10 +14,16 @@
  *  limitations under the License.
  ******************************************************************************* */
 import { getTouchElement } from './buttons'
-import { ActionKind, ButtonKind, type INavElement, type TModel } from './types'
+import { ActionKind, ButtonKind, type INavElement, type TModel, SwipeDirection, type IButton } from './types'
+
+const dummyButton: IButton = {
+  x: 0,
+  y: 0,
+  delay: 0,
+  direction: SwipeDirection.NoSwipe,
+}
 
 export function scheduleToNavElement(clickSchedule: Array<INavElement | number>): INavElement[] {
-  const dummyButton = getTouchElement('nanos', ButtonKind.QuitAppButton)
   const nav: INavElement[] = []
   for (const click of clickSchedule) {
     if (typeof click !== 'number') {

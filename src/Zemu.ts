@@ -66,6 +66,13 @@ import {
 } from './types'
 import { isTouchDevice, zondaxToggleBlindSigning, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from './zondax'
 
+const dummyButton: IButton = {
+  x: 0,
+  y: 0,
+  delay: 0,
+  direction: SwipeDirection.NoSwipe,
+}
+
 export default class Zemu {
   public startOptions!: IStartOptions
 
@@ -851,7 +858,9 @@ export default class Zemu {
       timeout,
       runLastAction
     )
-    const rejectConfirmationNav = new TouchNavigation(this.startOptions.model, [ButtonKind.RejectButton, ButtonKind.ConfirmYesButton])
+    const rejectConfirmationNav = isTouchDevice(this.startOptions.model)
+      ? new TouchNavigation(this.startOptions.model, [ButtonKind.RejectButton, ButtonKind.ConfirmYesButton])
+      : new ClickNavigation([0, 0]) // Both click, then confirm
     // Overwrite last snapshot since navigate starts taking a snapshot of the current screen
     const lastIndex = await this.navigate(
       path,
@@ -915,10 +924,11 @@ export default class Zemu {
 
       const nav: INavElement = {
         type: touchDevice ? ActionKind.Touch : ActionKind.RightClick,
-        button:
-          imageIndex === 1 && isBlindSigning
+        button: touchDevice
+          ? (imageIndex === 1 && isBlindSigning
             ? getTouchElement(this.startOptions.model, ButtonKind.RejectButton)
-            : getTouchElement(this.startOptions.model, ButtonKind.SwipeContinueButton), // Change button based on imageIndex
+            : getTouchElement(this.startOptions.model, ButtonKind.SwipeContinueButton))
+          : dummyButton, // For non-touch devices, use dummy button since action type determines behavior
       }
       await this.runAction(nav, filename, waitForScreenUpdate, true)
       start = new Date()
@@ -927,7 +937,9 @@ export default class Zemu {
     if (!runLastAction) return imageIndex // do not run last action if requested
 
     // Approve can be performed with Tap or PressAndHold
-    const approveButton = getTouchElement(this.startOptions.model, this.startOptions.approveAction)
+    const approveButton = touchDevice 
+      ? getTouchElement(this.startOptions.model, this.startOptions.approveAction)
+      : dummyButton
 
     if (this.startOptions.approveAction === ButtonKind.DynamicTapButton) {
       const events = await this.getEvents()
