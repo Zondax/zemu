@@ -27,6 +27,7 @@ import { PNG, type PNGWithMetadata } from 'pngjs'
 import rndstr from 'randomstring'
 import { ClickNavigation, scheduleToNavElement, TouchNavigation } from './actions'
 import { getTouchElement } from './buttons'
+import { isCriticalTransportError, TransportError, getAPDUStatusMessage } from './errors'
 import {
   BASE_NAME,
   DEFAULT_EMU_IMG,
@@ -78,6 +79,7 @@ export default class Zemu {
 
   private emuContainer: EmuContainer
   public containerName: string
+  private lastTransportError: Error | null = null
 
   public readonly elfPath: string
   public readonly libElfs: Record<string, string>
@@ -437,7 +439,58 @@ export default class Zemu {
 
   getTransport(): Transport {
     if (this.transport == null) throw new Error('Transport is not loaded.')
-    return this.transport
+    
+    // Create a wrapper to intercept transport errors
+    const self = this
+    const originalTransport = this.transport
+    
+    // Return a proxy that intercepts send() calls
+    return new Proxy(originalTransport, {
+      get(target, prop, receiver) {
+        if (prop === 'send') {
+          return async function(cla: number, ins: number, p1: number, p2: number, data?: Buffer, statusList?: number[]) {
+            try {
+              self.lastTransportError = null // Clear previous error
+              const result = await target.send(cla, ins, p1, p2, data, statusList)
+              return result
+            } catch (error) {
+              // Store the error for later checks
+              self.lastTransportError = error as Error
+              
+              // Log critical errors
+              if (isCriticalTransportError(error)) {
+                const statusCode = (error as any).statusCode
+                self.log(`Critical transport error detected: ${getAPDUStatusMessage(statusCode)}`)
+              }
+              
+              // Re-throw the error
+              throw error
+            }
+          }
+        }
+        
+        // For exchange and other methods, apply similar wrapping
+        if (prop === 'exchange') {
+          return async function(apdu: Buffer) {
+            try {
+              self.lastTransportError = null
+              const result = await target.exchange(apdu)
+              return result
+            } catch (error) {
+              self.lastTransportError = error as Error
+              if (isCriticalTransportError(error)) {
+                const statusCode = (error as any).statusCode
+                self.log(`Critical transport error detected: ${getAPDUStatusMessage(statusCode)}`)
+              }
+              throw error
+            }
+          }
+        }
+        
+        // For all other properties/methods, return as-is
+        return Reflect.get(target, prop, receiver)
+      }
+    }) as Transport
   }
 
   getWindowRect(): IDeviceWindow {
@@ -505,6 +558,16 @@ export default class Zemu {
     this.log('Wait until screen is')
 
     while (!inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
+      // Check for critical transport errors that should fail immediately
+      if (this.lastTransportError && isCriticalTransportError(this.lastTransportError)) {
+        const statusCode = (this.lastTransportError as any).statusCode
+        throw new TransportError(
+          `Transport error ${getAPDUStatusMessage(statusCode)} - failing immediately instead of waiting for timeout`,
+          statusCode,
+          this.lastTransportError
+        )
+      }
+      
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
@@ -527,6 +590,16 @@ export default class Zemu {
     this.log('Wait until screen is not')
 
     while (inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
+      // Check for critical transport errors that should fail immediately
+      if (this.lastTransportError && isCriticalTransportError(this.lastTransportError)) {
+        const statusCode = (this.lastTransportError as any).statusCode
+        throw new TransportError(
+          `Transport error ${getAPDUStatusMessage(statusCode)} - failing immediately instead of waiting for timeout`,
+          statusCode,
+          this.lastTransportError
+        )
+      }
+      
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
@@ -879,13 +952,21 @@ export default class Zemu {
   }
 
   async getEvents(): Promise<IEvent[]> {
+    // Check if we have a critical transport error that should be propagated
+    if (this.lastTransportError && isCriticalTransportError(this.lastTransportError)) {
+      throw this.lastTransportError
+    }
+    
     // eslint-disable-next-line @typescript-eslint/unbound-method
     axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
     const eventsUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/events`
     try {
       const { data } = await axios.get(eventsUrl)
       return data.events
-    } catch (_error) {
+    } catch (error) {
+      // Only suppress network errors for events endpoint
+      // Transport errors should still be tracked via lastTransportError
+      this.log(`Failed to get events: ${error}`)
       return []
     }
   }
@@ -913,6 +994,16 @@ export default class Zemu {
     const startRegex = new RegExp(text, flags)
 
     while (!found) {
+      // Check for critical transport errors that should fail immediately
+      if (this.lastTransportError && isCriticalTransportError(this.lastTransportError)) {
+        const statusCode = (this.lastTransportError as any).statusCode
+        throw new TransportError(
+          `Transport error ${getAPDUStatusMessage(statusCode)} - failing immediately instead of waiting for timeout`,
+          statusCode,
+          this.lastTransportError
+        )
+      }
+      
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
       if (elapsed > timeout) {
