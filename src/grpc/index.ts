@@ -34,9 +34,15 @@ export default class GRPCRouter {
     this.server.addService(rpcDefinition.ledger_go.ZemuCommand.service, {
       Exchange(call: any, callback: any, ctx = self) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        void ctx.httpTransport.exchange(call.request.command).then((response: Buffer) => {
-          callback(null, { reply: response })
-        })
+        void ctx.httpTransport
+          .exchange(call.request.command)
+          .then((response: Buffer) => {
+            callback(null, { reply: response })
+          })
+          .catch((err: unknown) => {
+            // propagate transport failure back to the client
+            callback(err as Error)
+          })
       },
     })
     this.server.bindAsync(this.serverAddress, ServerCredentials.createInsecure(), (err, port) => {

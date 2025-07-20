@@ -55,7 +55,7 @@ export namespace flex {
   // Placeholder if Ledger moves this button
   export const settingsNavRightButton: IButton = navRightButton
 
-  export const settingsNavnavLeftButton: IButton = {
+  export const settingsNavLeftButton: IButton = {
     x: 315,
     y: 555,
     delay: 0.25,
@@ -149,7 +149,7 @@ export namespace flex {
     [ButtonKind.PrevPageButton, flex.prevPageButton],
 
     [ButtonKind.SettingsNavRightButton, flex.settingsNavRightButton],
-    [ButtonKind.SettingsNavLeftButton, flex.settingsNavnavLeftButton],
+    [ButtonKind.SettingsNavLeftButton, flex.settingsNavLeftButton],
     [ButtonKind.SettingsQuitButton, flex.settingsQuitButton],
 
     [ButtonKind.ToggleSettingButton1, flex.toggleOption1],

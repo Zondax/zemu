@@ -60,6 +60,8 @@ export interface IStartOptions {
   approveAction: ButtonKind
   approveKeyword: string
   rejectKeyword: string
+  disablePool?: boolean
+  X11?: boolean
 }
 
 export interface IDeviceModel {

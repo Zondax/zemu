@@ -7,6 +7,6 @@ const catchExit = () => {
   })
 }
 
-module.exports = async () => {
-  await catchExit()
+module.exports = () => {
+  catchExit()
 }
