@@ -5,14 +5,12 @@ on:
     types: [created]
   push:
     tags:
+      # Main release versions: v1, v1.2, v1.2.3
       - "v[0-9]+"
-      - "v[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+"  
       - "v[0-9]+.[0-9]+.[0-9]+"
+      # Prerelease versions: v1.2.3-rc1, v1.2.3-beta.1, etc.
       - "v[0-9]+.[0-9]+.[0-9]+-*"
-      # Explicit patterns for common prerelease formats
-      - "v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+-alpha.[0-9]+"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
