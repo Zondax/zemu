@@ -16,6 +16,7 @@
 
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
+import Docker from 'dockerode'
 import rndstr from 'randomstring'
 import { BASE_NAME, DEFAULT_EMU_IMG, DEFAULT_HOST, DEFAULT_START_DELAY } from './constants'
 import EmuContainer from './emulator'
@@ -47,6 +48,7 @@ export class ContainerPool {
   private portRanges: Map<TModel, { transportStart: number; speculosStart: number }> = new Map()
   private readonly host: string = DEFAULT_HOST
   private readonly emuImage: string = DEFAULT_EMU_IMG
+  private readonly docker: Docker = new Docker()
 
   private constructor() {
     this.initializePortRanges()
@@ -69,6 +71,9 @@ export class ContainerPool {
   }
 
   async initialize(config: IPoolConfig): Promise<void> {
+    // Clean up any stale containers before initializing new ones
+    await this.cleanupStaleContainers()
+
     const initPromises: Promise<void>[] = []
 
     for (const [model, count] of Object.entries(config)) {
@@ -304,6 +309,41 @@ export class ContainerPool {
       await container.container.stop()
     } catch (error) {
       console.warn(`Failed to stop removed container ${container.containerName}:`, error)
+    }
+  }
+
+  private async cleanupStaleContainers(): Promise<void> {
+    try {
+      // List all containers that match our naming pattern
+      const containers = await this.docker.listContainers({ 
+        all: true,
+        filters: { 
+          name: [`${BASE_NAME}-pool-`, `${BASE_NAME}-`] 
+        }
+      })
+
+      if (containers.length === 0) {
+        return
+      }
+
+      console.warn(`Found ${containers.length} stale zemu containers, cleaning up...`)
+
+      // Remove all found containers in parallel
+      const cleanupPromises = containers.map(async (containerInfo) => {
+        try {
+          const container = this.docker.getContainer(containerInfo.Id)
+          await container.remove({ force: true })
+        } catch (error) {
+          // Ignore errors when removing containers (they might already be removed)
+          console.warn(`Failed to remove stale container ${containerInfo.Names?.[0]}:`, error)
+        }
+      })
+
+      await Promise.all(cleanupPromises)
+      console.warn(`Cleaned up ${containers.length} stale containers`)
+    } catch (error) {
+      console.warn('Failed to cleanup stale containers:', error)
+      // Don't throw - we want initialization to continue even if cleanup fails
     }
   }
 
