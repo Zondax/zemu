@@ -169,9 +169,12 @@ export default class Zemu {
       await Zemu.containerPool.initialize(config || defaultConfig)
       Zemu.poolInitialized = true
     } catch (error) {
-      console.warn('Container pool initialization failed, falling back to individual containers:', error)
+      console.warn(
+        `Container pool initialization failed: ${error instanceof Error ? error.message : error}. Falling back to individual containers.`
+      )
       Zemu.poolEnabled = false
       Zemu.containerPool = null
+      Zemu.poolInitialized = false
     }
   }
 
@@ -925,9 +928,9 @@ export default class Zemu {
       const nav: INavElement = {
         type: touchDevice ? ActionKind.Touch : ActionKind.RightClick,
         button: touchDevice
-          ? (imageIndex === 1 && isBlindSigning
+          ? imageIndex === 1 && isBlindSigning
             ? getTouchElement(this.startOptions.model, ButtonKind.RejectButton)
-            : getTouchElement(this.startOptions.model, ButtonKind.SwipeContinueButton))
+            : getTouchElement(this.startOptions.model, ButtonKind.SwipeContinueButton)
           : dummyButton, // For non-touch devices, use dummy button since action type determines behavior
       }
       await this.runAction(nav, filename, waitForScreenUpdate, true)
@@ -937,9 +940,7 @@ export default class Zemu {
     if (!runLastAction) return imageIndex // do not run last action if requested
 
     // Approve can be performed with Tap or PressAndHold
-    const approveButton = touchDevice 
-      ? getTouchElement(this.startOptions.model, this.startOptions.approveAction)
-      : dummyButton
+    const approveButton = touchDevice ? getTouchElement(this.startOptions.model, this.startOptions.approveAction) : dummyButton
 
     if (this.startOptions.approveAction === ButtonKind.DynamicTapButton) {
       const events = await this.getEvents()

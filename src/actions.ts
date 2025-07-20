@@ -14,7 +14,7 @@
  *  limitations under the License.
  ******************************************************************************* */
 import { getTouchElement } from './buttons'
-import { ActionKind, ButtonKind, type INavElement, type TModel, SwipeDirection, type IButton } from './types'
+import { ActionKind, ButtonKind, type IButton, type INavElement, SwipeDirection, type TModel } from './types'
 
 const dummyButton: IButton = {
   x: 0,

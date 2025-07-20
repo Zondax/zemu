@@ -18,7 +18,7 @@ const catchExit = () => {
     process.exit(1)
   })
 
-  process.on('unhandledRejection', (reason, promise) => {
+  process.on('unhandledRejection', (reason, _promise) => {
     console.error('Unhandled rejection, cleaning up containers:', reason)
     cleanup()
     process.exit(1)

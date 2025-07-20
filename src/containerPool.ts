@@ -315,11 +315,11 @@ export class ContainerPool {
   private async cleanupStaleContainers(): Promise<void> {
     try {
       // List all containers that match our naming pattern
-      const containers = await this.docker.listContainers({ 
+      const containers = await this.docker.listContainers({
         all: true,
-        filters: { 
-          name: [`${BASE_NAME}-pool-`, `${BASE_NAME}-`] 
-        }
+        filters: {
+          name: [`${BASE_NAME}-pool-`, `${BASE_NAME}-`],
+        },
       })
 
       if (containers.length === 0) {
