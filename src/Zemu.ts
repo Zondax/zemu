@@ -153,10 +153,10 @@ export default class Zemu {
 
       const defaultConfig: IPoolConfig = {
         nanos: 2,
-        nanox: 1,
-        nanosp: 1,
-        stax: 1,
-        flex: 1,
+        nanox: 2,
+        nanosp: 2,
+        stax: 2,
+        flex: 2,
       }
 
       await Zemu.containerPool.initialize(config || defaultConfig)
