@@ -18,6 +18,8 @@ import path from 'node:path'
 import { Transform } from 'node:stream'
 import Docker, { type Container, type ContainerInfo } from 'dockerode'
 
+// Development certificate key for emulator testing only - NOT FOR PRODUCTION USE
+// This is a well-known test key used by the Ledger emulator for development purposes
 export const DEV_CERT_PRIVATE_KEY = 'ff701d781f43ce106f72dc26a46b6a83e053b5d07bb3d4ceab79c91ca822a66b'
 export const BOLOS_SDK = '/project/deps/nanos-secure-sdk'
 export const DEFAULT_APP_PATH = '/project/app/bin'

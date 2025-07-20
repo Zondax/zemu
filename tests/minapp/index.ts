@@ -25,7 +25,7 @@ export function processErrorResponse(response: any) {
       if (Object.hasOwn(response, 'statusCode')) {
         return {
           return_code: response.statusCode,
-          error_message: response.statusCode.toString,
+          error_message: response.statusCode.toString(),
         }
       }
 

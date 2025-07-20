@@ -90,6 +90,7 @@ export default class Zemu {
   private static containerPool: ContainerPool | null = null
   private static poolEnabled: boolean = process.env.ZEMU_DISABLE_POOL !== 'true'
   private static poolInitialized = false
+  private static poolInitPromise: Promise<void> | null = null
   private pooledContainer: IPooledContainer | null = null
   private usingPool = false
 
@@ -258,7 +259,10 @@ export default class Zemu {
     try {
       // Initialize pool if not already done
       if (!Zemu.poolInitialized && Zemu.containerPool === null) {
-        await Zemu.initializePool()
+        if (!Zemu.poolInitPromise) {
+          Zemu.poolInitPromise = Zemu.initializePool()
+        }
+        await Zemu.poolInitPromise
       }
 
       if (!Zemu.containerPool || !Zemu.poolInitialized) {
