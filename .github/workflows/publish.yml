@@ -18,7 +18,7 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write
+  id-token: write  # Required for npm provenance/OIDC
 
 jobs:
   publish-npm:
