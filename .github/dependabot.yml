@@ -1,25 +1,25 @@
-# Basic dependabot.yml file with
-# minimum configuration for two package managers
-
 version: 2
 updates:
-  # Enable version updates for npm
   - package-ecosystem: "npm"
-    # Look for `package.json` and `lock` files in the `root` directory
     directory: "/"
-    # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "daily"
-    target-branch: dev
-
-  # Enable version updates for GitHub Actions
-  - package-ecosystem: 'github-actions'
-    directory: '/'
-    schedule:
-      interval: 'daily'
-      time: '11:00'
     commit-message:
-      prefix: 'chore'
-      prefix-development: 'chore'
-      include: 'scope'
-    target-branch: dev
+      prefix: "deps"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    groups:
+      all:
+        patterns: ["*"]
+    ignore:
+      # Ignore major version updates for stability
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "ci"
+    target-branch: "main"

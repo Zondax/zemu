@@ -1,0 +1,31 @@
+[tools]
+node = "22"
+pnpm = "latest"
+
+[env]
+# Ensure pnpm uses the correct Node.js version
+NODE_ENV = "development"
+
+[tasks.install]
+description = "Install dependencies"
+run = "pnpm install"
+
+[tasks.build]
+description = "Build the project"
+run = "pnpm build"
+
+[tasks.test]
+description = "Run tests"
+run = "pnpm test"
+
+[tasks.check]
+description = "Run linting and formatting checks"
+run = "pnpm check"
+
+[tasks.dev]
+description = "Development setup"
+run = [
+  "pnpm install",
+  "pnpm check",
+  "pnpm build"
+]

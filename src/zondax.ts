@@ -13,11 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { ClickNavigation, TouchNavigation } from "./actions";
-import { ButtonKind, type TModel } from "./types";
+import { ClickNavigation, TouchNavigation } from './actions'
+import { ButtonKind, type TModel } from './types'
 
 export function isTouchDevice(model: TModel): boolean {
-  return model === "stax" || model === "flex";
+  return model === 'stax' || model === 'flex'
 }
 
 export function zondaxMainmenuNavigation(model: TModel, clickArray?: number[]): ClickNavigation | TouchNavigation {
@@ -29,34 +29,26 @@ export function zondaxMainmenuNavigation(model: TModel, clickArray?: number[]): 
       ButtonKind.SettingsNavRightButton,
       ButtonKind.SettingsNavRightButton,
       ButtonKind.SettingsQuitButton,
-    ]);
+    ])
   }
-  const DEFAULT_MAINMENU_CLICKS = [1, 0, 0, 4, -5];
-  return new ClickNavigation(clickArray ?? DEFAULT_MAINMENU_CLICKS);
+  const DEFAULT_MAINMENU_CLICKS = [1, 0, 0, 4, -5]
+  return new ClickNavigation(clickArray ?? DEFAULT_MAINMENU_CLICKS)
 }
 
 export function zondaxToggleExpertMode(model: TModel, clickArray?: number[]): ClickNavigation | TouchNavigation {
   if (isTouchDevice(model)) {
-    return new TouchNavigation(model, [
-      ButtonKind.InfoButton,
-      ButtonKind.ToggleSettingButton1,
-      ButtonKind.SettingsQuitButton,
-    ]);
+    return new TouchNavigation(model, [ButtonKind.InfoButton, ButtonKind.ToggleSettingButton1, ButtonKind.SettingsQuitButton])
   }
-  const DEFAULT_EXPERT_MODE_CLICKS = [1, 0, -1];
-  return new ClickNavigation(clickArray ?? DEFAULT_EXPERT_MODE_CLICKS);
+  const DEFAULT_EXPERT_MODE_CLICKS = [1, 0, -1]
+  return new ClickNavigation(clickArray ?? DEFAULT_EXPERT_MODE_CLICKS)
 }
 
 export function zondaxToggleBlindSigning(model: TModel, clickArray?: number[]): ClickNavigation | TouchNavigation {
   if (isTouchDevice(model)) {
-    return new TouchNavigation(model, [
-      ButtonKind.InfoButton,
-      ButtonKind.ToggleSettingButton2,
-      ButtonKind.SettingsQuitButton,
-    ]);
+    return new TouchNavigation(model, [ButtonKind.InfoButton, ButtonKind.ToggleSettingButton2, ButtonKind.SettingsQuitButton])
   }
-  const DEFAULT_BLIND_SIGNING_MODE_CLICKS = [2, 0, -2];
-  return new ClickNavigation(clickArray ?? DEFAULT_BLIND_SIGNING_MODE_CLICKS);
+  const DEFAULT_BLIND_SIGNING_MODE_CLICKS = [2, 0, -2]
+  return new ClickNavigation(clickArray ?? DEFAULT_BLIND_SIGNING_MODE_CLICKS)
 }
 
 export function zondaxTouchEnableSpecialMode(model: TModel, toggleSettingButton?: ButtonKind): TouchNavigation {
@@ -68,5 +60,5 @@ export function zondaxTouchEnableSpecialMode(model: TModel, toggleSettingButton?
     toggleSettingButton ?? ButtonKind.ToggleSettingButton2,
     ButtonKind.SwipeContinueButton,
     ButtonKind.ConfirmYesButton,
-  ]);
+  ])
 }

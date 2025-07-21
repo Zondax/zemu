@@ -13,41 +13,39 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { type ButtonKind, type IButton, SwipeDirection, type TModel } from "./types";
-import { stax } from "./buttons_stax";
-import { flex } from "./buttons_flex";
 
-const dummyButton: IButton = {
+import { flex } from './buttons_flex'
+import { stax } from './buttons_stax'
+import { type ButtonKind, type IButton, SwipeDirection, type TModel } from './types'
+
+export const dummyButton: IButton = {
   x: 0,
   y: 0,
   delay: 0,
   direction: SwipeDirection.NoSwipe,
-};
+}
 
 export function getTouchElement(model: TModel, buttonKind: ButtonKind): IButton {
   switch (model) {
-    case "stax": {
-      const button = stax.TouchElements.get(buttonKind);
+    case 'stax': {
+      const button = stax.TouchElements.get(buttonKind)
       if (button != null) {
-        return button;
+        return button
       }
-      break;
+      throw new Error(`ButtonKind ${buttonKind} not found for model ${model}`)
     }
 
-    case "flex": {
-      const button = flex.TouchElements.get(buttonKind);
+    case 'flex': {
+      const button = flex.TouchElements.get(buttonKind)
       if (button != null) {
-        return button;
+        return button
       }
-      break;
+      throw new Error(`ButtonKind ${buttonKind} not found for model ${model}`)
     }
 
     // Add cases for other models here when they become available
 
     default:
-      return dummyButton;
+      throw new Error(`Unsupported ButtonKind: ${model}, ${buttonKind}`)
   }
-
-  console.log(`Unsupported ButtonKind: ${model}, ${buttonKind}`);
-  return dummyButton;
 }

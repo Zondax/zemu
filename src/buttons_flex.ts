@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { ButtonKind, type IButton, SwipeDirection } from "./types";
+import { ButtonKind, type IButton, SwipeDirection } from './types'
 
 /* eslint-disable @typescript-eslint/no-namespace */
 export namespace flex {
@@ -22,59 +22,59 @@ export namespace flex {
     y: 75,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const quitAppButton: IButton = {
     x: 240,
     y: 550,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const swipeContinueButton: IButton = {
     x: 250,
     y: 325,
     delay: 0.1,
     direction: SwipeDirection.SwipeLeft,
-  };
+  }
 
   export const navRightButton: IButton = {
     x: 435,
     y: 555,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const navLeftButton: IButton = {
     x: 235,
     y: 555,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   // Placeholder if Ledger moves this button
-  export const settingsNavRightButton: IButton = navRightButton;
+  export const settingsNavRightButton: IButton = navRightButton
 
-  export const settingsNavnavLeftButton: IButton = {
+  export const settingsNavLeftButton: IButton = {
     x: 315,
     y: 555,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const settingsQuitButton: IButton = {
     x: 40,
     y: 45,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const rejectButton: IButton = {
     x: 95,
     y: 555,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   // From y:96 to y:235 (both included), the first switch is toggleable.
   export const toggleOption1: IButton = {
@@ -82,28 +82,28 @@ export namespace flex {
     y: 96,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const approveTapButton: IButton = {
     x: 240,
     y: 435,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const prevPageButton: IButton = {
     x: 45,
     y: 45,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const approveHoldButton: IButton = {
     x: 400,
     y: 435,
     delay: 5,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   // From y:236 to y:375 (both included), the second switch is toggleable.
   export const toggleOption2: IButton = {
@@ -111,35 +111,35 @@ export namespace flex {
     y: 236,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const confirmYesButton: IButton = {
     x: 235,
     y: 460,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const confirmNoButton: IButton = {
     x: 235,
     y: 555,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const showQRButton: IButton = {
     x: 250,
     y: 245,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const closeQRButton: IButton = {
     x: 200,
     y: 650,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
-  };
+  }
 
   export const TouchElements = new Map<ButtonKind, IButton>([
     [ButtonKind.InfoButton, flex.infoButton],
@@ -149,7 +149,7 @@ export namespace flex {
     [ButtonKind.PrevPageButton, flex.prevPageButton],
 
     [ButtonKind.SettingsNavRightButton, flex.settingsNavRightButton],
-    [ButtonKind.SettingsNavLeftButton, flex.settingsNavnavLeftButton],
+    [ButtonKind.SettingsNavLeftButton, flex.settingsNavLeftButton],
     [ButtonKind.SettingsQuitButton, flex.settingsQuitButton],
 
     [ButtonKind.ToggleSettingButton1, flex.toggleOption1],
@@ -167,5 +167,5 @@ export namespace flex {
     [ButtonKind.CloseQRButton, flex.closeQRButton],
 
     [ButtonKind.DynamicTapButton, flex.approveTapButton],
-  ]);
+  ])
 }

@@ -1,4 +1,6 @@
-import Zemu from "../src/index";
+import Zemu from '../src/index'
 
-Zemu.checkAndPullImage();
-Zemu.stopAllEmuContainers();
+;(async () => {
+  await Zemu.checkAndPullImage()
+  await Zemu.stopAllEmuContainers()
+})()

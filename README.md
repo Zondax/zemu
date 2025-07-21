@@ -6,7 +6,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![npm version](https://badge.fury.io/js/%40zondax%2Fzemu.svg)](https://badge.fury.io/js/%40zondax%2Fzemu)
-[![GithubActions](https://github.com/Zondax/zemu/actions/workflows/main.yml/badge.svg)](https://github.com/Zondax/zemu/blob/main/.github/workflows/main.yml)
+[![CI](https://github.com/Zondax/zemu/actions/workflows/ci-ts.yaml/badge.svg)](https://github.com/Zondax/zemu/actions/workflows/ci-ts.yaml)
 
 > **We appreciate any contributions to this effort!**
 >
@@ -21,18 +21,48 @@ apps ecosystem is lacking an adequate approach with respect to testing. The Zemu
 problem. Under the hood, Zemu uses Ledger's project [speculos](https://github.com/ledgerHQ/speculos). It's currently
 being used in every Ledger App built by Zondax, among many others (such as Ethereum one built by Ledger team).
 
-_Zemu is an emulation and testing framework for Ledger Nano S/S+/X devices._
+_Zemu is an emulation and testing framework for Ledger Nano S/S+/X/Stax/Flex devices._
 
 ## Features
 
 - Minimal configuration + Docker based
 - Speculos/Qemu based emulation
-- Easy JS API
-  - Mocha / Jest compatible
+- Container pooling for improved test performance
+- Easy JS/TypeScript API
+  - Vitest / Jest / Mocha compatible
   - Parallelized testing
   - Abstracted device control (buttons, reset, etc.)
   - Navigate thru screens and take screenshots of them
+- Support for all Ledger devices (Nano S/S+/X/Stax/Flex)
+- Enhanced error handling with detailed APDU status codes
 - Debugging (support for CLion and vscode, even mixed C/Rust)
+
+## Installation
+
+```bash
+npm install --save-dev @zondax/zemu
+# or
+pnpm add -D @zondax/zemu
+```
+
+## Quick Start
+
+```typescript
+import Zemu from '@zondax/zemu'
+
+const sim = new Zemu(APP_PATH)
+await sim.start({ model: 'nanos' })
+
+// Interact with your app
+await sim.clickRight()
+await sim.clickBoth()
+
+// Take screenshots
+const screenshot = await sim.snapshot()
+
+// Clean up
+await sim.close()
+```
 
 ## Docs
 
