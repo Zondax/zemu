@@ -26,7 +26,7 @@ import getPort from 'get-port'
 import { PNG, type PNGWithMetadata } from 'pngjs'
 import rndstr from 'randomstring'
 import { ClickNavigation, scheduleToNavElement, TouchNavigation } from './actions'
-import { getTouchElement } from './buttons'
+import { dummyButton, getTouchElement } from './buttons'
 import {
   BASE_NAME,
   DEFAULT_EMU_IMG,
@@ -65,13 +65,6 @@ import {
   type TModel,
 } from './types'
 import { isTouchDevice, zondaxToggleBlindSigning, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from './zondax'
-
-const dummyButton: IButton = {
-  x: 0,
-  y: 0,
-  delay: 0,
-  direction: SwipeDirection.NoSwipe,
-}
 
 export default class Zemu {
   public startOptions!: IStartOptions

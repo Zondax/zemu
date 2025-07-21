@@ -18,7 +18,7 @@ import { flex } from './buttons_flex'
 import { stax } from './buttons_stax'
 import { type ButtonKind, type IButton, SwipeDirection, type TModel } from './types'
 
-const _dummyButton: IButton = {
+export const dummyButton: IButton = {
   x: 0,
   y: 0,
   delay: 0,

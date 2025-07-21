@@ -13,15 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { getTouchElement } from './buttons'
-import { ActionKind, ButtonKind, type IButton, type INavElement, SwipeDirection, type TModel } from './types'
-
-const dummyButton: IButton = {
-  x: 0,
-  y: 0,
-  delay: 0,
-  direction: SwipeDirection.NoSwipe,
-}
+import { dummyButton, getTouchElement } from './buttons'
+import { ActionKind, ButtonKind, type INavElement, type TModel } from './types'
 
 export function scheduleToNavElement(clickSchedule: Array<INavElement | number>): INavElement[] {
   const nav: INavElement[] = []
