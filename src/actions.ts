@@ -13,54 +13,53 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { getTouchElement } from "./buttons";
-import { ActionKind, ButtonKind, type TModel, type INavElement } from "./types";
+import { dummyButton, getTouchElement } from './buttons'
+import { ActionKind, ButtonKind, type INavElement, type TModel } from './types'
 
 export function scheduleToNavElement(clickSchedule: Array<INavElement | number>): INavElement[] {
-  const dummyButton = getTouchElement("nanos", ButtonKind.QuitAppButton);
-  const nav: INavElement[] = [];
+  const nav: INavElement[] = []
   for (const click of clickSchedule) {
-    if (typeof click !== "number") {
-      nav.push(click);
-      continue;
+    if (typeof click !== 'number') {
+      nav.push(click)
+      continue
     }
     if (click === 0) {
       nav.push({
         type: ActionKind.BothClick,
         button: dummyButton,
-      });
+      })
     } else {
       for (let i = 0; i < Math.abs(click); i++) {
         nav.push({
           type: click > 0 ? ActionKind.RightClick : ActionKind.LeftClick,
           button: dummyButton,
-        });
+        })
       }
     }
   }
-  return nav;
+  return nav
 }
 
 export class ClickNavigation {
-  schedule: INavElement[];
+  schedule: INavElement[]
 
   constructor(clickSchedule: number[]) {
-    this.schedule = scheduleToNavElement(clickSchedule);
+    this.schedule = scheduleToNavElement(clickSchedule)
   }
 }
 
 export class TouchNavigation {
-  schedule: INavElement[];
+  schedule: INavElement[]
 
   constructor(model: TModel, buttonKindArray: ButtonKind[]) {
-    this.schedule = [];
+    this.schedule = []
     for (const buttonKind of buttonKindArray) {
-      const touchButton = getTouchElement(model, buttonKind);
-      if (touchButton == null) throw new Error("Undefined touch action");
+      const touchButton = getTouchElement(model, buttonKind)
+      if (touchButton == null) throw new Error('Undefined touch action')
       this.schedule.push({
         type: ActionKind.Touch,
         button: touchButton,
-      });
+      })
     }
   }
 }

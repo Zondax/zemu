@@ -14,117 +14,119 @@
  *  limitations under the License.
  ******************************************************************************* */
 export interface IDeviceWindow {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 export interface ISnapshot {
-  width: number;
-  height: number;
-  data: Buffer;
+  width: number
+  height: number
+  data: Buffer
 }
 
 export interface IEvent {
-  text: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  clear: boolean;
+  text: string
+  x: number
+  y: number
+  w: number
+  h: number
+  clear: boolean
 }
 export interface ISwipeCoordinates {
-  x: number;
-  y: number;
+  x: number
+  y: number
 }
 
-export type TModel = "nanos" | "nanosp" | "nanox" | "stax" | "flex";
+export type TModel = 'nanos' | 'nanosp' | 'nanox' | 'stax' | 'flex'
 
 export interface IStartOptions {
-  logging: boolean;
+  logging: boolean
   logger?: {
-    enabled: boolean;
+    enabled: boolean
     timestamp: {
-      enabled: boolean;
-      format: "unix" | "iso";
-    };
-  };
-  startDelay: number;
-  custom: string;
-  model: TModel;
-  sdk: string;
-  startText: string;
-  caseSensitive: boolean;
-  startTimeout: number;
-  approveAction: ButtonKind;
-  approveKeyword: string;
-  rejectKeyword: string;
+      enabled: boolean
+      format: 'unix' | 'iso'
+    }
+  }
+  startDelay: number
+  custom: string
+  model: TModel
+  sdk: string
+  startText: string
+  caseSensitive: boolean
+  startTimeout: number
+  approveAction: ButtonKind
+  approveKeyword: string
+  rejectKeyword: string
+  disablePool?: boolean
+  X11?: boolean
 }
 
 export interface IDeviceModel {
-  name: TModel;
-  prefix: string;
-  path: string;
+  name: TModel
+  prefix: string
+  path: string
 }
 
 export interface IButton {
-  x: number;
-  y: number;
-  delay: number;
-  direction: SwipeDirection;
+  x: number
+  y: number
+  delay: number
+  direction: SwipeDirection
 }
 
 export interface INavElement {
-  type: ActionKind;
-  button: IButton;
+  type: ActionKind
+  button: IButton
 }
 
 export enum SwipeDirection {
   NoSwipe = 0,
-  SwipeUp,
-  SwipeDown,
-  SwipeRight,
-  SwipeLeft,
+  SwipeUp = 1,
+  SwipeDown = 2,
+  SwipeRight = 3,
+  SwipeLeft = 4,
 }
 
 export enum ActionKind {
   LeftClick = 0,
-  RightClick,
-  BothClick,
-  Touch,
+  RightClick = 1,
+  BothClick = 2,
+  Touch = 3,
 }
 
 export enum ButtonKind {
   InfoButton = 0,
-  QuitAppButton,
+  QuitAppButton = 1,
 
-  SwipeContinueButton,
+  SwipeContinueButton = 2,
 
-  PrevPageButton,
+  PrevPageButton = 3,
 
-  SettingsNavRightButton,
-  SettingsNavLeftButton,
-  SettingsQuitButton,
+  SettingsNavRightButton = 4,
+  SettingsNavLeftButton = 5,
+  SettingsQuitButton = 6,
 
-  ToggleSettingButton1,
-  ToggleSettingButton2,
-  ToggleSettingButton3,
+  ToggleSettingButton1 = 7,
+  ToggleSettingButton2 = 8,
+  ToggleSettingButton3 = 9,
 
-  NavRightButton,
-  NavLeftButton,
+  NavRightButton = 10,
+  NavLeftButton = 11,
 
-  ApproveHoldButton,
-  ApproveTapButton,
-  RejectButton,
+  ApproveHoldButton = 12,
+  ApproveTapButton = 13,
+  RejectButton = 14,
 
-  ConfirmYesButton,
-  ConfirmNoButton,
+  ConfirmYesButton = 15,
+  ConfirmNoButton = 16,
 
-  ShowQRButton,
-  CloseQRButton,
+  ShowQRButton = 17,
+  CloseQRButton = 18,
 
   // Text to compare must match this button
   // Zemu will find the center where the text is displayed and tap there
-  DynamicTapButton,
+  DynamicTapButton = 19,
 }
