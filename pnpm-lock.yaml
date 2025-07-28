@@ -47,7 +47,7 @@ importers:
         version: 2.1.2
       '@ledgerhq/hw-transport':
         specifier: ^6.31.7
-        version: 6.31.7
+        version: 6.31.8
       '@types/dockerode':
         specifier: ^3.3.42
         version: 3.3.42
@@ -337,8 +337,14 @@ packages:
   '@ledgerhq/devices@8.4.7':
     resolution: {integrity: sha512-CljHIaPmtv93H2If1Zs1xW0pgg+M37bAoJkm6+V6Yw5S0MgFWFpLnTTNgCvHXyD8pG0+uq8TuOXUiG1oAV5AyA==}
 
+  '@ledgerhq/devices@8.4.8':
+    resolution: {integrity: sha512-joodpi1lTIoPswpH6DBtlAieEfP0xB1NlM8RY3xj82EtO8eU1IRqTQz7wtsbstXJ1FdLRg/CJ5OL41omdBsrZQ==}
+
   '@ledgerhq/errors@6.22.0':
     resolution: {integrity: sha512-rXtpIOfHL62jWB7o77PNFD4EDYdcqyMeVgt7TZcmTkWT78cK+YYSUTMrNuGLhnZZZTMLWH023Wgt65OfKIdGBQ==}
+
+  '@ledgerhq/errors@6.23.0':
+    resolution: {integrity: sha512-bM7tPYShPThtBy1Y+9D28iquOeP5W5s4p7KKD/cUQoaVaPibrtC7Mm4u+IeSlH4WGvFJkTmv0vmZJajuZtM79A==}
 
   '@ledgerhq/hw-transport-http@6.30.7':
     resolution: {integrity: sha512-TdH41Jm9WFxFpHQa+Mijw7OdRqhIwuL3iwWWU25dSAhQcSX4h+j1Cix0ArjYPXpEiCkm0W02vzr15y0SwyVoDg==}
@@ -346,8 +352,8 @@ packages:
   '@ledgerhq/hw-transport@6.31.4':
     resolution: {integrity: sha512-6c1ir/cXWJm5dCWdq55NPgCJ3UuKuuxRvf//Xs36Bq9BwkV2YaRQhZITAkads83l07NAdR16hkTWqqpwFMaI6A==}
 
-  '@ledgerhq/hw-transport@6.31.7':
-    resolution: {integrity: sha512-R+QMlqoLJDPeCiqwWv85PbZ3m0hel5PwQzWwSIbyEwialqjXnG7LFQgytkgXlgMcayT0chvvLeYjuY5ZfMPY7w==}
+  '@ledgerhq/hw-transport@6.31.8':
+    resolution: {integrity: sha512-iH74gILq8BkkLX1Il0wNhcYp1BJ3tjR18fdok4KEdU86i9dOXRKfLbWNhDDFf1px/pMrsGlDS4SpaO74janeEA==}
 
   '@ledgerhq/logs@6.13.0':
     resolution: {integrity: sha512-4+qRW2Pc8V+btL0QEmdB2X+uyx0kOWMWE1/LWsq5sZy3Q5tpi4eItJS6mB0XL3wGW59RQ+8bchNQQ1OW/va8Og==}
@@ -1520,12 +1526,21 @@ snapshots:
       rxjs: 7.8.2
       semver: 7.7.2
 
+  '@ledgerhq/devices@8.4.8':
+    dependencies:
+      '@ledgerhq/errors': 6.23.0
+      '@ledgerhq/logs': 6.13.0
+      rxjs: 7.8.2
+      semver: 7.7.2
+
   '@ledgerhq/errors@6.22.0': {}
+
+  '@ledgerhq/errors@6.23.0': {}
 
   '@ledgerhq/hw-transport-http@6.30.7':
     dependencies:
       '@ledgerhq/errors': 6.22.0
-      '@ledgerhq/hw-transport': 6.31.7
+      '@ledgerhq/hw-transport': 6.31.8
       '@ledgerhq/logs': 6.13.0
       axios: 1.7.7
       ws: 7.5.10
@@ -1541,10 +1556,10 @@ snapshots:
       '@ledgerhq/logs': 6.13.0
       events: 3.3.0
 
-  '@ledgerhq/hw-transport@6.31.7':
+  '@ledgerhq/hw-transport@6.31.8':
     dependencies:
-      '@ledgerhq/devices': 8.4.7
-      '@ledgerhq/errors': 6.22.0
+      '@ledgerhq/devices': 8.4.8
+      '@ledgerhq/errors': 6.23.0
       '@ledgerhq/logs': 6.13.0
       events: 3.3.0
 
