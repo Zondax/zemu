@@ -14,6 +14,9 @@ importers:
       '@grpc/proto-loader':
         specifier: ^0.7.15
         version: 0.7.15
+      '@ledgerhq/errors':
+        specifier: ^6.23.0
+        version: 6.23.0
       '@ledgerhq/hw-transport-http':
         specifier: ^6.30.8
         version: 6.30.8
@@ -339,9 +342,6 @@ packages:
 
   '@ledgerhq/devices@8.4.8':
     resolution: {integrity: sha512-joodpi1lTIoPswpH6DBtlAieEfP0xB1NlM8RY3xj82EtO8eU1IRqTQz7wtsbstXJ1FdLRg/CJ5OL41omdBsrZQ==}
-
-  '@ledgerhq/errors@6.22.0':
-    resolution: {integrity: sha512-rXtpIOfHL62jWB7o77PNFD4EDYdcqyMeVgt7TZcmTkWT78cK+YYSUTMrNuGLhnZZZTMLWH023Wgt65OfKIdGBQ==}
 
   '@ledgerhq/errors@6.23.0':
     resolution: {integrity: sha512-bM7tPYShPThtBy1Y+9D28iquOeP5W5s4p7KKD/cUQoaVaPibrtC7Mm4u+IeSlH4WGvFJkTmv0vmZJajuZtM79A==}
@@ -1515,7 +1515,7 @@ snapshots:
 
   '@ledgerhq/devices@8.4.7':
     dependencies:
-      '@ledgerhq/errors': 6.22.0
+      '@ledgerhq/errors': 6.23.0
       '@ledgerhq/logs': 6.13.0
       rxjs: 7.8.2
       semver: 7.7.2
@@ -1526,8 +1526,6 @@ snapshots:
       '@ledgerhq/logs': 6.13.0
       rxjs: 7.8.2
       semver: 7.7.2
-
-  '@ledgerhq/errors@6.22.0': {}
 
   '@ledgerhq/errors@6.23.0': {}
 
@@ -1546,7 +1544,7 @@ snapshots:
   '@ledgerhq/hw-transport@6.31.4':
     dependencies:
       '@ledgerhq/devices': 8.4.7
-      '@ledgerhq/errors': 6.22.0
+      '@ledgerhq/errors': 6.23.0
       '@ledgerhq/logs': 6.13.0
       events: 3.3.0
 
