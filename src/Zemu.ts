@@ -15,6 +15,7 @@
  ******************************************************************************* */
 
 import { resolve } from 'node:path'
+import { TransportStatusError } from '@ledgerhq/errors'
 import type Transport from '@ledgerhq/hw-transport'
 import HttpTransport from '@ledgerhq/hw-transport-http'
 import axios, { type AxiosResponse } from 'axios'
@@ -65,6 +66,10 @@ import {
   type TModel,
 } from './types'
 import { isTouchDevice, zondaxToggleBlindSigning, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from './zondax'
+
+enum ApduError {
+  NoError = 0x9000,
+}
 
 export default class Zemu {
   public startOptions!: IStartOptions
@@ -458,6 +463,11 @@ export default class Zemu {
             try {
               self.lastTransportError = null // Clear previous error
               const result = await target.send(cla, ins, p1, p2, data, statusList)
+              const sw = result.readUInt16BE(result.length - 2)
+
+              if (sw !== ApduError.NoError) {
+                throw new TransportStatusError(sw)
+              }
               return result
             } catch (error) {
               // Store the error for later checks

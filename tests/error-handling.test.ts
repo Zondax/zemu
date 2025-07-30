@@ -29,13 +29,16 @@ describe('Error Handling', () => {
       const validINS = 0x00
       const p1 = 0x00
       const p2 = 0x00
+      const data = Buffer.from([])
+      // Provide a statusList to make sure zemu throws an exception even on accepted status words
+      const statusList = [0x9000, 0x6e00]
 
       // Start timer to measure how long the error takes
       const startTime = Date.now()
 
       try {
         // This should fail with CLA_NOT_SUPPORTED (0x6E00)
-        await transport.send(invalidCLA, validINS, p1, p2)
+        await transport.send(invalidCLA, validINS, p1, p2, data, statusList)
 
         // If we get here, the test failed - we expected an error
         expect.fail('Expected transport.send to throw an error')
