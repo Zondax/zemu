@@ -1175,4 +1175,8 @@ export default class Zemu {
       await this.runAction(nav, filename, waitForScreenUpdate, waitForEventsChange)
     }
   }
+
+  clearTransportError(): void {
+    this.lastTransportError = null
+  }
 }
