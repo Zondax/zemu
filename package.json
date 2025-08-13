@@ -23,7 +23,7 @@
     "pnpm": ">=8.0.0"
   },
   "scripts": {
-    "build": "pnpm rimraf dist && tsc && pnpm copy-files",
+    "build": "rm -rf dist && tsc && mkdir -p dist/src/grpc && cp src/grpc/*.proto dist/src/grpc/",
     "copy-files": "copyfiles -u 0 src/**/*.proto dist/",
     "test:clean": "pnpm ts-node tests/pullImageKillOld.ts",
     "test": "pnpm test:clean && pnpm build && vitest run",
