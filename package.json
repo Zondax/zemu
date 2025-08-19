@@ -40,7 +40,7 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.4",
-    "@grpc/proto-loader": "^0.7.15",
+    "@grpc/proto-loader": "^0.8.0",
     "@ledgerhq/hw-transport-http": "^6.30.8",
     "@ledgerhq/errors": "^6.23.0",
     "axios": "^1.11.0",
@@ -64,7 +64,7 @@
     "copyfiles": "^2.4.1",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
-    "typescript": "5.8.3",
+    "typescript": "5.9.2",
     "vitest": "^3.2.4"
   },
   "files": [
