@@ -932,7 +932,7 @@ export default class Zemu {
       const nav: INavElement = {
         type: touchDevice ? ActionKind.Touch : ActionKind.RightClick,
         button: touchDevice
-          ? imageIndex === 1 && isBlindSigning
+          ? imageIndex === 1 + startImgIndex && isBlindSigning
             ? getTouchElement(this.startOptions.model, ButtonKind.RejectButton)
             : getTouchElement(this.startOptions.model, ButtonKind.SwipeContinueButton)
           : dummyButton, // For non-touch devices, use dummy button since action type determines behavior
