@@ -15,7 +15,6 @@
  ******************************************************************************* */
 
 import { resolve } from 'node:path'
-import { TransportStatusError } from '@ledgerhq/errors'
 import type Transport from '@ledgerhq/hw-transport'
 import HttpTransport from '@ledgerhq/hw-transport-http'
 import axios, { type AxiosResponse } from 'axios'
@@ -466,7 +465,9 @@ export default class Zemu {
               const sw = result.readUInt16BE(result.length - 2)
 
               if (sw !== ApduError.NoError) {
-                throw new TransportStatusError(sw)
+                // Extract error message from response (all bytes except last 2)
+                const errorMessage = result.length > 2 ? result.subarray(0, result.length - 2).toString('utf8') : ''
+                throw new TransportError(errorMessage || getAPDUStatusMessage(sw), sw)
               }
               return result
             } catch (error) {
