@@ -492,6 +492,13 @@ export default class Zemu {
             try {
               self.lastTransportError = null
               const result = await target.exchange(apdu)
+              const sw = result.readUInt16BE(result.length - 2)
+
+              if (sw !== ApduError.NoError) {
+                // Extract error message from response (all bytes except last 2)
+                const errorMessage = result.length > 2 ? result.subarray(0, result.length - 2).toString('utf8') : ''
+                throw new TransportError(errorMessage || getAPDUStatusMessage(sw), sw)
+              }
               return result
             } catch (error) {
               self.lastTransportError = error as Error
