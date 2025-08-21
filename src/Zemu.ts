@@ -15,7 +15,6 @@
  ******************************************************************************* */
 
 import { resolve } from 'node:path'
-import { TransportStatusError } from '@ledgerhq/errors'
 import type Transport from '@ledgerhq/hw-transport'
 import HttpTransport from '@ledgerhq/hw-transport-http'
 import axios, { type AxiosResponse } from 'axios'
@@ -466,7 +465,9 @@ export default class Zemu {
               const sw = result.readUInt16BE(result.length - 2)
 
               if (sw !== ApduError.NoError) {
-                throw new TransportStatusError(sw)
+                // Extract error message from response (all bytes except last 2)
+                const errorMessage = result.length > 2 ? result.subarray(0, result.length - 2).toString('utf8') : ''
+                throw new TransportError(errorMessage || getAPDUStatusMessage(sw), sw)
               }
               return result
             } catch (error) {
@@ -491,6 +492,13 @@ export default class Zemu {
             try {
               self.lastTransportError = null
               const result = await target.exchange(apdu)
+              const sw = result.readUInt16BE(result.length - 2)
+
+              if (sw !== ApduError.NoError) {
+                // Extract error message from response (all bytes except last 2)
+                const errorMessage = result.length > 2 ? result.subarray(0, result.length - 2).toString('utf8') : ''
+                throw new TransportError(errorMessage || getAPDUStatusMessage(sw), sw)
+              }
               return result
             } catch (error) {
               self.lastTransportError = error as Error
@@ -931,7 +939,7 @@ export default class Zemu {
       const nav: INavElement = {
         type: touchDevice ? ActionKind.Touch : ActionKind.RightClick,
         button: touchDevice
-          ? imageIndex === 1 && isBlindSigning
+          ? imageIndex === 1 + startImgIndex && isBlindSigning
             ? getTouchElement(this.startOptions.model, ButtonKind.RejectButton)
             : getTouchElement(this.startOptions.model, ButtonKind.SwipeContinueButton)
           : dummyButton, // For non-touch devices, use dummy button since action type determines behavior

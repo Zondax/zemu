@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
   "assist": {
     "actions": {
       "source": {
@@ -89,16 +89,6 @@
   },
   "files": {
     "maxSize": 100485760,
-    "includes": [
-      "**",
-      "!**/node_modules/**",
-      "!**/dist/**",
-      "!**/.github/**",
-      "!**/coverage/**",
-      "!**/build/**",
-      "!**/.next/**",
-      "!**/.turbo/**",
-      "!**/*.d.ts"
-    ]
+    "includes": ["**", "!**/node_modules", "!**/dist", "!**/.github", "!**/coverage", "!**/build", "!**/.next", "!**/.turbo", "!**/*.d.ts"]
   }
 }
