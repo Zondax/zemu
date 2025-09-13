@@ -26,10 +26,10 @@ importers:
         version: 6.30.9
       axios:
         specifier: ^1.8.2
-        version: 1.11.0
+        version: 1.12.0
       axios-retry:
         specifier: ^4.5.0
-        version: 4.5.0(axios@1.11.0)
+        version: 4.5.0(axios@1.12.0)
       dockerode:
         specifier: ^4.0.7
         version: 4.0.7
@@ -619,8 +619,8 @@ packages:
     peerDependencies:
       axios: ^1.8.2
 
-  axios@1.11.0:
-    resolution: {integrity: sha512-1Lx3WLFQWm3ooKDYZD1eXmoGO9fxYQjrycfHFC8P0sCfQVXyROp0p9PFWBehewBOdCwHc+f/b8I0fMto5eSfwA==}
+  axios@1.12.0:
+    resolution: {integrity: sha512-oXTDccv8PcfjZmPGlWsPSwtOJCZ/b6W5jAMCNcfwJbCzDckwG0jrYJFaWH1yvivfCXjVzV/SPDEhMB3Q+DSurg==}
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -803,8 +803,8 @@ packages:
       picomatch:
         optional: true
 
-  follow-redirects@1.15.9:
-    resolution: {integrity: sha512-gew4GsXizNgdoRyqmyfMHyAmXsZDk6mHkSxZFCzW9gwlbtOW44CDtYavM+y+72qD/Vq2l550kMF52DT8fOLJqQ==}
+  follow-redirects@1.15.11:
+    resolution: {integrity: sha512-deG2P0JfjrTxl50XGCDyfI97ZGVCxIpfKYmfyrQ54n5FO/0gfIES8C/Psl6kWVDolizcaaxZJnTS0QSMxvnsBQ==}
     engines: {node: '>=4.0'}
     peerDependencies:
       debug: '*'
@@ -1522,7 +1522,7 @@ snapshots:
       '@ledgerhq/errors': 6.24.0
       '@ledgerhq/hw-transport': 6.31.9
       '@ledgerhq/logs': 6.13.0
-      axios: 1.11.0
+      axios: 1.12.0
       ws: 7.5.10
     transitivePeerDependencies:
       - bufferutil
@@ -1735,7 +1735,7 @@ snapshots:
     dependencies:
       '@ledgerhq/hw-transport': 6.31.4
       '@zondax/ledger-js': 1.2.0
-      axios: 1.11.0
+      axios: 1.12.0
     transitivePeerDependencies:
       - debug
 
@@ -1765,14 +1765,14 @@ snapshots:
 
   asynckit@0.4.0: {}
 
-  axios-retry@4.5.0(axios@1.11.0):
+  axios-retry@4.5.0(axios@1.12.0):
     dependencies:
-      axios: 1.11.0
+      axios: 1.12.0
       is-retry-allowed: 2.2.0
 
-  axios@1.11.0:
+  axios@1.12.0:
     dependencies:
-      follow-redirects: 1.15.9
+      follow-redirects: 1.15.11
       form-data: 4.0.4
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -1991,7 +1991,7 @@ snapshots:
     optionalDependencies:
       picomatch: 4.0.3
 
-  follow-redirects@1.15.9: {}
+  follow-redirects@1.15.11: {}
 
   foreground-child@3.3.1:
     dependencies:
