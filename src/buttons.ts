@@ -14,9 +14,9 @@
  *  limitations under the License.
  ******************************************************************************* */
 
+import { apex_p } from './buttons_apex'
 import { flex } from './buttons_flex'
 import { stax } from './buttons_stax'
-import { apex_p } from './buttons_apex'
 import { type ButtonKind, type IButton, SwipeDirection, type TModel } from './types'
 
 export const dummyButton: IButton = {
