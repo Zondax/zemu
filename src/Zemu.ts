@@ -42,6 +42,7 @@ import {
   DEFAULT_STAX_START_TEXT,
   DEFAULT_WAIT_TIMEOUT,
   KILL_TIMEOUT,
+  WINDOW_APEX,
   WINDOW_FLEX,
   WINDOW_S,
   WINDOW_STAX,
@@ -94,7 +95,8 @@ export default class Zemu {
 
   // Container pool management
   private static containerPool: ContainerPool | null = null
-  private static poolEnabled: boolean = process.env.ZEMU_DISABLE_POOL !== 'true'
+  // Pool is disabled if ZEMU_DISABLE_POOL is set or if we're in a test environment
+  private static poolEnabled: boolean = process.env.ZEMU_DISABLE_POOL !== 'true' && process.env.NODE_ENV !== 'test'
   private static poolInitialized = false
   private static poolInitPromise: Promise<void> | null = null
   private pooledContainer: IPooledContainer | null = null
@@ -161,6 +163,7 @@ export default class Zemu {
         nanosp: 2,
         stax: 2,
         flex: 2,
+        apex_p: 2,
       }
 
       await Zemu.containerPool.initialize(config || defaultConfig)
@@ -225,6 +228,7 @@ export default class Zemu {
       nanosp: 0xc0de0001,
       stax: 0xc0de0001,
       flex: 0xc0de0001,
+      apex_p: 0xc0de0001,
     }
     const elfApp = fs.readFileSync(elfPath)
     const elfInfo = elfy.parse(elfApp)
@@ -545,6 +549,8 @@ export default class Zemu {
         return WINDOW_STAX
       case 'flex':
         return WINDOW_FLEX
+      case 'apex_p':
+        return WINDOW_APEX
       default:
         throw new Error(`model ${this.startOptions.model} not recognized`)
     }
@@ -860,7 +866,7 @@ export default class Zemu {
     }
     const takeSnapshots = true
     const runLastAction = false
-    // For Stax/Flex devices navigate until reject keyword --> Reject --> Confirm rejection
+    // For Stax/Flex/Apex devices navigate until reject keyword --> Reject --> Confirm rejection
     // reject keyword should be actually approve keyword (issue with OCR)
     const navLastIndex = await this.navigateUntilText(
       path,

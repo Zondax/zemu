@@ -39,7 +39,7 @@ export interface ISwipeCoordinates {
   y: number
 }
 
-export type TModel = 'nanos' | 'nanosp' | 'nanox' | 'stax' | 'flex'
+export type TModel = 'nanos' | 'nanosp' | 'nanox' | 'stax' | 'flex' | 'apex_p'
 
 export interface IStartOptions {
   logging: boolean

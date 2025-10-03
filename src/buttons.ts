@@ -16,6 +16,7 @@
 
 import { flex } from './buttons_flex'
 import { stax } from './buttons_stax'
+import { apex_p } from './buttons_apex'
 import { type ButtonKind, type IButton, SwipeDirection, type TModel } from './types'
 
 export const dummyButton: IButton = {
@@ -37,6 +38,14 @@ export function getTouchElement(model: TModel, buttonKind: ButtonKind): IButton 
 
     case 'flex': {
       const button = flex.TouchElements.get(buttonKind)
+      if (button != null) {
+        return button
+      }
+      throw new Error(`ButtonKind ${buttonKind} not found for model ${model}`)
+    }
+
+    case 'apex_p': {
+      const button = apex_p.TouchElements.get(buttonKind)
       if (button != null) {
         return button
       }

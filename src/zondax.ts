@@ -17,7 +17,7 @@ import { ClickNavigation, TouchNavigation } from './actions'
 import { ButtonKind, type TModel } from './types'
 
 export function isTouchDevice(model: TModel): boolean {
-  return model === 'stax' || model === 'flex'
+  return model === 'stax' || model === 'flex' || model === 'apex_p'
 }
 
 export function zondaxMainmenuNavigation(model: TModel, clickArray?: number[]): ClickNavigation | TouchNavigation {
