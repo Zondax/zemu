@@ -64,7 +64,7 @@ export namespace apex_p {
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
   }
-  
+
   export const settingsQuitButton: IButton = {
     x: 40,
     y: 45,
