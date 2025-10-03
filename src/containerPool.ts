@@ -39,6 +39,7 @@ export interface IPoolConfig {
   nanosp?: number
   stax?: number
   flex?: number
+  apex_p?: number
 }
 
 export class ContainerPool {

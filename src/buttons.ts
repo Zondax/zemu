@@ -14,6 +14,7 @@
  *  limitations under the License.
  ******************************************************************************* */
 
+import { apex_p } from './buttons_apex'
 import { flex } from './buttons_flex'
 import { stax } from './buttons_stax'
 import { type ButtonKind, type IButton, SwipeDirection, type TModel } from './types'
@@ -37,6 +38,14 @@ export function getTouchElement(model: TModel, buttonKind: ButtonKind): IButton 
 
     case 'flex': {
       const button = flex.TouchElements.get(buttonKind)
+      if (button != null) {
+        return button
+      }
+      throw new Error(`ButtonKind ${buttonKind} not found for model ${model}`)
+    }
+
+    case 'apex_p': {
+      const button = apex_p.TouchElements.get(buttonKind)
       if (button != null) {
         return button
       }
