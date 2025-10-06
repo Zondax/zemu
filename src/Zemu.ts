@@ -660,6 +660,42 @@ export default class Zemu {
     this.log('Screen changed')
   }
 
+  async waitUntilTextDisappears(text: string, timeout = 5000): Promise<void> {
+    const start = new Date()
+
+    while (true) {
+      const currentTime = new Date()
+      const elapsed = currentTime.getTime() - start.getTime()
+      if (elapsed > timeout) {
+        throw new Error(`Timeout waiting for text "${text}" to disappear (${timeout}ms)`)
+      }
+
+      const events = await this.getEvents()
+
+      // Find the last occurrence of the text
+      let lastIndexWithText = -1
+      for (let i = 0; i < events.length; i++) {
+        if (events[i].text.includes(text)) {
+          lastIndexWithText = i
+        }
+      }
+
+      // If text was never present, we're done
+      if (lastIndexWithText === -1) {
+        return
+      }
+
+      // Check if there are events after the last occurrence (meaning screen changed after the text appeared)
+      const hasEventsAfterText = lastIndexWithText < events.length - 1
+      if (hasEventsAfterText) {
+        return
+      }
+
+      // Text is still the most recent thing on screen, keep waiting
+      await Zemu.sleep(50)
+    }
+  }
+
   eventsAreEqual(events1: IEvent[], events2: IEvent[]): boolean {
     if (events1.length !== events2.length) return false
     for (let i = 0; i < events1.length; i++) {
