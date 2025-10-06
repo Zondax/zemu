@@ -661,33 +661,19 @@ export default class Zemu {
   }
 
   async waitUntilTextDisappears(text: string, timeout = 5000): Promise<void> {
-    const start = new Date()
+    const startTime = Date.now()
 
     while (true) {
-      const currentTime = new Date()
-      const elapsed = currentTime.getTime() - start.getTime()
-      if (elapsed > timeout) {
+      if (Date.now() - startTime > timeout) {
         throw new Error(`Timeout waiting for text "${text}" to disappear (${timeout}ms)`)
       }
 
       const events = await this.getEvents()
 
-      // Find the last occurrence of the text
-      let lastIndexWithText = -1
-      for (let i = 0; i < events.length; i++) {
-        if (events[i].text.includes(text)) {
-          lastIndexWithText = i
-        }
-      }
+      const lastIndexWithText = events.findLastIndex((event) => event.text.includes(text))
 
-      // If text was never present, we're done
-      if (lastIndexWithText === -1) {
-        return
-      }
-
-      // Check if there are events after the last occurrence (meaning screen changed after the text appeared)
-      const hasEventsAfterText = lastIndexWithText < events.length - 1
-      if (hasEventsAfterText) {
+      // If text was never present, or if there are new events after the text appeared, we're done.
+      if (lastIndexWithText === -1 || lastIndexWithText < events.length - 1) {
         return
       }
 
