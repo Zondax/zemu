@@ -73,7 +73,7 @@ export namespace apex_p {
   }
 
   export const rejectButton: IButton = {
-    x: 150,
+    x: 95,
     y: 380,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
@@ -87,10 +87,9 @@ export namespace apex_p {
     direction: SwipeDirection.NoSwipe,
   }
 
-  // TODO
   export const approveTapButton: IButton = {
-    x: 205,
-    y: 520,
+    x: 180,
+    y: 290,
     delay: 0.25,
     direction: SwipeDirection.NoSwipe,
   }
