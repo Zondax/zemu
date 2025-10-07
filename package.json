@@ -40,8 +40,8 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.0",
     "@grpc/proto-loader": "^0.8.0",
-    "@ledgerhq/hw-transport-http": "^6.30.12",
     "@ledgerhq/errors": "^6.26.0",
+    "@ledgerhq/hw-transport-http": "^6.30.12",
     "axios": "^1.12.2",
     "axios-retry": "^4.5.0",
     "dockerode": "^4.0.9",
@@ -56,7 +56,7 @@
     "@ledgerhq/hw-transport": "^6.31.12",
     "@types/dockerode": "^3.3.44",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^24.6.2",
+    "@types/node": "^24.7.0",
     "@types/pngjs": "^6.0.5",
     "@types/randomstring": "^1.3.0",
     "@zondax/ledger-substrate": "^1.1.2",
