@@ -20,10 +20,10 @@ importers:
         version: 0.8.0
       '@ledgerhq/errors':
         specifier: ^6.26.0
-        version: 6.26.0
+        version: 6.27.0
       '@ledgerhq/hw-transport-http':
         specifier: ^6.30.12
-        version: 6.30.12
+        version: 6.31.0
       axios:
         specifier: ^1.8.2
         version: 1.11.0
@@ -51,7 +51,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.3.3
-        version: 2.3.3
+        version: 2.3.4
       '@ledgerhq/hw-transport':
         specifier: ^6.31.12
         version: 6.31.12
@@ -94,55 +94,55 @@ packages:
   '@balena/dockerignore@1.0.2':
     resolution: {integrity: sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q==}
 
-  '@biomejs/biome@2.3.3':
-    resolution: {integrity: sha512-zn/P1pRBCpDdhi+VNSMnpczOz9DnqzOA2c48K8xgxjDODvi5O8gs3a2H233rck/5HXpkFj6TmyoqVvxirZUnvg==}
+  '@biomejs/biome@2.3.4':
+    resolution: {integrity: sha512-TU08LXjBHdy0mEY9APtEtZdNQQijXUDSXR7IK1i45wgoPD5R0muK7s61QcFir6FpOj/RP1+YkPx5QJlycXUU3w==}
     engines: {node: '>=14.21.3'}
     hasBin: true
 
-  '@biomejs/cli-darwin-arm64@2.3.3':
-    resolution: {integrity: sha512-5+JtW6RKmjqL9un0UtHV0ezOslAyYBzyl5ZhYiu7GHesX2x8NCDl6tXYrenv9m7e1RLbkO5E5Kh04kseMtz6lw==}
+  '@biomejs/cli-darwin-arm64@2.3.4':
+    resolution: {integrity: sha512-w40GvlNzLaqmuWYiDU6Ys9FNhJiclngKqcGld3iJIiy2bpJ0Q+8n3haiaC81uTPY/NA0d8Q/I3Z9+ajc14102Q==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [darwin]
 
-  '@biomejs/cli-darwin-x64@2.3.3':
-    resolution: {integrity: sha512-UPmKRalkHicvIpeccuKqq+/gA2HYV8FUnAEDJnqYBlGlycKqe6xrovWqvWTE4TTNpIFf4UQyuaDzLkN6Kz6tbA==}
+  '@biomejs/cli-darwin-x64@2.3.4':
+    resolution: {integrity: sha512-3s7TLVtjJ7ni1xADXsS7x7GMUrLBZXg8SemXc3T0XLslzvqKj/dq1xGeBQ+pOWQzng9MaozfacIHdK2UlJ3jGA==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [darwin]
 
-  '@biomejs/cli-linux-arm64-musl@2.3.3':
-    resolution: {integrity: sha512-KhCDMV+V7Yu72v40ssGJTHuv/j0n7JQ6l0s/c+EMcX5zPYLMLr4XpmI+WXhp4Vfkz0T5Xnh5wbrTBI3f2UTpjQ==}
+  '@biomejs/cli-linux-arm64-musl@2.3.4':
+    resolution: {integrity: sha512-IruVGQRwMURivWazchiq7gKAqZSFs5so6gi0hJyxk7x6HR+iwZbO2IxNOqyLURBvL06qkIHs7Wffl6Bw30vCbQ==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [linux]
 
-  '@biomejs/cli-linux-arm64@2.3.3':
-    resolution: {integrity: sha512-zeiKwALNB/hax7+LLhCYqhqzlWdTfgE9BGkX2Z8S4VmCYnGFrf2fON/ec6KCos7mra5MDm6fYICsEWN2+HKZhw==}
+  '@biomejs/cli-linux-arm64@2.3.4':
+    resolution: {integrity: sha512-y7efHyyM2gYmHy/AdWEip+VgTMe9973aP7XYKPzu/j8JxnPHuSUXftzmPhkVw0lfm4ECGbdBdGD6+rLmTgNZaA==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [linux]
 
-  '@biomejs/cli-linux-x64-musl@2.3.3':
-    resolution: {integrity: sha512-IyqQ+jYzU5MVy9CK5NV0U+NnUMPUAhYMrB/x4QgL/Dl1MqzBVc61bHeyhLnKM6DSEk73/TQYrk/8/QmVHudLdQ==}
+  '@biomejs/cli-linux-x64-musl@2.3.4':
+    resolution: {integrity: sha512-mzKFFv/w66e4/jCobFmD3kymCqG+FuWE7sVa4Yjqd9v7qt2UhXo67MSZKY9Ih18V2IwPzRKQPCw6KwdZs6AXSA==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [linux]
 
-  '@biomejs/cli-linux-x64@2.3.3':
-    resolution: {integrity: sha512-05CjPLbvVVU8J6eaO6iSEoA0FXKy2l6ddL+1h/VpiosCmIp3HxRKLOa1hhC1n+D13Z8g9b1DtnglGtM5U3sTag==}
+  '@biomejs/cli-linux-x64@2.3.4':
+    resolution: {integrity: sha512-gKfjWR/6/dfIxPJCw8REdEowiXCkIpl9jycpNVHux8aX2yhWPLjydOshkDL6Y/82PcQJHn95VCj7J+BRcE5o1Q==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [linux]
 
-  '@biomejs/cli-win32-arm64@2.3.3':
-    resolution: {integrity: sha512-NtlLs3pdFqFAQYZjlEHKOwJEn3GEaz7rtR2oCrzaLT2Xt3Cfd55/VvodQ5V+X+KepLa956QJagckJrNL+DmumQ==}
+  '@biomejs/cli-win32-arm64@2.3.4':
+    resolution: {integrity: sha512-5TJ6JfVez+yyupJ/iGUici2wzKf0RrSAxJhghQXtAEsc67OIpdwSKAQboemILrwKfHDi5s6mu7mX+VTCTUydkw==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [win32]
 
-  '@biomejs/cli-win32-x64@2.3.3':
-    resolution: {integrity: sha512-klJKPPQvUk9Rlp0Dd56gQw/+Wt6uUprHdHWtbDC93f3Iv+knA2tLWpcYoOZJgPV+9s+RBmYv0DGy4mUlr20esg==}
+  '@biomejs/cli-win32-x64@2.3.4':
+    resolution: {integrity: sha512-FGCijXecmC4IedQ0esdYNlMpx0Jxgf4zceCaMu6fkjWyjgn50ZQtMiqZZQ0Q/77yqPxvtkgZAvt5uGw0gAAjig==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
@@ -347,14 +347,20 @@ packages:
   '@ledgerhq/devices@8.6.1':
     resolution: {integrity: sha512-PQR2fyWz7P/wMFHY9ZLz17WgFdxC/Im0RVDcWXpp24+iRQRyxhQeX2iG4mBKUzfaAW6pOIEiWt+vmJh88QP9rQ==}
 
-  '@ledgerhq/errors@6.26.0':
-    resolution: {integrity: sha512-4OlisaDBafkn7KN5emue08lCGMVREX6T+nxj47C7W30EBA/leLAEDaVvUw5/gFOWrv8Q2A9Scb8aMM3uokyt0w==}
+  '@ledgerhq/devices@8.7.0':
+    resolution: {integrity: sha512-3pSOULPUhClk2oOxa6UnoyXW8+05FK7r6cpq2WiTey4kyIUjmIraO7AX9lhz9IU73dGVtBMdU+NCPPO2RYJaTQ==}
 
-  '@ledgerhq/hw-transport-http@6.30.12':
-    resolution: {integrity: sha512-pnN3YKsOG8VYMlibTn2Cit7DPrHms+BhLzByZvBSCjUq9YdM4dcG056TIL1ac2qksDmp8suonnavDjPHrtldpQ==}
+  '@ledgerhq/errors@6.27.0':
+    resolution: {integrity: sha512-EE2hATONHdNP3YWFe3rZwwpSEzI5oN+q/xTjOulnjHZo84TLjungegEJ54A/Pzld0woulkkeVA27FbW5SAO1aA==}
+
+  '@ledgerhq/hw-transport-http@6.31.0':
+    resolution: {integrity: sha512-nSh+BwVuWDPLOWTLmL2EAIXGHYvW7HJqKLZ2yYszJBKQh2xQCNDaXw/jd3dQNsi98k9KMZMWov4WVMN2n0wCzA==}
 
   '@ledgerhq/hw-transport@6.31.12':
     resolution: {integrity: sha512-FO5LRIXYC8ELtaohlO8qK0b3TfHUNBZ3+CXKPHiHj2jJwrxPf4s5kcgBYrmzuf1C/1vfrMOjzyty6OgrMIbU6Q==}
+
+  '@ledgerhq/hw-transport@6.31.13':
+    resolution: {integrity: sha512-MrJRDk74wY980ofiFPRpTHQBbRw1wDuKbdag1zqlO1xtJglymwwY03K2kvBNvkm1RTSCPUp/nAoNG+WThZuuew==}
 
   '@ledgerhq/hw-transport@6.31.4':
     resolution: {integrity: sha512-6c1ir/cXWJm5dCWdq55NPgCJ3UuKuuxRvf//Xs36Bq9BwkV2YaRQhZITAkads83l07NAdR16hkTWqqpwFMaI6A==}
@@ -1064,6 +1070,11 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  semver@7.7.3:
+    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
+    engines: {node: '>=10'}
+    hasBin: true
+
   shebang-command@2.0.0:
     resolution: {integrity: sha512-kHxr2zZpYtdmrN1qDjrrX/Z1rR1kG8Dx+gkpK1G4eXmvXswmcE1hTWBWYUzlraYw1/yZp6YuDY77YtvbN0dmDA==}
     engines: {node: '>=8'}
@@ -1333,39 +1344,39 @@ snapshots:
 
   '@balena/dockerignore@1.0.2': {}
 
-  '@biomejs/biome@2.3.3':
+  '@biomejs/biome@2.3.4':
     optionalDependencies:
-      '@biomejs/cli-darwin-arm64': 2.3.3
-      '@biomejs/cli-darwin-x64': 2.3.3
-      '@biomejs/cli-linux-arm64': 2.3.3
-      '@biomejs/cli-linux-arm64-musl': 2.3.3
-      '@biomejs/cli-linux-x64': 2.3.3
-      '@biomejs/cli-linux-x64-musl': 2.3.3
-      '@biomejs/cli-win32-arm64': 2.3.3
-      '@biomejs/cli-win32-x64': 2.3.3
+      '@biomejs/cli-darwin-arm64': 2.3.4
+      '@biomejs/cli-darwin-x64': 2.3.4
+      '@biomejs/cli-linux-arm64': 2.3.4
+      '@biomejs/cli-linux-arm64-musl': 2.3.4
+      '@biomejs/cli-linux-x64': 2.3.4
+      '@biomejs/cli-linux-x64-musl': 2.3.4
+      '@biomejs/cli-win32-arm64': 2.3.4
+      '@biomejs/cli-win32-x64': 2.3.4
 
-  '@biomejs/cli-darwin-arm64@2.3.3':
+  '@biomejs/cli-darwin-arm64@2.3.4':
     optional: true
 
-  '@biomejs/cli-darwin-x64@2.3.3':
+  '@biomejs/cli-darwin-x64@2.3.4':
     optional: true
 
-  '@biomejs/cli-linux-arm64-musl@2.3.3':
+  '@biomejs/cli-linux-arm64-musl@2.3.4':
     optional: true
 
-  '@biomejs/cli-linux-arm64@2.3.3':
+  '@biomejs/cli-linux-arm64@2.3.4':
     optional: true
 
-  '@biomejs/cli-linux-x64-musl@2.3.3':
+  '@biomejs/cli-linux-x64-musl@2.3.4':
     optional: true
 
-  '@biomejs/cli-linux-x64@2.3.3':
+  '@biomejs/cli-linux-x64@2.3.4':
     optional: true
 
-  '@biomejs/cli-win32-arm64@2.3.3':
+  '@biomejs/cli-win32-arm64@2.3.4':
     optional: true
 
-  '@biomejs/cli-win32-x64@2.3.3':
+  '@biomejs/cli-win32-x64@2.3.4':
     optional: true
 
   '@cspotcode/source-map-support@0.8.1':
@@ -1493,24 +1504,31 @@ snapshots:
 
   '@ledgerhq/devices@8.4.7':
     dependencies:
-      '@ledgerhq/errors': 6.26.0
+      '@ledgerhq/errors': 6.27.0
       '@ledgerhq/logs': 6.13.0
       rxjs: 7.8.2
       semver: 7.7.2
 
   '@ledgerhq/devices@8.6.1':
     dependencies:
-      '@ledgerhq/errors': 6.26.0
+      '@ledgerhq/errors': 6.27.0
       '@ledgerhq/logs': 6.13.0
       rxjs: 7.8.2
       semver: 7.7.2
 
-  '@ledgerhq/errors@6.26.0': {}
-
-  '@ledgerhq/hw-transport-http@6.30.12':
+  '@ledgerhq/devices@8.7.0':
     dependencies:
-      '@ledgerhq/errors': 6.26.0
-      '@ledgerhq/hw-transport': 6.31.12
+      '@ledgerhq/errors': 6.27.0
+      '@ledgerhq/logs': 6.13.0
+      rxjs: 7.8.2
+      semver: 7.7.3
+
+  '@ledgerhq/errors@6.27.0': {}
+
+  '@ledgerhq/hw-transport-http@6.31.0':
+    dependencies:
+      '@ledgerhq/errors': 6.27.0
+      '@ledgerhq/hw-transport': 6.31.13
       '@ledgerhq/logs': 6.13.0
       axios: 1.11.0
       ws: 7.5.10
@@ -1522,14 +1540,21 @@ snapshots:
   '@ledgerhq/hw-transport@6.31.12':
     dependencies:
       '@ledgerhq/devices': 8.6.1
-      '@ledgerhq/errors': 6.26.0
+      '@ledgerhq/errors': 6.27.0
+      '@ledgerhq/logs': 6.13.0
+      events: 3.3.0
+
+  '@ledgerhq/hw-transport@6.31.13':
+    dependencies:
+      '@ledgerhq/devices': 8.7.0
+      '@ledgerhq/errors': 6.27.0
       '@ledgerhq/logs': 6.13.0
       events: 3.3.0
 
   '@ledgerhq/hw-transport@6.31.4':
     dependencies:
       '@ledgerhq/devices': 8.4.7
-      '@ledgerhq/errors': 6.26.0
+      '@ledgerhq/errors': 6.27.0
       '@ledgerhq/logs': 6.13.0
       events: 3.3.0
 
@@ -2245,6 +2270,8 @@ snapshots:
   safer-buffer@2.1.2: {}
 
   semver@7.7.2: {}
+
+  semver@7.7.3: {}
 
   shebang-command@2.0.0:
     dependencies:
