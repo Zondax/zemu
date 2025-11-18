@@ -6,6 +6,10 @@ pnpm = "latest"
 # Ensure pnpm uses the correct Node.js version
 NODE_ENV = "development"
 
+[tasks.ci_postinstall]
+description = "Install dependencies for CI"
+run = "pnpm install --frozen-lockfile"
+
 [tasks.install]
 description = "Install dependencies"
 run = "pnpm install"
