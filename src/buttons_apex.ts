@@ -34,7 +34,7 @@ export namespace apex_p {
 
   export const swipeContinueButton: IButton = {
     x: 270,
-    y: 320,
+    y: 200,
     delay: 0.1,
     direction: SwipeDirection.SwipeLeft,
   }
