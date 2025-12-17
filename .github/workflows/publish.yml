@@ -22,10 +22,12 @@ permissions:
 
 jobs:
   publish-npm:
-    uses: zondax/_workflows/.github/workflows/_publish-npm.yaml@main
+    uses: zondax/_workflows/.github/workflows/_publish-npm.yaml@v5
+    permissions:
+      contents: read
+      id-token: write # Required for OIDC trusted publishing - must be in caller!
     with:
-      timeout_minutes: 10
-      dry_run: false
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN_PUBLISH_AUTO }}
+      timeout_minutes: 15
+      dry_run: ${{ github.event_name != 'release' }}
+      github_app_auth: false
 
