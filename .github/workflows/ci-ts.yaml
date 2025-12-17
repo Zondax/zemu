@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   ts-checks:
-    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@main
+    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@v5
     with:
       package_manager: pnpm
       node_version: "22"
@@ -33,16 +33,11 @@ jobs:
     needs: ts-checks
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22'
-          cache: 'pnpm'
+        uses: actions/checkout@v6
+      - name: Setup mise
+        uses: jdx/mise-action@v3
+        env:
+          MISE_NODE_VERSION: ${{ matrix.node-version }}
       - name: Install dependencies
         run: pnpm install
       - name: Run tests with Docker

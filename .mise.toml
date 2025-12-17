@@ -1,6 +1,7 @@
 [tools]
 node = "22"
 pnpm = "latest"
+bun = "latest"
 
 [env]
 # Ensure pnpm uses the correct Node.js version
