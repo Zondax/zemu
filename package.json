@@ -68,7 +68,7 @@
     "vitest": "^4.0.16"
   },
   "resolutions": {
-    "axios": "^1.8.2",
+    "axios": "^1.13.2",
     "glob": "^10.3.10"
   },
   "files": [
