@@ -70,8 +70,8 @@ export default class EmuContainer {
 
   static async checkAndPullImage(imageName: string): Promise<void> {
     const docker = new Docker()
-    await new Promise<void>((resolve) => {
-      docker.pull(imageName, {}, (err: any, stream: any) => {
+    await new Promise<void>((resolve, reject) => {
+      docker.pull(imageName, {}, (err: unknown, stream) => {
         function onProgress(event: any): void {
           const progress = event?.progress ?? ''
           const status = event?.status ?? ''
@@ -81,18 +81,19 @@ export default class EmuContainer {
         function onFinished(err: any, _output: any): void {
           if (err != null) {
             process.stdout.write(`[DOCKER] ${err}\n`)
-            throw err
+            reject(err)
           }
           resolve()
         }
 
         if (err != null) {
           process.stdout.write(`[DOCKER] ${err}\n`)
-          throw err
+          reject(err)
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        docker.modem.followProgress(stream, onFinished, onProgress)
+        if (stream) {
+          docker.modem.followProgress(stream, onFinished, onProgress)
+        }
       })
     })
   }
