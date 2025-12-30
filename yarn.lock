@@ -281,31 +281,31 @@
     rxjs "^7.8.1"
     semver "^7.3.5"
 
-"@ledgerhq/devices@8.7.1":
-  version "8.7.1"
-  resolved "https://registry.npmjs.org/@ledgerhq/devices/-/devices-8.7.1.tgz#e676dfca7dfd4f9704ed2e4c003a79d0153d53c5"
-  integrity sha512-xUtqLp4t7PhVKkMG/mCrSzxGQ25JA06UAIxxq07EwuJKyWaey1gSdvqr0TvbTw/fsJNya4FIBYTrUkjH9XpdBQ==
+"@ledgerhq/devices@8.8.0":
+  version "8.8.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-8.8.0.tgz#479298de2b4dd059fe52fc2c627caf120b59923f"
+  integrity sha512-ZFRAQQaESxIK/8SYrrHyqb7pQjLPO8f62PI6H16SP0/uC9fdZKR8NqOGMvIf7I6K442SkiQATnC/kxUeUTfuHA==
   dependencies:
-    "@ledgerhq/errors" "^6.27.1"
+    "@ledgerhq/errors" "^6.28.0"
     "@ledgerhq/logs" "^6.13.0"
-    rxjs "^7.8.1"
+    rxjs "7.8.2"
     semver "^7.3.5"
 
-"@ledgerhq/errors@^6.24.0", "@ledgerhq/errors@^6.27.0", "@ledgerhq/errors@^6.27.1":
-  version "6.27.1"
-  resolved "https://registry.npmjs.org/@ledgerhq/errors/-/errors-6.27.1.tgz#66cc609359ddf9368d33f5591008fcb31b1a6315"
-  integrity sha512-Q6nXkg63kSjxa8DDBtjSGAuiOP/jQVQM/0f+0R/ovilQKuxMIxEMXPfonvhQ2AIP4bqKOzGV1c9Iqnow22w/Zg==
+"@ledgerhq/errors@^6.24.0", "@ledgerhq/errors@^6.27.0", "@ledgerhq/errors@^6.27.1", "@ledgerhq/errors@^6.28.0":
+  version "6.28.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.28.0.tgz#4a4ccea3b7ee28a54f4301053729c3804d8d0737"
+  integrity sha512-Rx6GN801GP/3gCfVmmiXFVZWmiaEGMuXVwjM6WOCX0dzw4v7KcB1nj4vrNC1plDI/xkPt/clYJPG7LgSt0mxlw==
 
 "@ledgerhq/hw-transport-http@^6.31.1":
-  version "6.31.1"
-  resolved "https://registry.npmjs.org/@ledgerhq/hw-transport-http/-/hw-transport-http-6.31.1.tgz#52daba6ea02f81c06ba00100b68bb35d2ef031bb"
-  integrity sha512-YRynbciqpn1F3cL5ciQqT6uyL9/iCm2QEHrZZDXSau0xZdvuxfcjk7pJinw0cdDZX+XvCMcEGuOa2wl7EiGzIw==
+  version "6.32.0"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport-http/-/hw-transport-http-6.32.0.tgz#5136880863ff597f268655aa730367945685bf4c"
+  integrity sha512-RElyb92socuAyQuzov6ZPLBAozV+m20RUanlZSziBU+jGqnfA9GJWGzqwbCONhzT0EKoa0Sz94Aq3oqwmEk4Kg==
   dependencies:
-    "@ledgerhq/errors" "^6.27.1"
-    "@ledgerhq/hw-transport" "6.31.14"
+    "@ledgerhq/errors" "^6.28.0"
+    "@ledgerhq/hw-transport" "6.31.15"
     "@ledgerhq/logs" "^6.13.0"
     axios "1.12.2"
-    ws "^7.5.2"
+    ws "8.18.3"
 
 "@ledgerhq/hw-transport@6.31.13":
   version "6.31.13"
@@ -317,13 +317,13 @@
     "@ledgerhq/logs" "^6.13.0"
     events "^3.3.0"
 
-"@ledgerhq/hw-transport@6.31.14", "@ledgerhq/hw-transport@^6.31.14":
-  version "6.31.14"
-  resolved "https://registry.npmjs.org/@ledgerhq/hw-transport/-/hw-transport-6.31.14.tgz#bae7401b27586d2b560ee349661a57379b1fde6f"
-  integrity sha512-aTKItTLDCN2aoZv6nX6weMslgzT0mI8Hp2FEt2iTomQ6V5r1/BRDRbz2WB1989dZsgBajPRuUWhTZ/Bt6tiijw==
+"@ledgerhq/hw-transport@6.31.15", "@ledgerhq/hw-transport@^6.31.14":
+  version "6.31.15"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.31.15.tgz#6df7c630b5e438900bbc70bf5d5849696a7283a0"
+  integrity sha512-I+hzH9XGFPaYq9K+iw+qWJUyVdhN9fdO00Df9zAkOCzju1W5Gc+cDJxbYnZApmY8oMd8mNoXTstEW3Ih5ikaVg==
   dependencies:
-    "@ledgerhq/devices" "8.7.1"
-    "@ledgerhq/errors" "^6.27.1"
+    "@ledgerhq/devices" "8.8.0"
+    "@ledgerhq/errors" "^6.28.0"
     "@ledgerhq/logs" "^6.13.0"
     events "^3.3.0"
 
@@ -1122,9 +1122,9 @@ fs-constants@^1.0.0:
   integrity sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==
 
 fs-extra@^11.3.2:
-  version "11.3.2"
-  resolved "https://registry.npmjs.org/fs-extra/-/fs-extra-11.3.2.tgz#c838aeddc6f4a8c74dd15f85e11fe5511bfe02a4"
-  integrity sha512-Xr9F6z6up6Ws+NjzMCZc6WXg2YFRlrLP9NQDO3VQrWrfiojdhS56TzueT88ze0uBdCTwEIhQ3ptnmKeWGFAe0A==
+  version "11.3.3"
+  resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-11.3.3.tgz#a27da23b72524e81ac6c3815cc0179b8c74c59ee"
+  integrity sha512-VWSRii4t0AFm6ixFFmLLx1t7wS1gh+ckoa84aOeapGum0h+EZd1EhEumSB+ZdDLnEPuucsVB9oB7cxJHap6Afg==
   dependencies:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"
@@ -1549,7 +1549,7 @@ rollup@^4.43.0:
     "@rollup/rollup-win32-x64-msvc" "4.53.5"
     fsevents "~2.3.2"
 
-rxjs@^7.8.1:
+rxjs@7.8.2, rxjs@^7.8.1:
   version "7.8.2"
   resolved "https://registry.npmjs.org/rxjs/-/rxjs-7.8.2.tgz#955bc473ed8af11a002a2be52071bf475638607b"
   integrity sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA==
@@ -1904,10 +1904,10 @@ wrappy@1:
   resolved "https://registry.npmjs.org/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
   integrity sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==
 
-ws@^7.5.2:
-  version "7.5.10"
-  resolved "https://registry.npmjs.org/ws/-/ws-7.5.10.tgz#58b5c20dc281633f6c19113f39b349bd8bd558d9"
-  integrity sha512-+dbF1tHwZpXcbOJdVOkzLDxZP1ailvSxM6ZweXTegylPny803bFhA+vqBYw4s31NSAk4S2Qz+AKXK9a4wkdjcQ==
+ws@8.18.3:
+  version "8.18.3"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.3.tgz#b56b88abffde62791c639170400c93dcb0c95472"
+  integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
 
 xtend@~4.0.1:
   version "4.0.2"
