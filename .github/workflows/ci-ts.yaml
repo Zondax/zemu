@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   ts-checks:
-    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@v5
+    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@v6
     with:
       package_manager: pnpm
       node_version: "22"
