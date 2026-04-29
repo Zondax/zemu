@@ -1,6 +1,6 @@
 [tools]
 node = "22"
-pnpm = "latest"
+pnpm = "10"
 bun = "latest"
 
 [env]
