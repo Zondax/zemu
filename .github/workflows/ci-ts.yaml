@@ -18,10 +18,10 @@ permissions:
 
 jobs:
   ts-checks:
-    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@v5
+    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@v6
     with:
       package_manager: pnpm
-      node_version: "22"
+      node_version: "22.22.1"
       enable_tests: false  # Disable tests here since they need Docker
       enable_coverage: false
       test_command: "test"
