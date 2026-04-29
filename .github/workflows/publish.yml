@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   publish-npm:
-    uses: zondax/_workflows/.github/workflows/_publish-npm.yaml@v5
+    uses: zondax/_workflows/.github/workflows/_publish-npm.yaml@v6
     permissions:
       contents: read
       id-token: write # Required for OIDC trusted publishing - must be in caller!
