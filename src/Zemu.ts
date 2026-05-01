@@ -985,7 +985,9 @@ export default class Zemu {
       const events = await this.getEvents()
       const matchingEvent = events.find((event: IEvent) => textRegex.test(event.text))
 
-      if (matchingEvent != null) {
+      // Only override default coords when the event has a real bounding box;
+      // some speculos versions report text-only events with x=y=w=h=0.
+      if (matchingEvent != null && matchingEvent.w > 0 && matchingEvent.h > 0) {
         approveButton.x = Math.round(matchingEvent.x + matchingEvent.w / 2)
         approveButton.y = Math.round(matchingEvent.y + matchingEvent.h / 2)
       }
