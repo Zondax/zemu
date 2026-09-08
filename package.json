@@ -32,7 +32,8 @@
     "check": "biome check src/ tests/",
     "check:fix": "biome check --write src/ tests/",
     "fix": "pnpm run lint:fix",
-    "update:package": "ncu --interactive --packageManager pnpm"
+    "update:package": "ncu --interactive --packageManager pnpm",
+    "typecheck": "tsc --noEmit"
   },
   "bugs": {
     "url": "https://github.com/Zondax/zemu/issues"
