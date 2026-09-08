@@ -17,6 +17,7 @@
 import path from 'node:path'
 import { Transform } from 'node:stream'
 import Docker, { type Container } from 'dockerode'
+import { DEFAULT_PULL_INACTIVITY_TIMEOUT } from './constants'
 
 // Development certificate key for emulator testing only - NOT FOR PRODUCTION USE
 // This is a well-known test key used by the Ledger emulator for development purposes
@@ -67,18 +68,46 @@ export default class EmuContainer {
     await Promise.all(targets.map((info) => docker.getContainer(info.Id).remove({ force: true })))
   }
 
-  static async checkAndPullImage(imageName: string): Promise<void> {
-    const docker = new Docker()
+  /**
+   * Pulls `imageName` if it is not present locally.
+   *
+   * Rejects instead of stalling when the daemon is unreachable, the pull fails, or the pull stream
+   * stops producing progress events for `inactivityTimeout` ms. The same value is applied as the
+   * socket timeout for the initial request, so a daemon that accepts the connection but never
+   * answers is covered too.
+   */
+  static async checkAndPullImage(imageName: string, inactivityTimeout: number = DEFAULT_PULL_INACTIVITY_TIMEOUT): Promise<void> {
+    const docker = new Docker({ timeout: inactivityTimeout })
     const stream = await docker.pull(imageName)
 
     await new Promise<void>((resolve, reject) => {
+      let watchdog: NodeJS.Timeout | undefined
+
+      const stopWatchdog = (): void => {
+        if (watchdog !== undefined) clearTimeout(watchdog)
+      }
+
+      const armWatchdog = (): void => {
+        stopWatchdog()
+        watchdog = setTimeout(() => {
+          const err = new Error(`[DOCKER] pull of ${imageName} produced no progress for ${inactivityTimeout} ms`)
+          process.stdout.write(`${err.message}\n`)
+          reject(err)
+          // Tear down the request so the daemon side is not left hanging
+          const destroyable = stream as { destroy?: (error?: Error) => void }
+          if (typeof destroyable.destroy === 'function') destroyable.destroy(err)
+        }, inactivityTimeout)
+      }
+
       const onProgress = (event: any): void => {
+        armWatchdog()
         const progress = event?.progress ?? ''
         const status = event?.status ?? ''
         process.stdout.write(`[DOCKER] ${status}: ${progress}\n`)
       }
 
       const onFinished = (err: Error | null): void => {
+        stopWatchdog()
         if (err != null) {
           process.stdout.write(`[DOCKER] ${err}\n`)
           reject(err)
@@ -88,6 +117,7 @@ export default class EmuContainer {
       }
 
       docker.modem.followProgress(stream, onFinished, onProgress)
+      armWatchdog()
     })
   }
 
