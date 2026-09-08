@@ -13,11 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  ******************************************************************************* */
-import { ButtonKind, type IDeviceWindow, type IStartOptions } from './types'
+import { ButtonKind, type IDeviceWindow, type IStartOptions, type TModel } from './types'
 
 export const DEFAULT_EMU_IMG = 'zondax/builder-zemu:speculos-8b3fcfbfce0a27435c050ee39a0e43ecdf4286ca'
 
-export const DEFAULT_MODEL = 'nanos'
+export const DEFAULT_MODEL: TModel = 'nanosp'
 export const DEFAULT_NANO_START_TEXT = 'Ready'
 export const DEFAULT_STAX_START_TEXT = 'This application enables'
 export const DEFAULT_PENDING_REVIEW_TEXT = 'Ledger review'
@@ -41,7 +41,6 @@ export const DEFAULT_START_OPTIONS: IStartOptions = {
   startDelay: DEFAULT_START_DELAY,
   custom: '',
   model: DEFAULT_MODEL,
-  sdk: '',
   startText: '',
   caseSensitive: false,
   startTimeout: DEFAULT_START_TIMEOUT,
@@ -55,13 +54,6 @@ export const KEYS = {
   PRESSED: 1,
   LEFT: 0xff51,
   RIGHT: 0xff53,
-}
-
-export const WINDOW_S: IDeviceWindow = {
-  x: 0,
-  y: 0,
-  width: 128,
-  height: 32,
 }
 
 export const WINDOW_X: IDeviceWindow = {
@@ -85,9 +77,10 @@ export const WINDOW_FLEX: IDeviceWindow = {
   height: 600,
 }
 
+// Matches speculos/mcu/struct.py: Model('Apex P', (300, 400), ...)
 export const WINDOW_APEX: IDeviceWindow = {
   x: 0,
   y: 0,
-  width: 480,
-  height: 600,
+  width: 300,
+  height: 400,
 }

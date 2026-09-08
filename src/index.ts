@@ -18,5 +18,6 @@ import Zemu from './Zemu'
 export default Zemu
 export { ClickNavigation, TouchNavigation } from './actions'
 export { DEFAULT_START_OPTIONS } from './constants'
-export { ButtonKind, type IDeviceModel, type INavElement, type IStartOptions } from './types'
+export { APDU_STATUS_CODES, getAPDUStatusMessage, isCriticalTransportError, TransportError } from './errors'
+export { ButtonKind, type IDeviceModel, type INavElement, type IStartOptions, type TModel } from './types'
 export { isTouchDevice, zondaxMainmenuNavigation } from './zondax'

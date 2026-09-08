@@ -14,11 +14,10 @@
  *  limitations under the License.
  ******************************************************************************* */
 
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import type Transport from '@ledgerhq/hw-transport'
 import HttpTransport from '@ledgerhq/hw-transport-http'
-import axios, { type AxiosResponse } from 'axios'
-import axiosRetry from 'axios-retry'
+import type { AxiosResponse } from 'axios'
 // @ts-expect-error typings are missing
 import elfy from 'elfy'
 import fs from 'fs-extra'
@@ -44,14 +43,13 @@ import {
   KILL_TIMEOUT,
   WINDOW_APEX,
   WINDOW_FLEX,
-  WINDOW_S,
   WINDOW_STAX,
   WINDOW_X,
 } from './constants'
-import { ContainerPool, type IPoolConfig, type IPooledContainer } from './containerPool'
 import EmuContainer from './emulator'
-import { getAPDUStatusMessage, isCriticalTransportError, TransportError } from './errors'
+import { APDU_STATUS_CODES, getAPDUStatusMessage, isCriticalTransportError, TransportError } from './errors'
 import GRPCRouter from './grpc'
+import { http } from './http'
 import {
   ActionKind,
   ButtonKind,
@@ -67,10 +65,6 @@ import {
 } from './types'
 import { isTouchDevice, zondaxToggleBlindSigning, zondaxToggleExpertMode, zondaxTouchEnableSpecialMode } from './zondax'
 
-enum ApduError {
-  NoError = 0x9000,
-}
-
 export default class Zemu {
   public startOptions!: IStartOptions
 
@@ -82,8 +76,8 @@ export default class Zemu {
   private readonly desiredTransportPort?: number
   private readonly desiredSpeculosApiPort?: number
 
-  private emuContainer: EmuContainer
-  public containerName: string
+  private readonly emuContainer: EmuContainer
+  public readonly containerName: string
   private lastTransportError: Error | null = null
 
   public readonly elfPath: string
@@ -92,15 +86,6 @@ export default class Zemu {
 
   public mainMenuSnapshot!: ISnapshot
   public initialEvents!: IEvent[]
-
-  // Container pool management
-  private static containerPool: ContainerPool | null = null
-  // Pool is disabled if ZEMU_DISABLE_POOL is set or if we're in a test environment
-  private static poolEnabled: boolean = process.env.ZEMU_DISABLE_POOL !== 'true' && process.env.NODE_ENV !== 'test'
-  private static poolInitialized = false
-  private static poolInitPromise: Promise<void> | null = null
-  private pooledContainer: IPooledContainer | null = null
-  private usingPool = false
 
   constructor(
     elfPath: string,
@@ -132,62 +117,6 @@ export default class Zemu {
 
     this.containerName = BASE_NAME + rndstr.generate(8)
     this.emuContainer = new EmuContainer(this.elfPath, this.libElfs, emuImage, this.containerName)
-    this.pooledContainer = null
-    this.usingPool = false
-  }
-
-  // Static pool management methods
-  static disablePool(): void {
-    Zemu.poolEnabled = false
-  }
-
-  static enablePool(): void {
-    Zemu.poolEnabled = true
-  }
-
-  static isPoolEnabled(): boolean {
-    return Zemu.poolEnabled
-  }
-
-  static async initializePool(config?: IPoolConfig): Promise<void> {
-    if (!Zemu.poolEnabled) {
-      return
-    }
-
-    try {
-      Zemu.containerPool = ContainerPool.getInstance()
-
-      const defaultConfig: IPoolConfig = {
-        nanos: 2,
-        nanox: 2,
-        nanosp: 2,
-        stax: 2,
-        flex: 2,
-        apex_p: 2,
-      }
-
-      await Zemu.containerPool.initialize(config || defaultConfig)
-      Zemu.poolInitialized = true
-    } catch (error) {
-      console.warn(
-        `Container pool initialization failed: ${error instanceof Error ? error.message : error}. Falling back to individual containers.`
-      )
-      Zemu.poolEnabled = false
-      Zemu.containerPool = null
-      Zemu.poolInitialized = false
-    }
-  }
-
-  static async cleanupPool(): Promise<void> {
-    if (Zemu.containerPool) {
-      await Zemu.containerPool.cleanup()
-      Zemu.containerPool = null
-      Zemu.poolInitialized = false
-    }
-  }
-
-  static getPoolStatus(): Record<string, { total: number; available: number; busy: number }> | null {
-    return Zemu.containerPool?.getPoolStatus() || null
   }
 
   static LoadPng2RGB(filename: string): PNGWithMetadata {
@@ -199,22 +128,17 @@ export default class Zemu {
     await new Promise<void>((resolve) => setTimeout(resolve, timeInMs))
   }
 
-  static stopAllEmuContainers(): void {
-    const timer = setTimeout(() => {
-      process.stderr.write('Could not kill all containers before timeout!\n')
-      process.exit(1)
-    }, KILL_TIMEOUT)
-
-    // Clean up pool first
-    if (Zemu.containerPool) {
-      Zemu.containerPool.cleanup().catch((error) => {
-        process.stderr.write(`Failed to cleanup container pool: ${error}\n`)
-      })
+  /** Force-removes every zemu container, giving up after KILL_TIMEOUT. */
+  static async stopAllEmuContainers(): Promise<void> {
+    let timer: NodeJS.Timeout | undefined
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`Could not kill all containers within ${KILL_TIMEOUT}ms`)), KILL_TIMEOUT)
+    })
+    try {
+      await Promise.race([EmuContainer.killContainerByName(BASE_NAME), timeout])
+    } finally {
+      clearTimeout(timer)
     }
-
-    // Then kill any remaining containers
-    EmuContainer.killContainerByName(BASE_NAME)
-    clearTimeout(timer)
   }
 
   static async checkAndPullImage(): Promise<void> {
@@ -222,125 +146,70 @@ export default class Zemu {
   }
 
   static checkElf(model: TModel, elfPath: string): void {
+    if ((model as string) === 'nanos') {
+      throw new Error('Nano S is no longer supported by the default emulator image. Use nanosp, nanox, stax, flex or apex_p.')
+    }
+
     const elfsModel: Record<TModel, number> = {
-      nanos: 0xc0d00001,
       nanox: 0xc0de0001,
       nanosp: 0xc0de0001,
       stax: 0xc0de0001,
       flex: 0xc0de0001,
       apex_p: 0xc0de0001,
     }
+    const expectedEntry = elfsModel[model]
+    if (expectedEntry === undefined) {
+      throw new Error(`model ${model} not recognized`)
+    }
+
     const elfApp = fs.readFileSync(elfPath)
     const elfInfo = elfy.parse(elfApp)
 
-    if (elfInfo.entry !== elfsModel[model]) {
+    if (elfInfo.entry !== expectedEntry) {
       throw new Error(`Are you sure is a ${model} app elf?`)
     }
   }
 
   async start(options: IStartOptions): Promise<void> {
-    this.startOptions = options
-    const approveWord = options.approveKeyword
-    const rejectWord = options.rejectKeyword
-    if (isTouchDevice(options.model)) {
-      this.startOptions.approveKeyword = approveWord.length === 0 ? DEFAULT_STAX_APPROVE_KEYWORD : approveWord
-      this.startOptions.rejectKeyword = rejectWord.length === 0 ? DEFAULT_STAX_REJECT_KEYWORD : rejectWord
-    } else {
-      this.startOptions.approveKeyword = approveWord.length === 0 ? DEFAULT_NANO_APPROVE_KEYWORD : approveWord
-      this.startOptions.rejectKeyword = rejectWord.length === 0 ? DEFAULT_NANO_REJECT_KEYWORD : rejectWord
+    // Copy so defaults resolved below never leak into the caller's object
+    this.startOptions = { ...options }
+    this.lastTransportError = null
+
+    const touch = isTouchDevice(this.startOptions.model)
+    if (this.startOptions.approveKeyword.length === 0) {
+      this.startOptions.approveKeyword = touch ? DEFAULT_STAX_APPROVE_KEYWORD : DEFAULT_NANO_APPROVE_KEYWORD
+    }
+    if (this.startOptions.rejectKeyword.length === 0) {
+      this.startOptions.rejectKeyword = touch ? DEFAULT_STAX_REJECT_KEYWORD : DEFAULT_NANO_REJECT_KEYWORD
+    }
+    if (this.startOptions.startText.length === 0) {
+      this.startOptions.startText = touch ? DEFAULT_STAX_START_TEXT : DEFAULT_NANO_START_TEXT
     }
 
     this.log('Checking ELF')
     Zemu.checkElf(this.startOptions.model, this.elfPath)
 
     try {
-      // Try to use pool if enabled and not explicitly disabled
-      if (Zemu.poolEnabled && !options.disablePool) {
-        await this.tryStartWithPool()
-        if (this.usingPool) {
-          return
-        }
-      }
+      await this.runContainerWithFreePorts()
 
-      // Fallback to traditional container creation
-      await this.startWithNewContainer()
+      this.log('Connecting to container')
+      await this.connect().catch(async (error) => {
+        this.log(`${error}`)
+        await this.close()
+        throw error
+      })
+
+      await this.finalizeStart()
     } catch (e) {
       this.log(`[ZEMU] ${e}`)
       throw e
     }
   }
 
-  private async tryStartWithPool(): Promise<void> {
-    try {
-      // Initialize pool if not already done
-      if (!Zemu.poolInitialized && Zemu.containerPool === null) {
-        if (!Zemu.poolInitPromise) {
-          Zemu.poolInitPromise = Zemu.initializePool()
-        }
-        await Zemu.poolInitPromise
-      }
-
-      if (!Zemu.containerPool || !Zemu.poolInitialized) {
-        return // Pool not available, will fallback
-      }
-
-      // Try to acquire container from pool
-      this.pooledContainer = await Zemu.containerPool.acquire(this.startOptions.model, this.elfPath, this.libElfs)
-
-      if (this.pooledContainer) {
-        this.log('Using pooled container')
-        this.usingPool = true
-        this.emuContainer = this.pooledContainer.container
-        this.transportPort = this.pooledContainer.transportPort
-        this.speculosApiPort = this.pooledContainer.speculosApiPort
-        this.containerName = this.pooledContainer.containerName
-
-        // Connect to the pooled container
-        await this.connect()
-        await this.finalizeStart()
-      }
-    } catch (error) {
-      this.log(`Pool container failed, falling back to new container: ${error}`)
-      this.usingPool = false
-      this.pooledContainer = null
-    }
-  }
-
-  private async startWithNewContainer(): Promise<void> {
-    this.log('Creating new container')
-
-    await this.assignPortsToListen()
-
-    if (this.transportPort === undefined || this.speculosApiPort === undefined) {
-      const e = new Error("The Speculos API port or/and transport port couldn't be reserved")
-      this.log(`[ZEMU] ${e}`)
-      throw e
-    }
-
-    this.log('Starting Container')
-    await this.emuContainer.runContainer({
-      ...this.startOptions,
-      transportPort: this.transportPort.toString(),
-      speculosApiPort: this.speculosApiPort.toString(),
-    })
-
-    this.log('Connecting to container')
-    await this.connect().catch(async (error) => {
-      this.log(`${error}`)
-      await this.close()
-      throw error
-    })
-
-    await this.finalizeStart()
-  }
-
   private async finalizeStart(): Promise<void> {
     // Captures main screen
     this.log('Wait for start text')
 
-    if (this.startOptions.startText.length === 0) {
-      this.startOptions.startText = isTouchDevice(this.startOptions.model) ? DEFAULT_STAX_START_TEXT : DEFAULT_NANO_START_TEXT
-    }
     const start = new Date()
     let found = false
     let reviewPendingFound = false
@@ -403,136 +272,130 @@ export default class Zemu {
     }
   }
 
+  /**
+   * Creates and starts the container. There is a window between get-port picking a
+   * free port and Docker binding it in which another process (typically a
+   * concurrent test) can take it, so port conflicts are retried with fresh ports.
+   */
+  private async runContainerWithFreePorts(): Promise<void> {
+    const MAX_ATTEMPTS = 3
+
+    for (let attempt = 1; ; attempt++) {
+      await this.assignPortsToListen()
+
+      if (this.transportPort === undefined || this.speculosApiPort === undefined) {
+        throw new Error("The Speculos API port or/and transport port couldn't be reserved")
+      }
+
+      this.log(`Starting Container (attempt ${attempt})`)
+      try {
+        await this.emuContainer.runContainer({
+          ...this.startOptions,
+          transportPort: this.transportPort.toString(),
+          speculosApiPort: this.speculosApiPort.toString(),
+        })
+        return
+      } catch (error) {
+        const portConflict = /port is already allocated|address already in use/i.test(String(error))
+        if (!portConflict || attempt >= MAX_ATTEMPTS) throw error
+
+        this.log(`Port conflict, retrying with new ports: ${error}`)
+        // Docker created the container but could not start it; drop it before retrying
+        await this.emuContainer.stop().catch((stopError) => this.log(`Cleanup after port conflict failed: ${stopError}`))
+        this.transportPort = undefined as unknown as number
+        this.speculosApiPort = undefined as unknown as number
+      }
+    }
+  }
+
   log(message: string): void {
-    if (this.startOptions.logger?.enabled ?? this.startOptions.logging) {
+    if (this.startOptions?.logger?.enabled ?? this.startOptions?.logging) {
       const currentTimestamp = new Date().toISOString().slice(11, 23)
       process.stdout.write(`[${this.containerName}] ${currentTimestamp}: ${message}\n`)
     }
   }
 
-  startGRPCServer(ip: string, port: number): void {
+  /** Resolves once the gRPC server is listening. Rejects if the address cannot be bound. */
+  startGRPCServer(ip: string, port: number): Promise<void> {
     this.grpcManager = new GRPCRouter(ip, port, this.transport)
-    this.grpcManager.startServer()
+    return this.grpcManager.startServer()
   }
 
   stopGRPCServer(): void {
     if (this.grpcManager != null) {
       this.grpcManager.stopServer()
+      this.grpcManager = undefined
     }
   }
 
   async close(): Promise<void> {
     this.stopGRPCServer()
+    this.log('Stopping container')
+    await this.emuContainer.stop()
+  }
 
-    try {
-      if (this.usingPool && this.pooledContainer && Zemu.containerPool) {
-        this.log('Returning container to pool')
-        await Zemu.containerPool.release(this.pooledContainer)
-      } else {
-        this.log('Stopping container')
-        await this.emuContainer.stop()
-      }
-    } catch (error) {
-      this.log(`Error during close: ${error}`)
-      // If pool return fails, try to stop container directly
-      if (this.usingPool && this.emuContainer) {
-        this.log('Attempting direct container stop after pool release failure')
-        await this.emuContainer.stop().catch((stopError) => {
-          this.log(`Failed to stop container directly: ${stopError}`)
-        })
-      }
-      throw error
-    } finally {
-      // Always clean up state
-      if (this.usingPool) {
-        this.usingPool = false
-        this.pooledContainer = null
-      }
+  private recordApduStatus(result: Buffer): void {
+    if (result.length < 2) return
+    const sw = result.readUInt16BE(result.length - 2)
+    if (sw === APDU_STATUS_CODES.SUCCESS) return
+
+    // Error message, if any, is the payload before the status word
+    const errorMessage = result.length > 2 ? result.subarray(0, result.length - 2).toString('utf8') : ''
+    this.recordTransportError(new TransportError(errorMessage || getAPDUStatusMessage(sw), sw))
+  }
+
+  private recordTransportError(error: unknown): void {
+    this.lastTransportError = error as Error
+    if (isCriticalTransportError(error)) {
+      const statusCode = (error as any).statusCode
+      this.log(`Critical transport error detected: ${getAPDUStatusMessage(statusCode)}`)
     }
   }
 
+  /**
+   * Returns the transport wrapped so every APDU status other than 0x9000 is recorded.
+   * Wait helpers (waitUntilScreenIs, waitForText, ...) then fail fast on critical
+   * status codes instead of waiting for their timeout.
+   *
+   * `send` keeps the @ledgerhq/hw-transport contract: a status word listed in
+   * `statusList` is returned to the caller instead of throwing.
+   */
   getTransport(): Transport {
     if (this.transport == null) throw new Error('Transport is not loaded.')
 
-    // Create a wrapper to intercept transport errors
     const self = this
     const originalTransport = this.transport
 
-    // Return a proxy that intercepts send() calls
     return new Proxy(originalTransport, {
       get(target, prop, receiver) {
         if (prop === 'send') {
-          return async function (cla: number, ins: number, p1: number, p2: number, data?: Buffer, statusList?: number[]) {
+          return async (cla: number, ins: number, p1: number, p2: number, data?: Buffer, statusList?: number[], opts?: any) => {
             try {
-              self.lastTransportError = null // Clear previous error
-              const result = await target.send(cla, ins, p1, p2, data, statusList)
-              const sw = result.readUInt16BE(result.length - 2)
-
-              if (sw !== ApduError.NoError) {
-                // Extract error message from response (all bytes except last 2)
-                const errorMessage = result.length > 2 ? result.subarray(0, result.length - 2).toString('utf8') : ''
-                throw new TransportError(errorMessage || getAPDUStatusMessage(sw), sw)
-              }
+              self.lastTransportError = null
+              const result = await target.send(cla, ins, p1, p2, data, statusList, opts)
+              self.recordApduStatus(result)
               return result
             } catch (error) {
-              // Store the error for later checks
-              self.lastTransportError = error as Error
-
-              // Log critical errors
-              if (isCriticalTransportError(error)) {
-                const statusCode = (error as any).statusCode
-                self.log(`Critical transport error detected: ${getAPDUStatusMessage(statusCode)}`)
-              }
-
-              // Re-throw the error
+              self.recordTransportError(error)
               throw error
             }
           }
         }
 
-        // For exchange method, apply similar wrapping
         if (prop === 'exchange') {
-          return async function (apdu: Buffer) {
+          return async (apdu: Buffer) => {
             try {
               self.lastTransportError = null
               const result = await target.exchange(apdu)
-              const sw = result.readUInt16BE(result.length - 2)
-
-              if (sw !== ApduError.NoError) {
-                // Extract error message from response (all bytes except last 2)
-                const errorMessage = result.length > 2 ? result.subarray(0, result.length - 2).toString('utf8') : ''
-                throw new TransportError(errorMessage || getAPDUStatusMessage(sw), sw)
-              }
+              self.recordApduStatus(result)
               return result
             } catch (error) {
-              self.lastTransportError = error as Error
-              if (isCriticalTransportError(error)) {
-                const statusCode = (error as any).statusCode
-                self.log(`Critical transport error detected: ${getAPDUStatusMessage(statusCode)}`)
-              }
+              self.recordTransportError(error)
               throw error
             }
           }
         }
 
-        // For setScrambleKey method, wrap if it exists
-        if (prop === 'setScrambleKey' && typeof target[prop] === 'function') {
-          return async function (key: string) {
-            try {
-              self.lastTransportError = null
-              const result = await (target as any).setScrambleKey(key)
-              return result
-            } catch (error) {
-              self.lastTransportError = error as Error
-              if (isCriticalTransportError(error)) {
-                self.log(`Critical transport error in setScrambleKey: ${error}`)
-              }
-              throw error
-            }
-          }
-        }
-
-        // For all other properties/methods, return as-is
         return Reflect.get(target, prop, receiver)
       },
     }) as Transport
@@ -540,8 +403,6 @@ export default class Zemu {
 
   getWindowRect(): IDeviceWindow {
     switch (this.startOptions.model) {
-      case 'nanos':
-        return WINDOW_S
       case 'nanox':
       case 'nanosp':
         return WINDOW_X
@@ -557,18 +418,11 @@ export default class Zemu {
   }
 
   async fetchSnapshot(url: string): Promise<AxiosResponse<Buffer, any>> {
-    // Exponential back-off retry delay between requests
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
-
-    return await axios({
-      method: 'GET',
-      url,
-      responseType: 'arraybuffer',
-    })
+    return await http.get(url, { responseType: 'arraybuffer' })
   }
 
   saveSnapshot(arrayBuffer: Buffer, filePath: string): void {
+    fs.ensureDirSync(dirname(filePath))
     fs.writeFileSync(filePath, Buffer.from(arrayBuffer), 'binary')
   }
 
@@ -596,6 +450,17 @@ export default class Zemu {
     return this.mainMenuSnapshot
   }
 
+  private throwIfCriticalTransportError(): void {
+    if (this.lastTransportError && isCriticalTransportError(this.lastTransportError)) {
+      const statusCode = (this.lastTransportError as any).statusCode
+      throw new TransportError(
+        `Transport error ${getAPDUStatusMessage(statusCode)} - failing immediately instead of waiting for timeout`,
+        statusCode,
+        this.lastTransportError
+      )
+    }
+  }
+
   async waitUntilScreenIs(screen: ISnapshot, timeout = DEFAULT_WAIT_TIMEOUT): Promise<void> {
     const start = new Date()
 
@@ -605,15 +470,7 @@ export default class Zemu {
     this.log('Wait until screen is')
 
     while (!inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
-      // Check for critical transport errors that should fail immediately
-      if (this.lastTransportError && isCriticalTransportError(this.lastTransportError)) {
-        const statusCode = (this.lastTransportError as any).statusCode
-        throw new TransportError(
-          `Transport error ${getAPDUStatusMessage(statusCode)} - failing immediately instead of waiting for timeout`,
-          statusCode,
-          this.lastTransportError
-        )
-      }
+      this.throwIfCriticalTransportError()
 
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
@@ -637,15 +494,7 @@ export default class Zemu {
     this.log('Wait until screen is not')
 
     while (inputSnapshotBufferHex.equals(currentSnapshotBufferHex)) {
-      // Check for critical transport errors that should fail immediately
-      if (this.lastTransportError && isCriticalTransportError(this.lastTransportError)) {
-        const statusCode = (this.lastTransportError as any).statusCode
-        throw new TransportError(
-          `Transport error ${getAPDUStatusMessage(statusCode)} - failing immediately instead of waiting for timeout`,
-          statusCode,
-          this.lastTransportError
-        )
-      }
+      this.throwIfCriticalTransportError()
 
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
@@ -900,9 +749,7 @@ export default class Zemu {
       timeout,
       runLastAction
     )
-    const rejectConfirmationNav = isTouchDevice(this.startOptions.model)
-      ? new TouchNavigation(this.startOptions.model, [ButtonKind.RejectButton, ButtonKind.ConfirmYesButton])
-      : new ClickNavigation([0, 0]) // Both click, then confirm
+    const rejectConfirmationNav = new TouchNavigation(this.startOptions.model, [ButtonKind.RejectButton, ButtonKind.ConfirmYesButton])
     // Overwrite last snapshot since navigate starts taking a snapshot of the current screen
     const lastIndex = await this.navigate(
       path,
@@ -1026,30 +873,25 @@ export default class Zemu {
   }
 
   async getEvents(): Promise<IEvent[]> {
-    // Check if we have a critical transport error that should be propagated
+    // A critical APDU error recorded through getTransport() is surfaced here so
+    // that every polling helper fails fast instead of waiting for its timeout.
     if (this.lastTransportError && isCriticalTransportError(this.lastTransportError)) {
       throw this.lastTransportError
     }
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay })
     const eventsUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/events`
     try {
-      const { data } = await axios.get(eventsUrl)
+      const { data } = await http.get(eventsUrl)
       return data.events
     } catch (error) {
-      // Only suppress network errors for events endpoint
-      // Transport errors should still be tracked via lastTransportError
+      // Network errors against the events endpoint are not fatal: the caller keeps polling
       this.log(`Failed to get events: ${error}`)
       return []
     }
   }
 
   async deleteEvents(): Promise<void> {
-    await axios({
-      method: 'DELETE',
-      url: `${this.transportProtocol}://${this.host}:${this.speculosApiPort}/events`,
-    })
+    await http.delete(`${this.transportProtocol}://${this.host}:${this.speculosApiPort}/events`)
   }
 
   async dumpEvents(): Promise<void> {
@@ -1068,15 +910,7 @@ export default class Zemu {
     const startRegex = new RegExp(text, flags)
 
     while (!found) {
-      // Check for critical transport errors that should fail immediately
-      if (this.lastTransportError && isCriticalTransportError(this.lastTransportError)) {
-        const statusCode = (this.lastTransportError as any).statusCode
-        throw new TransportError(
-          `Transport error ${getAPDUStatusMessage(statusCode)} - failing immediately instead of waiting for timeout`,
-          statusCode,
-          this.lastTransportError
-        )
-      }
+      this.throwIfCriticalTransportError()
 
       const currentTime = new Date()
       const elapsed = currentTime.getTime() - start.getTime()
@@ -1097,7 +931,7 @@ export default class Zemu {
 
     const clickUrl = `${this.transportProtocol}://${this.host}:${this.speculosApiPort}${endpoint}`
     const payload = { action: 'press-and-release' }
-    await axios.post(clickUrl, payload)
+    await http.post(clickUrl, payload)
     this.log(`Click ${endpoint} -> ${filename}`)
 
     // Wait and poll Speculos until the application screen gets updated
@@ -1171,7 +1005,7 @@ export default class Zemu {
       delay: button.delay,
       ...(button.direction !== SwipeDirection.NoSwipe ? { x2: swipe.x, y2: swipe.y } : {}),
     }
-    await axios.post(fingerTouchUrl, payload)
+    await http.post(fingerTouchUrl, payload)
     this.log(`Touch /finger -> ${filename}`)
 
     // Wait and poll Speculos until the application screen gets updated
@@ -1214,6 +1048,16 @@ export default class Zemu {
     }
   }
 
+  /** Last non-0x9000 APDU status seen through getTransport(), or null. */
+  getLastTransportError(): Error | null {
+    return this.lastTransportError
+  }
+
+  /**
+   * Forget the last recorded APDU error. Call this after an APDU that is
+   * expected to fail (for example a rejected transaction) before driving the
+   * UI again with the same Zemu instance.
+   */
   clearTransportError(): void {
     this.lastTransportError = null
   }

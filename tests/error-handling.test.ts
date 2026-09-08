@@ -1,125 +1,118 @@
-import { resolve } from 'node:path'
+/** ******************************************************************************
+ *  (c) 2018 - 2024 Zondax AG
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ******************************************************************************* */
 import { describe, expect, test } from 'vitest'
-import Zemu, { DEFAULT_START_OPTIONS, IStartOptions } from '../src'
+import Zemu, { APDU_STATUS_CODES, TransportError } from '../src'
+import { defaultOptions, nanoModels } from './common'
 
-const DEMO_APP_PATH_S = resolve('bin/app_s.elf')
+const model = nanoModels[0]
+const options = { ...defaultOptions, model: model.name }
 
-const ZEMU_OPTIONS_S: IStartOptions = {
-  ...DEFAULT_START_OPTIONS,
-  logging: true,
-  startDelay: 3000,
-  startText: 'Ready',
-  X11: false,
-  custom: '',
-  model: 'nanos',
-  disablePool: true, // Disable pooling for this test
+// CLA 0xff is not handled by any Zondax app and yields CLA_NOT_SUPPORTED (0x6e00)
+const INVALID_CLA = 0xff
+
+function differentScreen(sim: Zemu) {
+  const snapshot = sim.getMainMenuSnapshot()
+  const data = Buffer.from(snapshot.data)
+  data[data.length - 1] ^= 0xff
+  return { ...snapshot, data }
 }
 
-describe('Error Handling', () => {
-  test('Should fail fast on error 0x6E00 (CLA_NOT_SUPPORTED) instead of timing out', async () => {
-    const sim = new Zemu(DEMO_APP_PATH_S)
-
+describe('APDU error handling', () => {
+  test.concurrent('rejected status word throws fast with its status code', async () => {
+    const sim = new Zemu(model.path)
     try {
-      await sim.start(ZEMU_OPTIONS_S)
+      await sim.start(options)
       const transport = sim.getTransport()
 
-      // Send an invalid APDU command that should trigger CLA_NOT_SUPPORTED (0x6E00)
-      // CLA=0xFF is typically invalid for Ledger apps
-      const invalidCLA = 0xff
-      const validINS = 0x00
-      const p1 = 0x00
-      const p2 = 0x00
-      const data = Buffer.from([])
-      // Provide a statusList to make sure zemu throws an exception even on accepted status words
-      const statusList = [0x9000, 0x6e00]
-
-      // Start timer to measure how long the error takes
       const startTime = Date.now()
+      await expect(transport.send(INVALID_CLA, 0x00, 0x00, 0x00)).rejects.toMatchObject({ statusCode: APDU_STATUS_CODES.CLA_NOT_SUPPORTED })
+      expect(Date.now() - startTime).toBeLessThan(2000)
 
-      try {
-        // This should fail with CLA_NOT_SUPPORTED (0x6E00)
-        await transport.send(invalidCLA, validINS, p1, p2, data, statusList)
-
-        // If we get here, the test failed - we expected an error
-        expect.fail('Expected transport.send to throw an error')
-      } catch (error: any) {
-        const elapsedTime = Date.now() - startTime
-
-        // The error should happen quickly (< 1 second), not after a timeout
-        expect(elapsedTime).toBeLessThan(1000)
-
-        // Check if we got the expected error code
-        // Invalid CLA (0xFF) triggers CLA_NOT_SUPPORTED (0x6E00)
-        expect(error.statusCode).toBe(0x6e00)
-      }
+      const recorded = sim.getLastTransportError() as any
+      expect(recorded).not.toBeNull()
+      expect(recorded.statusCode).toBe(APDU_STATUS_CODES.CLA_NOT_SUPPORTED)
     } finally {
       await sim.close()
     }
   })
 
-  test('Should propagate transport errors in waitUntilScreenIs', async () => {
-    const sim = new Zemu(DEMO_APP_PATH_S)
-
+  test.concurrent('status words listed in statusList are returned, not thrown', async () => {
+    const sim = new Zemu(model.path)
     try {
-      await sim.start(ZEMU_OPTIONS_S)
-      const mainMenuSnapshot = sim.getMainMenuSnapshot()
-
-      // Mock a transport error by directly calling an invalid command
-      // that will cause subsequent operations to fail
+      await sim.start(options)
       const transport = sim.getTransport()
 
-      // Send invalid command to put device in error state
-      try {
-        await transport.send(0xff, 0x00, 0x00, 0x00)
-      } catch {
-        // Expected to fail
-      }
+      const response = await transport.send(INVALID_CLA, 0x00, 0x00, 0x00, Buffer.alloc(0), [
+        APDU_STATUS_CODES.SUCCESS,
+        APDU_STATUS_CODES.CLA_NOT_SUPPORTED,
+      ])
+      expect(response.readUInt16BE(response.length - 2)).toBe(APDU_STATUS_CODES.CLA_NOT_SUPPORTED)
 
-      // Now try to wait for screen - this should fail fast, not timeout
-      const startTime = Date.now()
-
-      try {
-        // This should fail quickly due to transport error, not wait for timeout
-        await sim.waitUntilScreenIs(mainMenuSnapshot, 5000)
-        expect.fail('Expected waitUntilScreenIs to throw an error')
-      } catch (error: any) {
-        const elapsedTime = Date.now() - startTime
-
-        // Should fail fast, not wait for the 5000ms timeout
-        expect(elapsedTime).toBeLessThan(1000)
-
-        // Error message should indicate transport error, not timeout
-        expect(error.message).not.toContain('Timeout')
-      }
+      // The status is still recorded so wait helpers can fail fast
+      expect((sim.getLastTransportError() as any)?.statusCode).toBe(APDU_STATUS_CODES.CLA_NOT_SUPPORTED)
     } finally {
       await sim.close()
     }
   })
 
-  test('Should handle error in getEvents gracefully', async () => {
-    const sim = new Zemu(DEMO_APP_PATH_S)
-
+  test.concurrent('wait helpers fail fast after a critical status word', async () => {
+    const sim = new Zemu(model.path)
     try {
-      await sim.start(ZEMU_OPTIONS_S)
-
-      // Force a transport error
+      await sim.start(options)
       const transport = sim.getTransport()
-      try {
-        await transport.send(0xff, 0x00, 0x00, 0x00)
-      } catch {
-        // Expected
-      }
 
-      // getEvents should propagate error, not return empty array
-      try {
-        const events = await sim.getEvents()
-        // If device is in error state, getEvents might still work
-        // But if transport is broken, it should throw
-        expect(Array.isArray(events)).toBe(true)
-      } catch (error: any) {
-        // This is also acceptable - error propagation
-        expect(error).toBeDefined()
-      }
+      await expect(transport.send(INVALID_CLA, 0x00, 0x00, 0x00)).rejects.toThrow()
+
+      const startTime = Date.now()
+      await expect(sim.waitUntilScreenIs(differentScreen(sim), 5000)).rejects.toBeInstanceOf(TransportError)
+      expect(Date.now() - startTime).toBeLessThan(1500)
+
+      await expect(sim.waitForText('never shown', 5000)).rejects.toBeInstanceOf(TransportError)
+      await expect(sim.getEvents()).rejects.toMatchObject({ statusCode: APDU_STATUS_CODES.CLA_NOT_SUPPORTED })
+    } finally {
+      await sim.close()
+    }
+  })
+
+  test.concurrent('clearTransportError restores normal timeouts', async () => {
+    const sim = new Zemu(model.path)
+    try {
+      await sim.start(options)
+      const transport = sim.getTransport()
+
+      await expect(transport.send(INVALID_CLA, 0x00, 0x00, 0x00)).rejects.toThrow()
+      sim.clearTransportError()
+      expect(sim.getLastTransportError()).toBeNull()
+
+      const startTime = Date.now()
+      await expect(sim.waitUntilScreenIs(differentScreen(sim), 1500)).rejects.toThrow(/Timeout waiting for screen to be/)
+      expect(Date.now() - startTime).toBeGreaterThanOrEqual(1500)
+    } finally {
+      await sim.close()
+    }
+  })
+
+  test.concurrent('start() does not mutate the options object', async () => {
+    const sim = new Zemu(model.path)
+    const shared = { ...defaultOptions, model: model.name }
+    try {
+      await sim.start(shared)
+      expect(shared.startText).toBe('')
+      expect(shared.approveKeyword).toBe('')
+      expect(sim.startOptions.startText).toBe('Ready')
     } finally {
       await sim.close()
     }
