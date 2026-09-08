@@ -37,9 +37,10 @@ describe('APDU error handling', () => {
       await sim.start(options)
       const transport = sim.getTransport()
 
+      // Generous bound: the point is "not a wait-helper timeout", not raw latency
       const startTime = Date.now()
       await expect(transport.send(INVALID_CLA, 0x00, 0x00, 0x00)).rejects.toMatchObject({ statusCode: APDU_STATUS_CODES.CLA_NOT_SUPPORTED })
-      expect(Date.now() - startTime).toBeLessThan(2000)
+      expect(Date.now() - startTime).toBeLessThan(5000)
 
       const recorded = sim.getLastTransportError() as any
       expect(recorded).not.toBeNull()
@@ -76,11 +77,12 @@ describe('APDU error handling', () => {
 
       await expect(transport.send(INVALID_CLA, 0x00, 0x00, 0x00)).rejects.toThrow()
 
+      // Must fail well before the 20s wait timeout
       const startTime = Date.now()
-      await expect(sim.waitUntilScreenIs(differentScreen(sim), 5000)).rejects.toBeInstanceOf(TransportError)
-      expect(Date.now() - startTime).toBeLessThan(1500)
+      await expect(sim.waitUntilScreenIs(differentScreen(sim), 20000)).rejects.toBeInstanceOf(TransportError)
+      expect(Date.now() - startTime).toBeLessThan(5000)
 
-      await expect(sim.waitForText('never shown', 5000)).rejects.toBeInstanceOf(TransportError)
+      await expect(sim.waitForText('never shown', 20000)).rejects.toBeInstanceOf(TransportError)
       await expect(sim.getEvents()).rejects.toMatchObject({ statusCode: APDU_STATUS_CODES.CLA_NOT_SUPPORTED })
     } finally {
       await sim.close()

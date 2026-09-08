@@ -18,6 +18,7 @@ import { PolkadotGenericApp } from '@zondax/ledger-substrate'
 import { describe, expect, test } from 'vitest'
 import Zemu, { zondaxMainmenuNavigation } from '../src'
 import { defaultOptions, models, nanoModels, PATH, POLYMESH_SS58_PREFIX, SNAPSHOTS_DIR } from './common'
+import { exchangeViaGrpc } from './grpcClient'
 
 // DER prefix for a raw Ed25519 public key (SubjectPublicKeyInfo)
 const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex')
@@ -159,13 +160,22 @@ describe.each(nanoModels)('$name buttons', (m) => {
   })
 })
 
-test('gRPC server start-stop', async () => {
+test('gRPC server forwards APDUs to the device', async () => {
   const m = nanoModels[0]
   const sim = new Zemu(m.path)
   try {
     await sim.start({ ...defaultOptions, model: m.name })
-    await sim.startGRPCServer('127.0.0.1', 0)
+    const port = await sim.startGRPCServer('127.0.0.1', 0)
+    expect(port).toBeGreaterThan(0)
+
+    // GET_APP_INFO (handled by the OS): format id 1, then the app name
+    const reply = await exchangeViaGrpc(port, Buffer.from([0xb0, 0x01, 0x00, 0x00, 0x00]))
+    expect(reply.readUInt16BE(reply.length - 2)).toBe(0x9000)
+    expect(reply[0]).toBe(1)
+    expect(reply.subarray(2, 2 + reply[1]).toString('ascii')).toBe('Polymesh')
+
     sim.stopGRPCServer()
+    await expect(exchangeViaGrpc(port, Buffer.alloc(0))).rejects.toThrow()
   } finally {
     await sim.close()
   }

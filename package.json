@@ -25,7 +25,7 @@
     "build": "rm -rf dist && tsc && cp src/grpc/*.proto dist/grpc/",
     "test:clean": "pnpm ts-node tests/pullImageKillOld.ts",
     "test": "pnpm test:clean && pnpm build && vitest run",
-    "test:watch": "vitest",
+    "test:watch": "pnpm build && vitest",
     "lint": "biome lint src/ tests/",
     "lint:fix": "biome check --write --unsafe .",
     "format": "biome format --write src/ tests/",
@@ -69,8 +69,8 @@
   "pnpm": {
     "overrides": {
       "axios": "^1.15.1",
-      "ws": ">=8.21.0",
-      "uuid": ">=11.1.1"
+      "ws": "^8.21.0",
+      "uuid": "^11.1.1"
     }
   }
 }

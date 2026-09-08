@@ -18,10 +18,10 @@ export default class GRPCRouter {
     this.server = new Server()
   }
 
-  /** Resolves once the server is bound and listening. */
-  startServer(): Promise<void> {
+  /** Resolves with the bound port once the server is listening. */
+  async startServer(): Promise<number> {
     if (!existsSync(PROTO_PATH)) {
-      return Promise.reject(new Error(`zemu.proto not found at ${PROTO_PATH}`))
+      throw new Error(`zemu.proto not found at ${PROTO_PATH}`)
     }
 
     const packageDefinition = loadSync(PROTO_PATH, {
@@ -44,14 +44,14 @@ export default class GRPCRouter {
       },
     })
 
-    return new Promise<void>((resolvePromise, reject) => {
+    return await new Promise<number>((resolvePromise, reject) => {
       this.server.bindAsync(this.serverAddress, ServerCredentials.createInsecure(), (err, port) => {
         if (err != null) {
           reject(err)
           return
         }
         process.stdout.write(`gRPC listening on ${port}\n`)
-        resolvePromise()
+        resolvePromise(port)
       })
     })
   }

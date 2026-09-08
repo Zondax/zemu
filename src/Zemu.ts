@@ -77,7 +77,7 @@ export default class Zemu {
   private readonly desiredSpeculosApiPort?: number
 
   private readonly emuContainer: EmuContainer
-  public readonly containerName: string
+  public containerName: string
   private lastTransportError: Error | null = null
 
   public readonly elfPath: string
@@ -128,14 +128,17 @@ export default class Zemu {
     await new Promise<void>((resolve) => setTimeout(resolve, timeInMs))
   }
 
-  /** Force-removes every zemu container, giving up after KILL_TIMEOUT. */
-  static async stopAllEmuContainers(): Promise<void> {
+  /**
+   * Force-removes every zemu container, giving up after KILL_TIMEOUT.
+   * Pass `createdAfter` (unix seconds) to leave containers of other sessions alone.
+   */
+  static async stopAllEmuContainers(createdAfter?: number): Promise<void> {
     let timer: NodeJS.Timeout | undefined
     const timeout = new Promise<never>((_, reject) => {
       timer = setTimeout(() => reject(new Error(`Could not kill all containers within ${KILL_TIMEOUT}ms`)), KILL_TIMEOUT)
     })
     try {
-      await Promise.race([EmuContainer.killContainerByName(BASE_NAME), timeout])
+      await Promise.race([EmuContainer.killContainerByName(BASE_NAME, createdAfter), timeout])
     } finally {
       clearTimeout(timer)
     }
@@ -189,20 +192,17 @@ export default class Zemu {
     this.log('Checking ELF')
     Zemu.checkElf(this.startOptions.model, this.elfPath)
 
+    await this.runContainerWithFreePorts()
+
+    // From here on a running container exists: never leave it behind on failure
     try {
-      await this.runContainerWithFreePorts()
-
       this.log('Connecting to container')
-      await this.connect().catch(async (error) => {
-        this.log(`${error}`)
-        await this.close()
-        throw error
-      })
-
+      await this.connect()
       await this.finalizeStart()
-    } catch (e) {
-      this.log(`[ZEMU] ${e}`)
-      throw e
+    } catch (error) {
+      this.log(`[ZEMU] ${error}`)
+      await this.close().catch((closeError) => this.log(`[ZEMU] Cleanup after failed start: ${closeError}`))
+      throw error
     }
   }
 
@@ -296,12 +296,15 @@ export default class Zemu {
         })
         return
       } catch (error) {
+        this.log(`[ZEMU] ${error}`)
+        // Docker may have created the container without starting it; drop it so the
+        // name is free again and nothing is left behind
+        await this.emuContainer.stop().catch((stopError) => this.log(`[ZEMU] Cleanup after failed container start: ${stopError}`))
+
         const portConflict = /port is already allocated|address already in use/i.test(String(error))
         if (!portConflict || attempt >= MAX_ATTEMPTS) throw error
 
-        this.log(`Port conflict, retrying with new ports: ${error}`)
-        // Docker created the container but could not start it; drop it before retrying
-        await this.emuContainer.stop().catch((stopError) => this.log(`Cleanup after port conflict failed: ${stopError}`))
+        this.log('Port conflict, retrying with new ports')
         this.transportPort = undefined as unknown as number
         this.speculosApiPort = undefined as unknown as number
       }
@@ -315,10 +318,17 @@ export default class Zemu {
     }
   }
 
-  /** Resolves once the gRPC server is listening. Rejects if the address cannot be bound. */
-  startGRPCServer(ip: string, port: number): Promise<void> {
-    this.grpcManager = new GRPCRouter(ip, port, this.transport)
-    return this.grpcManager.startServer()
+  /**
+   * Starts a gRPC server that forwards Exchange calls to the device transport.
+   * Resolves with the bound port (useful when `port` is 0). Rejects if the address cannot be bound.
+   * A previously started server is shut down first.
+   */
+  async startGRPCServer(ip: string, port: number): Promise<number> {
+    this.stopGRPCServer()
+    const router = new GRPCRouter(ip, port, this.transport)
+    const boundPort = await router.startServer()
+    this.grpcManager = router
+    return boundPort
   }
 
   stopGRPCServer(): void {

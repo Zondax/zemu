@@ -41,6 +41,7 @@ export const DEFAULT_START_OPTIONS: IStartOptions = {
   startDelay: DEFAULT_START_DELAY,
   custom: '',
   model: DEFAULT_MODEL,
+  sdk: '',
   startText: '',
   caseSensitive: false,
   startTimeout: DEFAULT_START_TIMEOUT,

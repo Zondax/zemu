@@ -40,6 +40,7 @@ export default class EmuContainer {
   private readonly image: string
   private readonly libElfs: Record<string, string>
   private currentContainer?: Container
+  private stopping?: Promise<void>
 
   constructor(elfLocalPath: string, libElfs: Record<string, string>, image: string, name: string) {
     this.image = image
@@ -55,11 +56,15 @@ export default class EmuContainer {
     }
   }
 
-  /** Force-removes every container whose name contains `name`. */
-  static async killContainerByName(name: string): Promise<void> {
+  /**
+   * Force-removes every container whose name contains `name`.
+   * `createdAfter` (unix seconds) limits the sweep to containers created after that time.
+   */
+  static async killContainerByName(name: string, createdAfter?: number): Promise<void> {
     const docker = new Docker()
     const containers = await docker.listContainers({ all: true, filters: { name: [name] } })
-    await Promise.all(containers.map((info) => docker.getContainer(info.Id).remove({ force: true })))
+    const targets = createdAfter === undefined ? containers : containers.filter((info) => info.Created >= createdAfter)
+    await Promise.all(targets.map((info) => docker.getContainer(info.Id).remove({ force: true })))
   }
 
   static async checkAndPullImage(imageName: string): Promise<void> {
@@ -187,28 +192,44 @@ export default class EmuContainer {
     this.log(`[ZEMU] Started ${this.currentContainer.id}`)
   }
 
-  async stop(): Promise<void> {
-    if (this.currentContainer == null) return
+  /**
+   * Stops and removes the container. The handle is only dropped once the
+   * container is gone, so a failed attempt can be retried with another stop().
+   * Concurrent calls share the same in-flight operation.
+   */
+  stop(): Promise<void> {
+    if (this.stopping == null) {
+      this.stopping = this.doStop().finally(() => {
+        this.stopping = undefined
+      })
+    }
+    return this.stopping
+  }
 
+  private async doStop(): Promise<void> {
     const container = this.currentContainer
-    this.currentContainer = undefined
+    if (container == null) return
+
     this.log('[ZEMU] Stopping container')
     try {
       await container.stop({ t: 0 })
     } catch (e: any) {
-      // 304: already stopped. Anything else is a real failure.
-      if (e?.statusCode !== 304) {
+      // 304: already stopped, 404: already gone. Anything else is a real failure.
+      if (e?.statusCode !== 304 && e?.statusCode !== 404) {
         this.log(`[ZEMU] Stopping: ${e}`)
         throw e
       }
     }
     this.log('[ZEMU] Stopped')
     try {
-      await container.remove()
-    } catch (err) {
-      this.log('[ZEMU] Unable to remove container')
-      throw err
+      await container.remove({ force: true })
+    } catch (e: any) {
+      if (e?.statusCode !== 404) {
+        this.log(`[ZEMU] Unable to remove container: ${e}`)
+        throw e
+      }
     }
+    this.currentContainer = undefined
     this.log('[ZEMU] Removed')
   }
 }
