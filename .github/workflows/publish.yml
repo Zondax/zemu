@@ -22,5 +22,6 @@ jobs:
       timeout_minutes: 15
       dry_run: false
       github_app_auth: false
-      node_version: "22.22.1"
+      # The shared workflow installs npm@latest, which needs Node 24 (npm 12 fails on Node 22 with EBADENGINE)
+      node_version: "24"
 
