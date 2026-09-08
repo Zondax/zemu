@@ -15,6 +15,7 @@ concurrency:
 permissions:
   contents: read
   id-token: write
+  pull-requests: write # _checks-ts.yaml requests it for coverage comments; the caller must grant it
 
 jobs:
   # Node and pnpm versions come from .mise.toml; the package manager is detected from the lockfile.
