@@ -29,6 +29,8 @@ export const DEFAULT_START_TIMEOUT = 30000
 export const KILL_TIMEOUT = 5000
 export const DEFAULT_METHOD_TIMEOUT = 15000
 export const DEFAULT_WAIT_TIMEOUT = 45000
+// Reject an image pull that produces no progress events for this long
+export const DEFAULT_PULL_INACTIVITY_TIMEOUT = 120000
 
 export const DEFAULT_NANO_APPROVE_KEYWORD = 'APPROVE'
 export const DEFAULT_NANO_REJECT_KEYWORD = 'REJECT'
