@@ -39,7 +39,11 @@ export interface ISwipeCoordinates {
   y: number
 }
 
-export type TModel = 'nanos' | 'nanosp' | 'nanox' | 'stax' | 'flex' | 'apex_p'
+/**
+ * Devices supported by the default emulator image.
+ * Nano S was dropped upstream by Speculos and is no longer supported.
+ */
+export type TModel = 'nanosp' | 'nanox' | 'stax' | 'flex' | 'apex_p'
 
 export interface IStartOptions {
   logging: boolean
@@ -53,14 +57,17 @@ export interface IStartOptions {
   startDelay: number
   custom: string
   model: TModel
-  sdk: string
+  /** @deprecated Not used. Kept so existing option objects keep compiling. */
+  sdk?: string
   startText: string
   caseSensitive: boolean
   startTimeout: number
   approveAction: ButtonKind
   approveKeyword: string
   rejectKeyword: string
+  /** @deprecated Container pooling was removed. This flag has no effect. */
   disablePool?: boolean
+  /** @deprecated Not used. Speculos always runs headless. */
   X11?: boolean
 }
 

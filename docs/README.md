@@ -9,7 +9,7 @@ problem. We stand on the shoulders of the giant [greenknot’s](https://github.c
 It's currently being used in every Ledger App built by Zondax, among many others (such as Ethereum one built by Ledger
 team).
 
-_Zemu is an emulation and testing framework for Ledger Nano S/S+/X devices_
+_Zemu is an emulation and testing framework for Ledger Nano S+/X, Stax, Flex and Apex devices_
 
 ## Features
 

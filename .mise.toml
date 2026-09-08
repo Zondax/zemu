@@ -1,11 +1,6 @@
 [tools]
 node = "22"
 pnpm = "10"
-bun = "latest"
-
-[env]
-# Ensure pnpm uses the correct Node.js version
-NODE_ENV = "development"
 
 [tasks.ci_postinstall]
 description = "Install dependencies for CI"

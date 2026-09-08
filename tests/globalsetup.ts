@@ -1,30 +1,29 @@
 import Zemu from '../src'
 
-const catchExit = () => {
-  const cleanup = () => {
-    console.log('Stopping dangling containers')
-    Zemu.stopAllEmuContainers()
+// Registered in vitest.config.ts as globalSetup. Runs once in the main vitest process.
+
+// Only containers created by this run are swept on teardown, so a concurrent
+// zemu session on the same Docker daemon is left alone. Ctrl-C still sweeps everything.
+let runStartedAt = 0
+
+async function killContainers(reason: string, createdAfter?: number): Promise<void> {
+  console.log(`[zemu] ${reason}: stopping dangling containers`)
+  try {
+    await Zemu.stopAllEmuContainers(createdAfter)
+  } catch (error) {
+    console.error('[zemu] failed to stop containers:', error)
   }
-
-  // Handle various exit signals
-  process.on('SIGINT', cleanup)
-  process.on('SIGTERM', cleanup)
-  process.on('beforeExit', cleanup)
-
-  // Handle uncaught exceptions
-  process.on('uncaughtException', (error) => {
-    console.error('Uncaught exception, cleaning up containers:', error)
-    cleanup()
-    process.exit(1)
-  })
-
-  process.on('unhandledRejection', (reason, _promise) => {
-    console.error('Unhandled rejection, cleaning up containers:', reason)
-    cleanup()
-    process.exit(1)
-  })
 }
 
-module.exports = () => {
-  catchExit()
+export function setup(): void {
+  runStartedAt = Math.floor(Date.now() / 1000) - 1
+  for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+    process.once(signal, () => {
+      void killContainers(signal).finally(() => process.exit(130))
+    })
+  }
+}
+
+export async function teardown(): Promise<void> {
+  await killContainers('teardown', runStartedAt)
 }

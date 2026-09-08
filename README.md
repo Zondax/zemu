@@ -21,19 +21,18 @@ apps ecosystem is lacking an adequate approach with respect to testing. The Zemu
 problem. Under the hood, Zemu uses Ledger's project [speculos](https://github.com/ledgerHQ/speculos). It's currently
 being used in every Ledger App built by Zondax, among many others (such as Ethereum one built by Ledger team).
 
-_Zemu is an emulation and testing framework for Ledger Nano S/S+/X/Stax/Flex devices._
+_Zemu is an emulation and testing framework for Ledger Nano S+/X, Stax, Flex and Apex devices._
 
 ## Features
 
 - Minimal configuration + Docker based
 - Speculos/Qemu based emulation
-- Container pooling for improved test performance
 - Easy JS/TypeScript API
   - Vitest / Jest / Mocha compatible
   - Parallelized testing
   - Abstracted device control (buttons, reset, etc.)
   - Navigate thru screens and take screenshots of them
-- Support for all Ledger devices (Nano S/S+/X/Stax/Flex)
+- Support for Nano S+, Nano X, Stax, Flex and Apex P (Nano S is no longer supported by Speculos)
 - Enhanced error handling with detailed APDU status codes
 - Debugging (support for CLion and vscode, even mixed C/Rust)
 
@@ -48,10 +47,10 @@ pnpm add -D @zondax/zemu
 ## Quick Start
 
 ```typescript
-import Zemu from '@zondax/zemu'
+import Zemu, { DEFAULT_START_OPTIONS } from '@zondax/zemu'
 
 const sim = new Zemu(APP_PATH)
-await sim.start({ model: 'nanos' })
+await sim.start({ ...DEFAULT_START_OPTIONS, model: 'nanosp' })
 
 // Interact with your app
 await sim.clickRight()

@@ -16,7 +16,7 @@
 
 import path from 'node:path'
 import { Transform } from 'node:stream'
-import Docker, { type Container, type ContainerInfo } from 'dockerode'
+import Docker, { type Container } from 'dockerode'
 
 // Development certificate key for emulator testing only - NOT FOR PRODUCTION USE
 // This is a well-known test key used by the Ledger emulator for development purposes
@@ -24,20 +24,23 @@ export const DEV_CERT_PRIVATE_KEY = 'ff701d781f43ce106f72dc26a46b6a83e053b5d07bb
 export const BOLOS_SDK = '/project/deps/nanos-secure-sdk'
 export const DEFAULT_APP_PATH = '/project/app/bin'
 
-export default class EmuContainer {
-  private logger: {
+export interface ILoggerOptions {
+  enabled: boolean
+  timestamp: {
     enabled: boolean
-    timestamp: {
-      enabled: boolean
-      format: 'unix' | 'iso'
-    }
+    format: 'unix' | 'iso'
   }
+}
+
+export default class EmuContainer {
+  private logger: ILoggerOptions
 
   private readonly elfLocalPath: string
   private readonly name: string
   private readonly image: string
   private readonly libElfs: Record<string, string>
   private currentContainer?: Container
+  private stopping?: Promise<void>
 
   constructor(elfLocalPath: string, libElfs: Record<string, string>, image: string, name: string) {
     this.image = image
@@ -53,80 +56,61 @@ export default class EmuContainer {
     }
   }
 
-  static killContainerByName(name: string): void {
+  /**
+   * Force-removes every container whose name contains `name`.
+   * `createdAfter` (unix seconds) limits the sweep to containers created after that time.
+   */
+  static async killContainerByName(name: string, createdAfter?: number): Promise<void> {
     const docker = new Docker()
-    docker.listContainers({ all: true, filters: { name: [name] } }, (listError, containers?: ContainerInfo[]) => {
-      if (listError != null) throw listError
-      if (containers == null || containers.length === 0) {
-        return
-      }
-      for (const containerInfo of containers) {
-        docker.getContainer(containerInfo.Id).remove({ force: true }, (removeError) => {
-          if (removeError != null) throw removeError
-        })
-      }
-    })
+    const containers = await docker.listContainers({ all: true, filters: { name: [name] } })
+    const targets = createdAfter === undefined ? containers : containers.filter((info) => info.Created >= createdAfter)
+    await Promise.all(targets.map((info) => docker.getContainer(info.Id).remove({ force: true })))
   }
 
   static async checkAndPullImage(imageName: string): Promise<void> {
     const docker = new Docker()
-    await new Promise<void>((resolve) => {
-      docker.pull(imageName, {}, (err: any, stream: any) => {
-        function onProgress(event: any): void {
-          const progress = event?.progress ?? ''
-          const status = event?.status ?? ''
-          process.stdout.write(`[DOCKER] ${status}: ${progress}\n`)
-        }
+    const stream = await docker.pull(imageName)
 
-        function onFinished(err: any, _output: any): void {
-          if (err != null) {
-            process.stdout.write(`[DOCKER] ${err}\n`)
-            throw err
-          }
-          resolve()
-        }
+    await new Promise<void>((resolve, reject) => {
+      const onProgress = (event: any): void => {
+        const progress = event?.progress ?? ''
+        const status = event?.status ?? ''
+        process.stdout.write(`[DOCKER] ${status}: ${progress}\n`)
+      }
 
+      const onFinished = (err: Error | null): void => {
         if (err != null) {
           process.stdout.write(`[DOCKER] ${err}\n`)
-          throw err
+          reject(err)
+          return
         }
+        resolve()
+      }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        docker.modem.followProgress(stream, onFinished, onProgress)
-      })
+      docker.modem.followProgress(stream, onFinished, onProgress)
     })
   }
 
-  log(message: string): void {
-    if (this.logger?.enabled) {
-      let msg = message
-
-      if (this.logger?.timestamp.enabled) {
-        switch (this.logger?.timestamp.format) {
-          case 'iso':
-            msg = `[${new Date().toISOString()}] ${message}`
-            break
-          case 'unix':
-            msg = `[${Date.now()}] ${message}`
-            break
-          default:
-            throw new Error('invalid logger timestamp format')
-        }
-      }
-
-      process.stdout.write(`${msg}\n`)
+  private formatTimestamp(): string {
+    switch (this.logger.timestamp.format) {
+      case 'iso':
+        return `[${new Date().toISOString()}] `
+      case 'unix':
+        return `[${Date.now()}] `
+      default:
+        throw new Error('invalid logger timestamp format')
     }
+  }
+
+  log(message: string): void {
+    if (!this.logger.enabled) return
+    const prefix = this.logger.timestamp.enabled ? this.formatTimestamp() : ''
+    process.stdout.write(`${prefix}${message}\n`)
   }
 
   async runContainer(options: {
     logging: boolean
-    logger?: {
-      enabled: boolean
-      timestamp: {
-        enabled: boolean
-        format: 'unix' | 'iso'
-      }
-    }
+    logger?: ILoggerOptions
     custom: string
     model: string
     transportPort: string
@@ -147,12 +131,10 @@ export default class EmuContainer {
       libArgs += ` -l ${libName}:${DEFAULT_APP_PATH}/${libFilename}`
     }
 
-    const modelOptions = options.model !== '' ? options.model : 'nanos'
-
     const customOptions = options.custom
 
     const displaySetting = '--display headless'
-    const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${modelOptions} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
+    const command = `/home/zondax/speculos/speculos.py --log-level speculos:DEBUG --color JADE_GREEN ${displaySetting} ${customOptions} -m ${options.model} ${DEFAULT_APP_PATH}/${appFilename} ${libArgs}`
 
     this.log(`[ZEMU] Command: ${command}`)
 
@@ -166,11 +148,12 @@ export default class EmuContainer {
     }
 
     const displayEnvironment: string = process.platform === 'darwin' ? 'host.docker.internal:0' : (process.env.DISPLAY ?? '')
+    // Docker passes Env values verbatim (no shell), so no quoting here.
     const environment = [
-      `SCP_PRIVKEY='${DEV_CERT_PRIVATE_KEY}'`,
-      `BOLOS_SDK='${BOLOS_SDK}'`,
-      `BOLOS_ENV='/opt/bolos'`,
-      `DISPLAY='${displayEnvironment}'`,
+      `SCP_PRIVKEY=${DEV_CERT_PRIVATE_KEY}`,
+      `BOLOS_SDK=${BOLOS_SDK}`,
+      'BOLOS_ENV=/opt/bolos',
+      `DISPLAY=${displayEnvironment}`,
     ]
 
     this.log(`[ZEMU] Creating Container ${this.image} - ${this.name} `)
@@ -191,32 +174,16 @@ export default class EmuContainer {
 
     this.log(`[ZEMU] Connected ${this.currentContainer.id}`)
 
-    if (this.logger?.enabled) {
+    if (this.logger.enabled) {
       const timestampTransform = new Transform({
         transform: (chunk, _encoding, callback) => {
-          if (this.logger?.timestamp.enabled) {
-            switch (this.logger?.timestamp.format) {
-              case 'iso':
-                callback(null, `[${new Date().toISOString()}] ${chunk}`)
-                break
-              case 'unix':
-                callback(null, `[${Date.now()}] ${chunk}`)
-                break
-              default:
-                throw new Error('invalid logger timestamp format')
-            }
-          } else {
-            callback(null, `${chunk}`)
-          }
+          const prefix = this.logger.timestamp.enabled ? this.formatTimestamp() : ''
+          callback(null, `${prefix}${chunk}`)
         },
       })
 
-      this.currentContainer.attach({ stream: true, stdout: true, stderr: true }, (err: any, stream: NodeJS.ReadWriteStream | undefined) => {
-        if (err != null) throw err
-        if (stream == null) return
-
-        stream.pipe(timestampTransform).pipe(process.stdout)
-      })
+      const stream = await this.currentContainer.attach({ stream: true, stdout: true, stderr: true })
+      stream.pipe(timestampTransform).pipe(process.stdout)
       this.log(`[ZEMU] Attached ${this.currentContainer.id}`)
     }
 
@@ -225,25 +192,44 @@ export default class EmuContainer {
     this.log(`[ZEMU] Started ${this.currentContainer.id}`)
   }
 
-  async stop(): Promise<void> {
-    if (this.currentContainer != null) {
-      const container = this.currentContainer
-      this.currentContainer = undefined
-      this.log('[ZEMU] Stopping container')
-      try {
-        await container.stop({ t: 0 })
-      } catch (e) {
+  /**
+   * Stops and removes the container. The handle is only dropped once the
+   * container is gone, so a failed attempt can be retried with another stop().
+   * Concurrent calls share the same in-flight operation.
+   */
+  stop(): Promise<void> {
+    if (this.stopping == null) {
+      this.stopping = this.doStop().finally(() => {
+        this.stopping = undefined
+      })
+    }
+    return this.stopping
+  }
+
+  private async doStop(): Promise<void> {
+    const container = this.currentContainer
+    if (container == null) return
+
+    this.log('[ZEMU] Stopping container')
+    try {
+      await container.stop({ t: 0 })
+    } catch (e: any) {
+      // 304: already stopped, 404: already gone. Anything else is a real failure.
+      if (e?.statusCode !== 304 && e?.statusCode !== 404) {
         this.log(`[ZEMU] Stopping: ${e}`)
         throw e
       }
-      this.log('[ZEMU] Stopped')
-      try {
-        await container.remove()
-      } catch (err) {
-        this.log('[ZEMU] Unable to remove container')
-        throw err
-      }
-      this.log('[ZEMU] Removed')
     }
+    this.log('[ZEMU] Stopped')
+    try {
+      await container.remove({ force: true })
+    } catch (e: any) {
+      if (e?.statusCode !== 404) {
+        this.log(`[ZEMU] Unable to remove container: ${e}`)
+        throw e
+      }
+    }
+    this.currentContainer = undefined
+    this.log('[ZEMU] Removed')
   }
 }

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Zemu is an emulation and testing framework for Ledger Nano S/S+/X/Stax/Flex devices. It provides a JavaScript/TypeScript
+Zemu is an emulation and testing framework for Ledger Nano S+/X, Stax, Flex and Apex P devices. It provides a JavaScript/TypeScript
 API for automated testing of Ledger applications using Docker-based emulation via Speculos/QEMU.
 
 ## Common Development Commands
@@ -13,7 +13,6 @@ API for automated testing of Ledger applications using Docker-based emulation vi
 
 ```bash
 pnpm build              # Builds the TypeScript project to dist/
-pnpm copy-files        # Copies proto files to dist/
 ```
 
 ### Testing
@@ -23,7 +22,7 @@ pnpm test              # Runs all tests (includes test:clean and build)
 pnpm test:clean        # Cleans up test environment
 pnpm test:watch        # Run tests in watch mode for development
 vitest run             # Run tests directly after building
-vitest tests/basic.s.test.ts  # Run a specific test file
+vitest tests/basic.test.ts  # Run a specific test file
 ```
 
 ### Linting and Formatting
@@ -44,7 +43,7 @@ pnpm check:fix         # Run both linting and formatting with auto-fix
    comparisons.
 
 2. **Device Models & Actions**:
-   - `src/types.ts`: Defines device models (nanos, nanosp, nanox, stax, flex) and interaction types
+   - `src/types.ts`: Defines device models (nanosp, nanox, stax, flex, apex_p) and interaction types
    - `src/actions.ts`: Navigation implementations (ClickNavigation, TouchNavigation)
    - `src/buttons*.ts`: Device-specific button mappings for each model
 
@@ -60,13 +59,13 @@ pnpm check:fix         # Run both linting and formatting with auto-fix
 
 ### Key Interfaces
 
-- `IStartOptions`: Configuration for emulator startup including model, SDK version, custom parameters
+- `IStartOptions`: Configuration for emulator startup including model, custom Speculos parameters and timeouts
 - `IDeviceModel`: Device specifications with display dimensions and paths
 - `INavElement`: Navigation element definitions for UI automation
 
 ## Testing Patterns
 
-Tests should follow the pattern in `tests/basic.*.test.ts`:
+Tests should follow the pattern in `tests/basic.test.ts` (device list and options live in `tests/common.ts`):
 
 1. Create Zemu instance with appropriate model and options
 2. Start the emulator
@@ -77,13 +76,12 @@ Tests should follow the pattern in `tests/basic.*.test.ts`:
 Example test structure:
 
 ```typescript
-const sim = new Zemu(DEMO_APP_PATH_S);
+const sim = new Zemu(m.path);
 try {
-  await sim.start(ZEMU_OPTIONS_S);
+  await sim.start({ ...defaultOptions, model: m.name });
   await sim.clickRight();
   await sim.clickBoth();
-  const snapshot = await sim.snapshot();
-  expect(snapshot).toMatchImageSnapshot();
+  expect(await sim.navigateAndCompareSnapshots('tests', 'my-testcase', [1, 0])).toBe(true);
 } finally {
   await sim.close();
 }
@@ -96,14 +94,15 @@ try {
 - Screenshot comparisons are pixel-perfect by default
 - Supports parallel test execution with isolated containers
 - Built-in retry logic for HTTP requests via `axios-retry`
-- Test snapshots are stored in `tests/snapshots/` for visual regression testing
+- Test snapshots are stored in `tests/snapshots/`; new runs write to `tests/snapshots-tmp/`, copy them over to update the goldens
+- Test fixtures in `bin/` are builds of the Polymesh Ledger app for each supported device
 - Global test setup automatically cleans up dangling containers on SIGINT
 
 ## Environment Configuration
 
-- **DISPLAY**: Required for X11 display forwarding on Linux. On macOS, defaults to `host.docker.internal:0`
-- **Node.js 22**: Project requires Node.js 22 or later (see .nvmrc)
-- **pnpm**: Uses pnpm as package manager (>=8.0.0)
+- **DISPLAY**: Passed through to the container. Speculos always runs headless, so it is not required
+- **Node.js 22**: Project requires Node.js 22 or later (see .mise.toml)
+- **pnpm**: Uses pnpm 10 as package manager (see .mise.toml)
 
 ## Release Process
 

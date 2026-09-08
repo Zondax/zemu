@@ -13,14 +13,13 @@ explain later how to apply this options. These are the defaults:
 
 ```typescript
 const DEFAULT_START_OPTIONS = {
-  model: "nanos", // this can be nanos, nanox and nanosp
-  sdk: "", // version of the ledger-secure-sdk to use
+  model: "nanosp", // nanosp, nanox, stax, flex or apex_p
   logging: false, // some nice logs
   custom: "", // other options passed directly to speculos, the emulator
   startDelay: 20000, // wait time before timeout before connection
   startText: "Ready", // text to search at the first screen
   caseSensitive: false, // for every text search in the emulator
-  startTimeout: 20000, // wait time to have startText after connecting
+  startTimeout: 30000, // wait time to have startText after connecting
 };
 ```
 
