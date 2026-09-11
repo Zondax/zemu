@@ -20,7 +20,7 @@ permissions:
 jobs:
   # Node and pnpm versions come from .mise.toml; the package manager is detected from the lockfile.
   ts-checks:
-    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@v6
+    uses: zondax/_workflows/.github/workflows/_checks-ts.yaml@v12
     with:
       enable_tests: false # Tests need Docker, see test-with-docker
       enable_coverage: false
